@@ -231,9 +231,11 @@ function createHeroScene(container) {
     container.appendChild(renderer.domElement);
 
     let basePosX = width > 900 ? (width > 1300 ? 1.40 : 1.10) : 0;
-    let basePosY = 0.42;
+    let basePosY = width <= 768 ? 1.20 : 0.42;
+    const baseScale = width <= 768 ? 0.85 : 1.0;
     const rootGroup = new THREE.Group();
     rootGroup.position.set(basePosX, basePosY, 0);
+    rootGroup.scale.set(baseScale, baseScale, baseScale);
     scene.add(rootGroup);
 
     // ── Core Group — icosahedron wireframe + glowing center flares ──
@@ -590,8 +592,11 @@ function createHeroScene(container) {
             camera.updateProjectionMatrix();
             renderer.setSize(w, h);
             basePosX = w > 900 ? (w > 1300 ? 1.40 : 1.10) : 0;
+            basePosY = w <= 768 ? 1.20 : 0.42;
+            const s = w <= 768 ? 0.85 : 1.0;
             rootGroup.position.x = basePosX;
             rootGroup.position.y = basePosY;
+            rootGroup.scale.set(s, s, s);
         }
     });
 }
