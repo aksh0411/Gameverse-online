@@ -1,0 +1,103 @@
+@media (max-width: 1200px) {
+  .hero-content h1 { font-size: 3.5rem; }
+  .games-grid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+  .sysreq-grid { gap: 20px; }
+}
+
+@media (max-width: 992px) {
+  section:not(#hero) { padding: 60px 4%; }
+  #hero { padding: 0 4%; }
+  .floating-header { padding: 14px 24px; }
+  
+  .hero-visual { opacity: 0.6; }
+  .hero-content { max-width: 100%; }
+  
+  .game-tabs { padding: 0 5%; gap: 20px; overflow-x: auto; white-space: nowrap; }
+  .tab-content { padding: 0 5% 50px; }
+  .game-hero { padding: 50px 5%; height: auto; padding-top: 120px; }
+  
+  .form-grid { grid-template-columns: 1fr; }
+  .universe-shell { overflow: visible; }
+  .dimensional-transition-zone { height: 28px; }
+  .collection-core-section { display: block; padding: 10px 0 40px !important; }
+  .core-grid-wrapper { min-height: auto; }
+  .core-left-panel {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 100%;
+    max-width: 100%;
+    padding: 0 20px;
+    pointer-events: auto;
+    margin-bottom: 16px;
+  }
+  .core-header-overlay { max-width: 100%; padding: 0; margin-bottom: 14px; }
+  .core-sidebar {
+    max-width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 16px;
+    border-radius: 14px;
+  }
+  .sidebar-header { 
+    width: 100%; 
+    padding: 0 4px 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    margin-bottom: 0;
+  }
+  .core-filter-card { flex: 1; min-width: 140px; padding: 10px 12px; }
+  .sidebar-tagline { display: none; }
+  .core-container { height: 500px; }
+}
+
+@media (max-width: 768px) {
+  .floating-header { padding: 12px 16px; }
+  .brand-logo { font-size: 1.05rem; }
+  .icon-circle-btn, .avatar-circle-btn { width: 36px; height: 36px; }
+  .hero-content h1 { font-size: 2.3rem; }
+  
+  /* Clean mobile hero and collection core */
+  #hero {
+    padding-top: 90px;
+    height: auto;
+    min-height: auto;
+    overflow: visible;
+  }
+  .hero-grid {
+    grid-template-columns: 1fr;
+    padding: 0 16px 20px;
+    gap: 24px;
+    width: 100%;
+  }
+  .hero-visual {
+    opacity: 0.5;
+  }
+  .collection-core-section {
+    padding: 10px 0 30px !important;
+  }
+  .core-left-panel { padding: 0 12px; }
+  .core-sidebar { padding: 12px; gap: 6px; }
+  .core-filter-card { min-width: 100px; padding: 8px 10px; gap: 8px; font-size: 0.75rem; }
+  .filter-card-icon { width: 28px; height: 28px; border-radius: 8px; }
+  .filter-card-icon svg { width: 14px; height: 14px; }
+  .filter-card-count { font-size: 0.72rem; padding: 1px 7px; }
+  .core-container {
+    height: 440px;
+  }
+  .scroll-indicator { display: none; }
+  
+  .games-grid { grid-template-columns: 1fr; }
+  .orbital-badge-pill { font-size: 0.68rem; padding: 2px 8px 2px 6px; }
+  .pill-badge-icon { width: 22px; height: 22px; }
+  .pill-badge-icon svg { width: 12px; height: 12px; }
+  
+  .poster-card { flex: 0 0 155px; height: 230px; border-radius: 12px; }
+  
+  .sysreq-grid { grid-template-columns: 1fr; }
+  .info-grid { grid-template-columns: 1fr; }
+  
+  .modal-overlay { padding: 0; }
+  .modal { height: 100vh; max-height: 100vh; border-radius: 0; }
+}
+

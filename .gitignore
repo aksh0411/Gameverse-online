@@ -1,0 +1,26 @@
+# Python Virtual Environments
+venv/
+backend/venv/
+ENV/
+env/
+
+# Python Bytecode and Cache
+__pycache__/
+backend/__pycache__/
+backend/routes/__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Local Environment Variables & Secrets
+.env
+backend/.env
+*.env.local
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Vercel
+.vercel/

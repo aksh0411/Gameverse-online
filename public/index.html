@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GAMEVERSE — Personal Game Archive</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/style.css?v=8.0">
+  <link rel="stylesheet" href="css/home.css?v=10.0">
+  <link rel="stylesheet" href="css/cards.css?v=8.0">
+  <link rel="stylesheet" href="css/admin.css?v=8.0">
+  <link rel="stylesheet" href="css/responsive.css?v=8.0">
+</head>
+<body>
+  <!-- Minimal Floating Header -->
+  <header class="floating-header">
+    <a href="#hero" class="brand-logo">
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="4"></rect><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"></path></svg>
+      <span>GAME<span class="logo-accent">VERSE</span></span>
+    </a>
+
+    <div class="top-icon-cluster">
+      <!-- Search Button -->
+      <button class="icon-circle-btn" id="searchToggle" title="Search Collection (Press / or Ctrl+K)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="7"></circle>
+          <line x1="21" y1="21" x2="16.5" y2="16.5"></line>
+        </svg>
+      </button>
+
+      <!-- Avatar Button -->
+      <div class="avatar-circle-btn" id="avatarBtn" title="Admin / Profile">V</div>
+    </div>
+  </header>
+
+  <!-- Spotlight Search Modal Overlay -->
+  <div class="spotlight-overlay hidden" id="searchOverlay">
+    <div class="spotlight-dialog glass-panel">
+      <div class="spotlight-input-row">
+        <svg class="spotlight-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="7"></circle>
+          <line x1="21" y1="21" x2="16.5" y2="16.5"></line>
+        </svg>
+        <input type="text" id="searchInput" placeholder="Search any game in universe (title, genre, platform)..." autocomplete="off">
+        <button class="spotlight-close" id="searchClose">&times;</button>
+      </div>
+      <div class="spotlight-results hidden" id="searchResults"></div>
+    </div>
+  </div>
+
+  <!-- ===== Shared Parent 4D Universe Environment ===== -->
+  <div class="universe-shell grain">
+    <!-- Single Shared Dimensional Atmosphere across Hero & Collection Core -->
+    <div class="universe-atmosphere">
+      <div class="universe-gradient-base"></div>
+      <div class="universe-gradient-plum-hero"></div>
+      <div class="universe-gradient-rose-hero"></div>
+      <div class="universe-gradient-plum-core"></div>
+      <div class="universe-gradient-cyan-core"></div>
+    </div>
+
+    <!-- Floating geometric ring accents across the continuous dimensional space -->
+    <div class="universe-ring universe-ring-1"></div>
+    <div class="universe-ring universe-ring-2"></div>
+    <div class="universe-ring universe-ring-3"></div>
+
+    <!-- ===== Section 1: Hero ===== -->
+    <section id="hero">
+      <!-- 4D HyperVisual — pure full-bleed 3D canvas positioned on right (integrated seamlessly, no cutoff) -->
+      <div class="hero-visual animate-fade-in">
+        <div id="hero3d" class="hero-visual-canvas"></div>
+      </div>
+
+      <div class="hero-grid">
+        <!-- Left: Text content -->
+        <div class="hero-content animate-fade-up">
+          <div class="hero-status-pill glass-panel">
+            <span class="status-dot" style="background:#c66a93; animation: pulse 2s infinite;"></span>
+            <span class="hero-pill-text">PERSONAL GAME ARCHIVE</span>
+          </div>
+
+          <h1>Enter My<br><span class="text-gradient">Game Universe</span></h1>
+          <p class="hero-desc">A living collection of worlds, stories and experiments — projected through a dimensional lens.</p>
+          
+          <div class="hero-buttons">
+            <a href="#my-collection" class="btn-primary">Explore Collection <span class="arrow">→</span></a>
+          </div>
+
+          <div class="stats" id="statsContainer">
+            <!-- Filled by JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seamless Dimensional Transition (cosmic bridge, zero harsh dividers) -->
+    <div class="dimensional-transition-zone">
+      <div class="transition-beam"></div>
+    </div>
+
+    <!-- ===== Section 2: Collection Core (Dimensional Network & Orbit) ===== -->
+    <section id="collection-core" class="collection-core-section animate-fade-in">
+      <div class="core-grid-wrapper">
+        <!-- Left Side Column: Header Overlay + Filter Sidebar -->
+        <div class="core-left-panel">
+          <div class="core-header-overlay">
+            <div class="section-tag-pill">
+              <span class="tag-diamond">◈</span>
+              <span class="section-tag">DIMENSIONAL RADAR</span>
+              <span class="tag-diamond">◈</span>
+            </div>
+            <h2>The <span class="text-gradient">Collection</span> Core</h2>
+            <p class="section-desc">Every game orbits the core on its own dimensional layer. Click a node to bring that world forward.</p>
+          </div>
+
+          <!-- Left Sidebar Panel Card -->
+          <div class="core-sidebar" id="radarFilterTabs">
+            <div class="sidebar-header">YOUR COLLECTION</div>
+
+            <button class="core-filter-card active" data-filter="bookmarked" id="filterBtnBookmarked">
+              <span class="filter-card-icon icon-bookmarked">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+              </span>
+              <span class="filter-card-label">Bookmarked</span>
+              <span class="filter-card-count" id="radarCountBookmarked">0</span>
+            </button>
+
+            <button class="core-filter-card" data-filter="favorited" id="filterBtnFavorited">
+              <span class="filter-card-icon icon-liked">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+              </span>
+              <span class="filter-card-label">Liked</span>
+              <span class="filter-card-count" id="radarCountFavorited">0</span>
+            </button>
+
+            <button class="core-filter-card" data-filter="playing" id="filterBtnPlaying">
+              <span class="filter-card-icon icon-playing">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4m-2-2v4m6-3h.01m4 0h.01"></path></svg>
+              </span>
+              <span class="filter-card-label">Playing</span>
+              <span class="filter-card-count" id="radarCountPlaying">0</span>
+            </button>
+
+            <div class="sidebar-tagline">
+              <span class="tagline-icon">✦</span>
+              <div>
+                <div class="tagline-top">YOUR WORLDS, YOUR WAY</div>
+                <div class="tagline-bottom">TRACK. EXPLORE. BELONG.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3D Radar Visualization Canvas + Orbiting Pills Layer -->
+        <div class="core-container" id="coreContainer">
+          <div id="core3d" class="core-3d-canvas"></div>
+          <div id="corePillsLayer" class="core-pills-layer"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===== Section 3: My Collection (Full Library Poster Carousel) ===== -->
+  <section id="my-collection" class="my-collection-section">
+    <div class="carousel-header-row">
+      <div>
+        <div class="section-tag-pill">
+          <span class="tag-diamond">◈</span>
+          <span class="section-tag">FULL LIBRARY</span>
+          <span class="tag-diamond">◈</span>
+        </div>
+        <h2>My <span class="text-gradient">Collection</span></h2>
+      </div>
+      <div class="carousel-nav-buttons">
+        <button class="nav-arrow-circle prev" id="carouselPrev" title="Previous Games">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <button class="nav-arrow-circle next" id="carouselNext" title="Next Games">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+      </div>
+    </div>
+    <div class="poster-carousel-viewport">
+      <div class="poster-carousel-track" id="collectionCarousel">
+        <!-- Vertical 2:3 Posters inserted by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Section 4: Favorites ===== -->
+  <section id="favorites">
+    <div class="section-header">
+      <div class="section-tag-row">
+        <div class="section-tag-line"></div>
+        <span class="section-tag">♥ TOP PICKS</span>
+      </div>
+      <h2>My <span class="text-gradient">Favorites</span></h2>
+    </div>
+    <div class="games-grid" id="favoritesGrid">
+      <!-- Favorited game cards -->
+    </div>
+  </section>
+
+  <!-- ===== Section 5: Currently Playing ===== -->
+  <section id="currently-playing">
+    <div class="section-header">
+      <div class="section-tag-row">
+        <span class="status-dot" style="background:#c66a93; animation: pulse 2s infinite;"></span>
+        <span class="section-tag">NOW ACTIVE</span>
+      </div>
+      <h2>Currently <span class="text-gradient">Playing</span></h2>
+    </div>
+    <div class="games-grid" id="playingGrid">
+      <!-- Playing game cards -->
+    </div>
+  </section>
+
+
+
+  <!-- ===== Footer ===== -->
+  <footer class="site-footer">
+    <div class="footer-brand">🎮 GAME<span style="color:#c66a93">VERSE</span></div>
+    <p class="footer-sub">A personal game archive</p>
+    <p class="footer-copy">Crafted in a 4D space · 2026</p>
+  </footer>
+
+  <!-- About Me Modal Overlay (Opens on Avatar Click or Navigation) -->
+  <div class="modal-overlay hidden" id="aboutModal">
+    <div class="about-card glass-panel about-modal-inner" id="aboutModalCard">
+      <!-- Ambient card background glow -->
+      <div class="about-glow-orb" aria-hidden="true"></div>
+
+      <!-- Modal Close Button -->
+      <button class="about-close-btn" id="aboutModalClose" title="Close Modal" aria-label="Close Modal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <!-- Personal Avatar with Glowing Ring & Gamer Badge -->
+      <div class="about-avatar-wrapper">
+        <div class="about-avatar-ring">
+          <svg class="about-avatar-svg" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Akshay's personal avatar illustration">
+            <defs>
+              <clipPath id="avatarCircleClipModal">
+                <circle cx="60" cy="60" r="58" />
+              </clipPath>
+              <radialGradient id="skyGradModal" cx="60" cy="30" r="70" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#2a164d"/>
+                <stop offset="50%" stop-color="#180c2e"/>
+                <stop offset="100%" stop-color="#0a0514"/>
+              </radialGradient>
+              <linearGradient id="cityMistModal" x1="60" y1="50" x2="60" y2="85" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#a855f7" stop-opacity="0"/>
+                <stop offset="100%" stop-color="#ec4899" stop-opacity="0.25"/>
+              </linearGradient>
+              <linearGradient id="hoodieBackModal" x1="30" y1="70" x2="90" y2="120" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#1e1430"/>
+                <stop offset="60%" stop-color="#120b1f"/>
+                <stop offset="100%" stop-color="#090510"/>
+              </linearGradient>
+              <linearGradient id="rimGlowModal" x1="20" y1="60" x2="100" y2="60" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#a855f7" stop-opacity="0.9"/>
+                <stop offset="50%" stop-color="#f472b6" stop-opacity="0.4"/>
+                <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.9"/>
+              </linearGradient>
+            </defs>
+            
+            <g clip-path="url(#avatarCircleClipModal)">
+              <rect width="120" height="120" fill="url(#skyGradModal)" />
+              
+              <!-- Stars / Cosmic Dust -->
+              <circle cx="25" cy="22" r="0.8" fill="#e9d5ff" opacity="0.8" />
+              <circle cx="45" cy="15" r="1.1" fill="#fbcfe8" opacity="0.9" />
+              <circle cx="85" cy="18" r="0.9" fill="#c084fc" opacity="0.7" />
+              <circle cx="35" cy="38" r="0.6" fill="#ffffff" opacity="0.6" />
+              <circle cx="95" cy="32" r="1.2" fill="#38bdf8" opacity="0.85" />
+              <circle cx="15" cy="45" r="0.8" fill="#e879f9" opacity="0.5" />
+              <circle cx="70" cy="28" r="0.7" fill="#ffffff" opacity="0.7" />
+
+              <!-- Distant City Skyline Silhouettes -->
+              <path d="M10 85 V62 H18 V55 H26 V68 H34 V52 H44 V65 H52 V58 H62 V70 H70 V54 H82 V64 H92 V48 H102 V66 H112 V85 Z" fill="#130a24" />
+              <rect x="0" y="50" width="120" height="35" fill="url(#cityMistModal)" />
+              
+              <!-- Glowing Neon Windows -->
+              <rect x="13" y="66" width="2" height="3" rx="0.5" fill="#38bdf8" opacity="0.85" />
+              <rect x="21" y="58" width="2" height="2" rx="0.5" fill="#f472b6" opacity="0.9" />
+              <rect x="21" y="63" width="2" height="2" rx="0.5" fill="#38bdf8" opacity="0.75" />
+              <rect x="37" y="56" width="3" height="2" rx="0.5" fill="#fbcfe8" opacity="0.8" />
+              <rect x="37" y="61" width="3" height="2" rx="0.5" fill="#a855f7" opacity="0.9" />
+              <rect x="47" y="68" width="2" height="2.5" rx="0.5" fill="#38bdf8" opacity="0.7" />
+              <rect x="73" y="58" width="2.5" height="2" rx="0.5" fill="#f472b6" opacity="0.85" />
+              <rect x="73" y="63" width="2.5" height="2" rx="0.5" fill="#fbcfe8" opacity="0.7" />
+              <rect x="85" y="58" width="2" height="3" rx="0.5" fill="#38bdf8" opacity="0.9" />
+              <rect x="95" y="52" width="2" height="2" rx="0.5" fill="#fbcfe8" opacity="0.8" />
+              <rect x="95" y="57" width="2" height="2" rx="0.5" fill="#a855f7" opacity="0.75" />
+              <rect x="105" y="70" width="2" height="2" rx="0.5" fill="#38bdf8" opacity="0.8" />
+
+              <!-- Window Sill -->
+              <line x1="0" y1="84" x2="120" y2="84" stroke="rgba(168, 85, 247, 0.3)" stroke-width="1.5" />
+              <rect x="0" y="84" width="120" height="36" fill="#0c0716" opacity="0.9" />
+
+              <!-- Character Silhouette (Hoodie & Headphones) -->
+              <path d="M22 120 C22 96 35 84 48 81 C52 80 68 80 72 81 C85 84 98 96 98 120 Z" fill="url(#hoodieBackModal)" />
+              <path d="M24 120 C24 98 36 86 48 83 C52 82 68 82 72 83 C84 86 96 98 96 120" stroke="url(#rimGlowModal)" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.8" />
+
+              <!-- Hood fold -->
+              <path d="M42 84 C42 76 48 72 60 72 C72 72 78 76 78 84 C78 90 70 94 60 94 C50 94 42 90 42 84 Z" fill="#180f26" />
+              <path d="M45 83 C48 77 54 74 60 74 C66 74 72 77 75 83" stroke="rgba(192, 132, 252, 0.4)" stroke-width="1" fill="none" />
+
+              <!-- Head & Hair -->
+              <path d="M46 64 C44 54 48 44 60 44 C72 44 76 54 74 64 C74 72 69 77 60 77 C51 77 46 72 46 64 Z" fill="#0d0717" />
+              <path d="M45 56 C41 50 45 42 52 38 C56 36 65 36 70 40 C75 42 79 48 76 55 C74 50 71 45 66 45 C62 45 58 47 55 49 C52 51 48 53 45 56 Z" fill="#140b24" />
+              <path d="M46 52 C44 44 50 38 60 38 C68 38 74 43 75 52" stroke="#c084fc" stroke-width="1.2" stroke-linecap="round" fill="none" opacity="0.75" />
+
+              <!-- Headphones -->
+              <path d="M43 56 C41 40 50 34 60 34 C70 34 79 40 77 56" stroke="#2a1b45" stroke-width="3" stroke-linecap="round" fill="none" />
+              <path d="M44 54 C43 42 51 36 60 36 C69 36 77 42 76 54" stroke="#a855f7" stroke-width="1" stroke-linecap="round" fill="none" opacity="0.8" />
+              <rect x="40" y="52" width="6" height="13" rx="3" fill="#1b112c" stroke="#a855f7" stroke-width="1" />
+              <circle cx="43" cy="58.5" r="1.5" fill="#e879f9" opacity="0.9" />
+              <rect x="74" y="52" width="6" height="13" rx="3" fill="#1b112c" stroke="#38bdf8" stroke-width="1" />
+              <circle cx="77" cy="58.5" r="1.5" fill="#38bdf8" opacity="0.9" />
+            </g>
+          </svg>
+
+          <!-- Avatar Glass Stamp / Note -->
+          <div class="avatar-speech-badge" aria-hidden="true">
+            <span>Good Games</span>
+            <span>Better Days</span>
+          </div>
+
+          <!-- Bottom Right Controller Icon Badge -->
+          <div class="avatar-controller-badge" title="Gamer at heart">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="6" width="20" height="12" rx="4"></rect>
+              <path d="M6 12h4m-2-2v4m7-2h.01m3 0h.01"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Heading & Roles -->
+      <h2 class="about-heading">Hey, I’m <span class="text-gradient">Akshay</span> 👋</h2>
+      <p class="about-subtitle">3rd year CS student &nbsp;·&nbsp; Builder &nbsp;·&nbsp; Gamer</p>
+
+      <!-- Story paragraphs -->
+      <div class="about-story-flow">
+        <p class="about-paragraph">
+          I’m a 20-year-old 3rd year CS student who got tired of having 50+ games scattered across platforms with zero way to track what I’ve actually played.
+        </p>
+        <p class="about-paragraph about-highlight-line">
+          So I built <span class="text-gradient">Gameverse</span>.
+        </p>
+        <p class="about-paragraph">
+          No fancy reason — I just wanted one place where I could see everything, rate stuff honestly, and stop forgetting about games I paid actual money for.
+        </p>
+      </div>
+
+      <!-- Delicate Ornamental Divider with Gamepad icon -->
+      <div class="about-ornament-divider" aria-hidden="true">
+        <span class="divider-line"></span>
+        <span class="divider-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="6" width="20" height="12" rx="4"></rect>
+            <path d="M6 12h4m-2-2v4m7-2h.01m3 0h.01"></path>
+          </svg>
+        </span>
+        <span class="divider-line"></span>
+      </div>
+
+      <!-- Outside Gameverse Section + Handwritten Annotation -->
+      <div class="about-outside-wrapper">
+        <div class="about-outside-box">
+          <div class="outside-box-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="6" width="20" height="12" rx="4"></rect>
+              <path d="M6 12h4m-2-2v4m7-2h.01m3 0h.01"></path>
+            </svg>
+          </div>
+          <div class="outside-box-content">
+            <div class="outside-box-label">OUTSIDE GAMEVERSE</div>
+            <div class="outside-box-desc">You'll usually find me coding, gaming, or adding new games to my library faster than I can play them.</div>
+          </div>
+        </div>
+        
+        <!-- Handwritten annotation on top right of the box -->
+        <div class="handwritten-annotation annotation-outside" aria-hidden="true">
+          <div class="handwritten-line">Same</div>
+          <div class="handwritten-line">Games</div>
+          <div class="handwritten-line">Different</div>
+          <div class="handwritten-line">
+            Stories
+            <svg class="handwritten-underline" width="46" height="5" viewBox="0 0 46 5" fill="none">
+              <path d="M2 3 Q 23 1, 44 3" stroke="rgba(192, 132, 252, 0.6)" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Closing note -->
+      <div class="about-closing-block">
+        <div class="closing-heading">Thanks for checking out Gameverse!</div>
+        <div class="closing-sub">Hope you find it as useful as I do.</div>
+      </div>
+
+      <!-- Admin Action Buttons (Login / Logout) -->
+      <div class="about-actions-row">
+        <button class="about-pill-btn admin-login-btn" id="adminLoginBtn">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/>
+          </svg>
+          <span>Login as Admin</span>
+        </button>
+        <button class="about-pill-btn admin-logout-btn hidden" id="adminLogoutBtn">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+          </svg>
+          <span>Logout Admin</span>
+        </button>
+      </div>
+
+      <!-- Decorative Corner Accents -->
+      <div class="about-corner-pixel" aria-hidden="true">
+        <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+          <rect x="2" y="24" width="8" height="8" rx="1.5" fill="rgba(168, 85, 247, 0.18)"/>
+          <rect x="10" y="24" width="8" height="8" rx="1.5" fill="rgba(168, 85, 247, 0.35)"/>
+          <rect x="2" y="32" width="8" height="8" rx="1.5" fill="rgba(168, 85, 247, 0.45)"/>
+          <rect x="10" y="32" width="8" height="8" rx="1.5" fill="rgba(168, 85, 247, 0.28)"/>
+          <rect x="18" y="32" width="8" height="8" rx="1.5" fill="rgba(168, 85, 247, 0.15)"/>
+        </svg>
+      </div>
+
+      <div class="handwritten-annotation annotation-corner" aria-hidden="true">
+        <span>Play</span>
+        <span>Collect</span>
+        <span>Remember</span>
+        <span class="dots">...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Login Modal -->
+  <div class="modal-overlay hidden" id="loginModal">
+    <div class="modal glass-panel">
+      <button class="modal-close" id="loginClose">&times;</button>
+      <h3>Admin Login</h3>
+      <form id="loginForm">
+        <div class="form-group">
+          <input type="text" name="username" placeholder="Username" required>
+        </div>
+        <div class="form-group">
+          <input type="password" name="password" placeholder="Password" required>
+        </div>
+        <button type="submit" class="btn-primary" style="width:100%">Login</button>
+        <p class="error-msg hidden" id="loginError"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin: Add/Edit Game Modal -->
+  <div class="modal-overlay hidden" id="addGameModal">
+    <div class="modal modal-large glass-panel">
+      <button class="modal-close" id="gameModalClose">&times;</button>
+      <h3 id="gameFormTitle">Add New Game</h3>
+      <form id="gameForm" enctype="multipart/form-data">
+        <input type="hidden" name="game_id" id="editGameId">
+        <!-- Basic Info -->
+        <div class="form-section">
+          <h4>Basic Info</h4>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Game Name *</label>
+              <input type="text" name="name" id="f_name" required>
+            </div>
+            <div class="form-group">
+              <label>Release Date</label>
+              <input type="date" name="release_date" id="f_release_date">
+            </div>
+            <div class="form-group">
+              <label>Rating (0-10)</label>
+              <input type="number" name="rating" id="f_rating" min="0" max="10" step="0.1">
+            </div>
+            <div class="form-group">
+              <label>Price</label>
+              <input type="number" name="price" id="f_price" min="0" step="0.01">
+            </div>
+            <div class="form-group">
+              <label>Game Engine</label>
+              <input type="text" name="engine" id="f_engine">
+            </div>
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input type="checkbox" name="is_free_to_play" id="f_is_free_to_play"> Free to Play
+              </label>
+            </div>
+          </div>
+          <div class="form-group full-width">
+            <label>Description</label>
+            <textarea name="description" id="f_description" rows="4"></textarea>
+          </div>
+        </div>
+
+        <!-- Cover Image -->
+        <div class="form-section">
+          <h4>Cover Image</h4>
+          <div class="image-upload">
+            <input type="file" name="cover_image" accept="image/*" id="coverImageInput">
+            <div class="image-preview" id="imagePreview">No image selected</div>
+          </div>
+        </div>
+
+        <!-- Developer & Publisher -->
+        <div class="form-section">
+          <h4>Developer & Publisher</h4>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Developer</label>
+              <select name="developer_id" id="developerSelect"><option value="">Select...</option></select>
+            </div>
+            <div class="form-group">
+              <label>Publisher</label>
+              <select name="publisher_id" id="publisherSelect"><option value="">Select...</option></select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Genres, Platforms, Modes -->
+        <div class="form-section">
+          <h4>Categories</h4>
+          <div class="form-group">
+            <label>Genres</label>
+            <div class="checkbox-group" id="genreCheckboxes"></div>
+          </div>
+          <div class="form-group">
+            <label>Platforms</label>
+            <div class="checkbox-group" id="platformCheckboxes"></div>
+          </div>
+          <div class="form-group">
+            <label>Game Modes</label>
+            <div class="checkbox-group" id="modeCheckboxes"></div>
+          </div>
+        </div>
+
+        <!-- System Requirements -->
+        <div class="form-section">
+          <h4>System Requirements (Optional)</h4>
+          <div class="form-grid">
+            <div class="form-group"><label>OS</label><input type="text" name="operating_system" id="f_os"></div>
+            <div class="form-group"><label>Min CPU</label><input type="text" name="minimum_cpu" id="f_min_cpu"></div>
+            <div class="form-group"><label>Min GPU</label><input type="text" name="minimum_gpu" id="f_min_gpu"></div>
+            <div class="form-group"><label>Min RAM</label><input type="text" name="minimum_ram" id="f_min_ram"></div>
+            <div class="form-group"><label>Min Storage</label><input type="text" name="minimum_storage" id="f_min_storage"></div>
+            <div class="form-group"><label>Rec CPU</label><input type="text" name="recommended_cpu" id="f_rec_cpu"></div>
+            <div class="form-group"><label>Rec GPU</label><input type="text" name="recommended_gpu" id="f_rec_gpu"></div>
+            <div class="form-group"><label>Rec RAM</label><input type="text" name="recommended_ram" id="f_rec_ram"></div>
+            <div class="form-group"><label>Rec Storage</label><input type="text" name="recommended_storage" id="f_rec_storage"></div>
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div class="form-section">
+          <h4>Personal Status</h4>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Play Status</label>
+              <select name="play_status" id="f_play_status">
+                <option value="not_started">Not Started</option>
+                <option value="playing">Playing</option>
+                <option value="play_later">Play Later</option>
+                <option value="completed">Completed</option>
+                <option value="wont_play">Won't Play</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="checkbox-label"><input type="checkbox" name="is_bookmarked" id="f_is_bookmarked"> Bookmarked</label>
+            </div>
+            <div class="form-group">
+              <label class="checkbox-label"><input type="checkbox" name="is_favorited" id="f_is_favorited"> Favorited</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">Save Game</button>
+          <button type="button" class="btn-outline modal-cancel" id="gameModalCancel">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin FAB -->
+  <button class="fab hidden" id="addGameFab" title="Add New Game"><span class="fab-icon">+</span><span class="fab-label">Add Game</span></button>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="js/api.js?v=8.0"></script>
+  <script src="js/auth.js?v=10.0"></script>
+  <script src="js/cards.js?v=9.0"></script>
+  <script src="js/search.js?v=8.0"></script>
+  <script src="js/admin.js?v=8.0"></script>
+  <script src="js/collection-core.js?v=9.0"></script>
+  <script src="js/home.js?v=10.0"></script>
+</body>
+</html>
