@@ -1131,8 +1131,8 @@ section:not(#hero):not(#collection-core) {
 
 .annotation-outside {
   position: absolute;
-  right: -10px;
-  top: 50%;
+  right: -14px;
+  top: 36%;
   transform: translateY(-50%) rotate(5deg);
   display: flex;
   flex-direction: column;
