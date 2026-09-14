@@ -1257,30 +1257,54 @@ section:not(#hero):not(#collection-core) {
 
   .about-outside-wrapper {
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
     margin-bottom: 16px;
+    align-items: center;
   }
 
   .about-outside-box {
     max-width: 100%;
   }
 
+  /* Annotation: single horizontal line below the box */
   .annotation-outside {
     position: static;
-    transform: rotate(2deg);
+    transform: rotate(1.5deg);
     align-self: flex-end;
-    font-size: 1.02rem;
+    flex-direction: row;
+    gap: 5px;
+    font-size: 0.95rem;
+    line-height: 1.2;
+    margin-right: 8px;
+  }
+  .annotation-outside .handwritten-line {
+    display: inline;
+  }
+  .annotation-outside .handwritten-underline {
+    display: none;
   }
 
   .annotation-corner {
     right: 14px;
     bottom: 10px;
-    font-size: 0.98rem;
+    font-size: 0.92rem;
   }
 
   .about-corner-pixel {
     left: 14px;
     bottom: 10px;
+  }
+
+  .about-closing-block .closing-heading {
+    font-size: 0.88rem;
+  }
+  .about-closing-block .closing-sub {
+    font-size: 0.78rem;
+  }
+
+  .about-pill-btn {
+    padding: 9px 22px;
+    font-size: 0.82rem;
   }
 }
 
