@@ -24,3 +24,6 @@ desktop.ini
 
 # Vercel
 .vercel/
+
+# Temporary scratch files
+scratch_games.json
