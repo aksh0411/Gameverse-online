@@ -27,3 +27,10 @@ desktop.ini
 
 # Temporary scratch files
 scratch_games.json
+
+# SQL backups and dumps
+SQL/
+*.sql
+
+# One-off batch data
+backend/batch_*.json
