@@ -16,6 +16,51 @@
   <link rel="stylesheet" href="css/responsive.css?v=8.0">
 </head>
 <body>
+  <!-- Minimal Floating Header -->
+  <header class="floating-header">
+    <a href="index.html" class="brand-logo">
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="4"></rect><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"></path></svg>
+      <span>GAME<span class="logo-accent">VERSE</span></span>
+    </a>
+
+    <div class="top-icon-cluster">
+      <!-- Search Button -->
+      <button class="icon-circle-btn" id="searchToggle" title="Search Collection (Press / or Ctrl+K)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="7"></circle>
+          <line x1="21" y1="21" x2="16.5" y2="16.5"></line>
+        </svg>
+      </button>
+
+      <!-- Notification Bell -->
+      <button class="icon-circle-btn" id="notifToggle" title="Notifications">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        <span class="notif-dot"></span>
+      </button>
+
+      <!-- Avatar Button -->
+      <div class="avatar-circle-btn" id="avatarBtn" title="Admin / Profile">V</div>
+    </div>
+  </header>
+
+  <!-- Spotlight Search Modal Overlay -->
+  <div class="spotlight-overlay hidden" id="searchOverlay">
+    <div class="spotlight-dialog glass-panel">
+      <div class="spotlight-input-row">
+        <svg class="spotlight-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="7"></circle>
+          <line x1="21" y1="21" x2="16.5" y2="16.5"></line>
+        </svg>
+        <input type="text" id="searchInput" placeholder="Search any game in universe (title, genre, platform)..." autocomplete="off">
+        <button class="spotlight-close" id="searchClose">&times;</button>
+      </div>
+      <div class="spotlight-results hidden" id="searchResults"></div>
+    </div>
+  </div>
+
   <!-- Outer Window Frame -->
   <div class="game-detail-app-frame">
     
@@ -154,6 +199,7 @@
   <script src="js/api.js?v=8.0"></script>
   <script src="js/auth.js?v=9.0"></script>
   <script src="js/cards.js?v=9.0"></script>
+  <script src="js/search.js?v=9.0"></script>
   <script src="js/game-detail.js?v=8.0"></script>
 </body>
 </html>

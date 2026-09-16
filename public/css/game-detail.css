@@ -6,11 +6,12 @@ body {
   color: #e8e2f7;
   font-family: 'Inter', sans-serif;
   margin: 0;
-  padding: 32px 20px 60px;
+  padding: 88px 20px 60px;
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: center;
   min-height: 100vh;
+  position: relative;
 }
 
 /* Outer Window Frame Container */
@@ -545,7 +546,7 @@ body {
 
 @media (max-width: 600px) {
   body {
-    padding: 12px 10px 40px;
+    padding: 68px 10px 40px;
   }
   .game-detail-hero-card {
     padding: 24px 20px 32px;

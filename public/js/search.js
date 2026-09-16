@@ -63,6 +63,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Notification Bell toggle
+    const notifToggle = document.getElementById('notifToggle');
+    if (notifToggle) {
+        notifToggle.addEventListener('click', () => {
+            const dot = notifToggle.querySelector('.notif-dot');
+            if (dot) dot.style.display = 'none';
+        });
+    }
+
     // 5. Debounced Live Search API Query
     let debounceTimer;
     if (searchInput && searchResults) {
@@ -77,8 +86,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
             debounceTimer = setTimeout(async () => {
                 try {
-                    const res = await apiGet(`/games?search=${encodeURIComponent(query)}`);
-                    const games = Array.isArray(res) ? res : (res.games || []);
+                    let games = [];
+                    try {
+                        const res = await apiGet(`/games?search=${encodeURIComponent(query)}`);
+                        games = Array.isArray(res) ? res : (res.games || []);
+                    } catch (apiErr) {
+                        if (window.__ALL_GAMES__ && Array.isArray(window.__ALL_GAMES__)) {
+                            const q = query.toLowerCase();
+                            games = window.__ALL_GAMES__.filter(g => {
+                                const name = (g.name || g.game_name || '').toLowerCase();
+                                const genres = (g.genres || []).map(x => (typeof x === 'object' ? x.genre_name : x).toLowerCase()).join(' ');
+                                const platforms = (g.platforms || []).map(x => (typeof x === 'object' ? x.platform_name : x).toLowerCase()).join(' ');
+                                return name.includes(q) || genres.includes(q) || platforms.includes(q);
+                            });
+                        }
+                    }
                     searchResults.innerHTML = '';
 
                     if (games.length === 0) {

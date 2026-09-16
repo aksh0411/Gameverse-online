@@ -50,8 +50,22 @@ def get_games(
     params = []
     
     if search:
-        query += " AND g.game_name ILIKE %s"
-        params.append(f"%{search}%")
+        query += """ AND (
+            g.game_name ILIKE %s
+            OR EXISTS (
+                SELECT 1 FROM gamegenres gg 
+                JOIN genres gn ON gg.genre_id = gn.genre_id 
+                WHERE gg.game_id = g.game_id AND gn.genre_name ILIKE %s
+            )
+            OR EXISTS (
+                SELECT 1 FROM gameplatforms gp 
+                JOIN platforms pl ON gp.platform_id = pl.platform_id 
+                WHERE gp.game_id = g.game_id AND pl.platform_name ILIKE %s
+            )
+            OR d.developer_name ILIKE %s
+        )"""
+        s_param = f"%{search}%"
+        params.extend([s_param, s_param, s_param, s_param])
     
     if status:
         query += " AND g.play_status = %s"
@@ -89,11 +103,25 @@ def get_games(
         games = db.fetchall()
         
         # Count total
-        count_query = "SELECT COUNT(*) as total FROM games g WHERE 1=1"
+        count_query = "SELECT COUNT(*) as total FROM games g LEFT JOIN developers d ON g.developer_id = d.developer_id WHERE 1=1"
         count_params = []
         if search:
-            count_query += " AND g.game_name ILIKE %s"
-            count_params.append(f"%{search}%")
+            count_query += """ AND (
+                g.game_name ILIKE %s
+                OR EXISTS (
+                    SELECT 1 FROM gamegenres gg 
+                    JOIN genres gn ON gg.genre_id = gn.genre_id 
+                    WHERE gg.game_id = g.game_id AND gn.genre_name ILIKE %s
+                )
+                OR EXISTS (
+                    SELECT 1 FROM gameplatforms gp 
+                    JOIN platforms pl ON gp.platform_id = pl.platform_id 
+                    WHERE gp.game_id = g.game_id AND pl.platform_name ILIKE %s
+                )
+                OR d.developer_name ILIKE %s
+            )"""
+            s_param = f"%{search}%"
+            count_params.extend([s_param, s_param, s_param, s_param])
         if status:
             count_query += " AND g.play_status = %s"
             count_params.append(status)
