@@ -63,15 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Notification Bell toggle
-    const notifToggle = document.getElementById('notifToggle');
-    if (notifToggle) {
-        notifToggle.addEventListener('click', () => {
-            const dot = notifToggle.querySelector('.notif-dot');
-            if (dot) dot.style.display = 'none';
-        });
-    }
-
     // 5. Debounced Live Search API Query
     let debounceTimer;
     if (searchInput && searchResults) {
