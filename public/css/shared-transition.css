@@ -1,0 +1,183 @@
+/* ========================================================================= */
+/* GAMEVERSE CINEMATIC SHARED-ELEMENT TRANSITION STYLES                      */
+/* ========================================================================= */
+
+/* ── 1. Dimmed & Blurred Background ── */
+.universe-dimmed {
+  filter: blur(5px) brightness(0.40) saturate(0.8);
+  transform: scale(0.985);
+  transition: filter 600ms cubic-bezier(0.16, 1, 0.3, 1), transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+/* ── 2. Dark Translucent Scrim / Backdrop ── */
+.detail-backdrop-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 910;
+  background: rgba(5, 3, 10, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 500ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.detail-backdrop-scrim.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── 3. The Morphing Proxy Element (FLIP shared element) ── */
+.shared-element-morph {
+  position: fixed;
+  z-index: 950;
+  pointer-events: none;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: #08070e;
+  border: 1px solid rgba(217, 140, 175, 0.3);
+  box-shadow: 0 0 40px rgba(122, 53, 168, 0.5), 0 25px 60px rgba(0, 0, 0, 0.85);
+  will-change: transform, top, left, width, height, border-radius, box-shadow;
+  transform-origin: top left;
+}
+
+.shared-element-morph .morph-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.shared-element-morph .morph-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+
+.shared-element-morph .morph-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(8, 7, 14, 0.95) 0%, rgba(8, 7, 14, 0.45) 45%, transparent 80%);
+  pointer-events: none;
+}
+
+.shared-element-morph .morph-title-wrap {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px 32px;
+  z-index: 2;
+  box-sizing: border-box;
+}
+
+.shared-element-morph .morph-title {
+  font-family: var(--font-heading), 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.9);
+  line-height: 1.15;
+  transition: font-size 600ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── 4. Full Detail Modal Container (Mounted in index.html) ── */
+.game-detail-modal-view {
+  position: fixed;
+  inset: 0;
+  z-index: 920;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 88px 20px 60px;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 300ms ease;
+}
+
+.game-detail-modal-view.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.game-detail-modal-view .game-detail-app-frame {
+  margin-top: 0;
+  position: relative;
+  z-index: 2;
+}
+
+/* ── 5. Staggered Entrance Animations for Detail Content ── */
+.detail-stagger-item {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 400ms cubic-bezier(0.16, 1, 0.3, 1), transform 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.game-detail-modal-view.content-revealed .detail-stagger-item {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger delays */
+.game-detail-modal-view.content-revealed .stagger-1 { transition-delay: 50ms; }
+.game-detail-modal-view.content-revealed .stagger-2 { transition-delay: 130ms; }
+.game-detail-modal-view.content-revealed .stagger-3 { transition-delay: 210ms; }
+.game-detail-modal-view.content-revealed .stagger-4 { transition-delay: 290ms; }
+
+/* Exit transition for content */
+.game-detail-modal-view.content-closing .detail-stagger-item {
+  opacity: 0 !important;
+  transform: translateY(12px) !important;
+  transition: opacity 180ms ease-in, transform 180ms ease-in;
+}
+
+/* ── 6. Top Nav inside Detail Hero (Back & Close Buttons) ── */
+.hero-back-pill,
+.detail-close-btn {
+  cursor: pointer;
+  user-select: none;
+}
+
+.detail-close-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.detail-close-circle:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(248, 113, 113, 0.5);
+  color: #fca5a5;
+  transform: scale(1.08);
+}
+
+/* ── 7. Mobile Adjustments ── */
+@media (max-width: 768px) {
+  .game-detail-modal-view {
+    padding: 68px 12px 40px;
+  }
+  .shared-element-morph .morph-title-wrap {
+    padding: 16px 20px;
+  }
+}

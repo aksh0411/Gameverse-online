@@ -221,24 +221,25 @@ a {
 
 .hidden { display: none !important; }
 
-/* ===== Top Clean Floating Header (Transparent, Unfixed on Scroll) ===== */
+/* ===== Top Clean Floating Header (Fixed, Premium Glassmorphism) ===== */
 .floating-header {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
   width: 100%;
-  z-index: 999;
+  z-index: 1000;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px 48px;
-  background: transparent;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border-bottom: none;
-  box-shadow: none;
+  padding: 20px 48px;
+  background: rgba(5, 4, 10, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
   pointer-events: auto;
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .brand-logo {

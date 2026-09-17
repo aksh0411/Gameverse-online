@@ -40,8 +40,15 @@ function renderPosterCard(game) {
         </div>
     `;
 
-    // Click navigation
-    card.addEventListener('click', () => {
+    // Click navigation with smooth shared-element transition
+    card.addEventListener('click', (e) => {
+        if (e.button === 0 && !e.ctrlKey && !e.metaKey) {
+            if (typeof window.openGameDetail === 'function') {
+                e.preventDefault();
+                window.openGameDetail(card, game);
+                return;
+            }
+        }
         window.location.href = `game.html?id=${gameId}`;
     });
 
@@ -177,11 +184,18 @@ function renderGameCard(game, index = 0) {
         }
     });
 
-    // Make whole card clickable to open game detail page
+    // Make whole card clickable to open game detail page with smooth shared-element transition
     card.addEventListener('click', (e) => {
         // If clicking bookmark button or its children, prevent navigation
         if (e.target.closest('.bookmark-toggle')) {
             return;
+        }
+        if (e.button === 0 && !e.ctrlKey && !e.metaKey) {
+            if (typeof window.openGameDetail === 'function') {
+                e.preventDefault();
+                window.openGameDetail(card, game);
+                return;
+            }
         }
         window.location.href = `game.html?id=${gameId}`;
     });

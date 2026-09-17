@@ -12,6 +12,8 @@
   <link rel="stylesheet" href="css/style.css?v=8.0">
   <link rel="stylesheet" href="css/home.css?v=10.0">
   <link rel="stylesheet" href="css/cards.css?v=8.0">
+  <link rel="stylesheet" href="css/game-detail.css?v=8.0">
+  <link rel="stylesheet" href="css/shared-transition.css?v=1.0">
   <link rel="stylesheet" href="css/admin.css?v=8.0">
   <link rel="stylesheet" href="css/responsive.css?v=8.0">
 </head>
@@ -596,11 +598,130 @@
   <!-- Admin FAB -->
   <button class="fab hidden" id="addGameFab" title="Add New Game"><span class="fab-icon">+</span><span class="fab-label">Add Game</span></button>
 
+  <!-- Dark Translucent Backdrop Scrim for Shared-Element Detail View -->
+  <div id="detailBackdropScrim" class="detail-backdrop-scrim"></div>
+
+  <!-- Shared-Element Detail Modal View -->
+  <div id="gameDetailModalView" class="game-detail-modal-view">
+    <div class="game-detail-app-frame" id="modalDetailFrame">
+      
+      <!-- Hero Card with Embedded Artwork, Top Navigation & Headline -->
+      <div class="game-detail-hero-card" id="modalHeroCard">
+        <!-- Background Artwork Layer (fades into black on left & bottom) -->
+        <div class="hero-backdrop" id="modalHeroBg">
+          <img id="modalHeroImg" class="hero-img-element" alt="Game Artwork" />
+        </div>
+        <div class="hero-backdrop-gradient"></div>
+        
+        <!-- Top Action Bar Inside Hero Card -->
+        <div class="hero-top-nav">
+          <button type="button" class="hero-back-pill" id="modalBackBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back to Collection
+          </button>
+          
+          <div class="hero-right-actions">
+            <button class="hero-circle-btn" id="modalBookmarkBtn" title="Toggle Bookmark">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            </button>
+
+            <button class="hero-circle-btn" id="modalFavoriteBtn" title="Toggle Favorite">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            
+            <button type="button" class="detail-close-circle" id="modalCloseBtn" title="Close (Esc)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Hero Details Info (Status Badge, Huge Title, Tagline) -->
+        <div class="hero-text-content" id="modalHeroText">
+          <div class="hero-status-tag" id="modalStatusTag">PLAYING</div>
+          <h1 class="hero-game-title" id="modalGameName">Loading Game...</h1>
+          <p class="hero-game-tagline" id="modalGameDescription"></p>
+        </div>
+      </div>
+
+      <!-- Animated Content Section (Staggered fade/slide in) -->
+      <div class="detail-animated-content">
+        <!-- Tabs Navigation Bar (Overview, System Requirements, Related) -->
+        <div class="detail-tabs-bar detail-stagger-item stagger-1">
+          <button class="detail-tab active" data-modal-tab="overview">Overview</button>
+          <button class="detail-tab" data-modal-tab="sysreq">System Requirements</button>
+          <button class="detail-tab" data-modal-tab="related">Related</button>
+        </div>
+
+        <!-- Tab 1: Overview Panel -->
+        <div class="tab-panel active detail-stagger-item stagger-2" id="modalTab-overview">
+          <!-- 5-Column Metadata Info Strip -->
+          <div class="meta-strip-card" id="modalQuickInfoRow">
+            <!-- Injected dynamically via JS: Genre, Developer, Released, Platform, Engine -->
+          </div>
+
+          <!-- 2-Column Split: About This Game (Left) & My Status (Right) -->
+          <div class="overview-two-col">
+            <!-- Left: About This Game -->
+            <div class="content-box about-box">
+              <h2 class="box-title">About This Game</h2>
+              <div class="box-desc about-text-content" id="modalFullDescription"></div>
+            </div>
+
+            <!-- Right: My Status -->
+            <div class="content-box status-box">
+              <h2 class="box-title">My Status</h2>
+              <div class="status-buttons-row" id="modalStatusSelector">
+                <button class="status-choice-btn" data-val="not_started">
+                  <span class="status-btn-icon">◇</span> Not Started
+                </button>
+                <button class="status-choice-btn" data-val="playing">
+                  <span class="status-btn-icon">▷</span> Playing
+                </button>
+                <button class="status-choice-btn" data-val="completed">
+                  <span class="status-btn-icon">✔</span> Completed
+                </button>
+                <button class="status-choice-btn" data-val="play_later">
+                  <span class="status-btn-icon">⏱</span> Play Later
+                </button>
+                <button class="status-choice-btn" data-val="wont_play">
+                  <span class="status-btn-icon">⏸</span> Won't Play
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: System Requirements Panel -->
+        <div class="tab-panel detail-stagger-item stagger-3" id="modalTab-sysreq">
+          <div class="sysreq-split-grid">
+            <div class="content-box sysreq-box">
+              <h2 class="box-title">Minimum Requirements</h2>
+              <table class="sysreq-table" id="modalSysreqMin"></table>
+            </div>
+            <div class="content-box sysreq-box sysreq-rec">
+              <h2 class="box-title" style="color:#d98caf">Recommended Requirements</h2>
+              <table class="sysreq-table" id="modalSysreqRec"></table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Related Games Panel -->
+        <div class="tab-panel detail-stagger-item stagger-4" id="modalTab-related">
+          <div class="related-games-grid" id="modalRelatedGamesGrid">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="js/api.js?v=8.0"></script>
   <script src="js/auth.js?v=10.0"></script>
   <script src="js/cards.js?v=9.0"></script>
+  <script src="js/shared-transition.js?v=1.0"></script>
   <script src="js/search.js?v=8.0"></script>
   <script src="js/admin.js?v=8.0"></script>
   <script src="js/collection-core.js?v=9.0"></script>

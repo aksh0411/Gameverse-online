@@ -122,7 +122,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             `;
 
                             item.addEventListener('click', () => {
-                                window.location.href = `game.html?id=${gameId}`;
+                                closeSearch();
+                                if (typeof window.openGameDetail === 'function') {
+                                    window.openGameDetail(null, game);
+                                } else {
+                                    window.location.href = `game.html?id=${gameId}`;
+                                }
                             });
 
                             searchResults.appendChild(item);
