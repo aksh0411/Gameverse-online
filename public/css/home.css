@@ -175,6 +175,22 @@
   max-width: 460px;
   margin-bottom: 32px;
   line-height: 1.65;
+  min-height: 52px; /* Prevent layout shift during scramble */
+  cursor: pointer;
+  user-select: none;
+}
+
+.hero-desc .revealed {
+  color: rgba(212, 204, 239, 0.75);
+  transition: color 0.15s ease;
+}
+
+.hero-desc .encrypted {
+  color: #d98caf;
+  font-family: 'Space Grotesk', monospace;
+  font-weight: 600;
+  text-shadow: 0 0 10px rgba(217, 140, 175, 0.55);
+  display: inline-block;
 }
 
 .hero-buttons {
