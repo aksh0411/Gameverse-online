@@ -13,7 +13,7 @@ load_dotenv()
 
 SECRET_KEY = os.getenv("JWT_SECRET", "gameverse-super-secret-jwt-key-2026")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 24 * 60  # 24 hours
+ACCESS_TOKEN_EXPIRE_MINUTES = 4 * 60  # 4 hours
 
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
 # Default hash for password 'admin123'
@@ -73,6 +73,11 @@ async def get_current_admin(token: str = Depends(oauth2_scheme)):
     except JWTError:
         raise credentials_exception
     return username
+
+@router.get("/verify")
+async def verify_admin_token(admin: str = Depends(get_current_admin)):
+    """Lightweight endpoint for the frontend to verify a stored JWT is still valid."""
+    return {"authenticated": True, "user": admin}
 
 if __name__ == "__main__":
     import sys

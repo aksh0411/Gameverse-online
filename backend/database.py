@@ -25,16 +25,21 @@ else:
 # Initialize pool as None, will be set in main.py lifespan or lazily on first request
 pool = None
 
+def create_pool(open_pool: bool = True):
+    return ConnectionPool(
+        conninfo=conninfo,
+        min_size=1,
+        max_size=5,
+        max_idle=60.0,
+        max_lifetime=300.0,
+        check=ConnectionPool.check_connection,
+        open=open_pool
+    )
+
 def get_connection_pool():
     global pool
     if pool is None or pool.closed:
-        pool = ConnectionPool(
-            conninfo=conninfo,
-            min_size=1,
-            max_size=3,
-            check=ConnectionPool.check_connection,
-            open=True
-        )
+        pool = create_pool(open_pool=True)
     return pool
 
 def get_db():

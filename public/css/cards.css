@@ -1,13 +1,14 @@
 /* ===== Game Card — Glass Panel with 3D Tilt ===== */
 .game-card {
-  background: rgba(12, 8, 19, 0.5);
+  background: rgba(14, 10, 22, 0.65);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(187, 174, 223, 0.10);
+  border: 1px solid rgba(212, 204, 239, 0.10);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 16px 36px -12px rgba(0, 0, 0, 0.5);
   border-radius: 1rem;
   overflow: hidden;
   position: relative;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
   transform-style: preserve-3d;
@@ -16,13 +17,13 @@
 }
 
 .game-card:hover {
-  border-color: rgba(217, 140, 175, 0.40);
-  box-shadow: 0 0 24px -6px rgba(214, 140, 175, 0.45), 0 20px 40px rgba(0, 0, 0, 0.35);
+  border-color: rgba(45, 212, 191, 0.45);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.2), 0 20px 48px -10px rgba(0, 0, 0, 0.7), 0 0 24px -6px rgba(0, 245, 212, 0.4);
 }
 
 .game-card:hover .card-title {
   color: #ffffff;
-  text-shadow: 0 0 10px rgba(217, 140, 175, 0.4);
+  text-shadow: 0 0 10px rgba(0, 245, 212, 0.4);
 }
 
 /* Status Badge */
@@ -122,11 +123,11 @@
   font-family: var(--font-heading);
   letter-spacing: 0.3px;
   color: #ffffff;
-  background: linear-gradient(135deg, rgba(94, 38, 128, 0.85), rgba(138, 58, 98, 0.85));
-  border: 1px solid rgba(217, 140, 175, 0.25);
+  background: linear-gradient(135deg, rgba(8, 145, 178, 0.85), rgba(13, 148, 136, 0.85));
+  border: 1px solid rgba(45, 212, 191, 0.25);
   text-align: center;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -140,10 +141,10 @@
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .btn-sm:hover {
-  background: linear-gradient(135deg, #7a35a8, #a84878);
-  border-color: rgba(217, 140, 175, 0.5);
+  background: linear-gradient(135deg, #0891b2, #14b8a6);
+  border-color: rgba(0, 245, 212, 0.5);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(122, 53, 168, 0.4), 0 0 16px rgba(198, 106, 147, 0.2);
+  box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4), 0 0 16px rgba(0, 245, 212, 0.25);
 }
 .btn-sm:hover .btn-arrow {
   transform: translateX(3px);
@@ -162,11 +163,11 @@
   background: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(187, 174, 223, 0.12);
+  border: 1px solid rgba(45, 212, 191, 0.14);
   border-radius: 10px;
-  color: rgba(212, 204, 239, 0.55);
+  color: rgba(165, 243, 252, 0.55);
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
   flex-shrink: 0;
   position: relative;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -180,10 +181,10 @@
 
 .bookmark-toggle:hover {
   background: rgba(255, 255, 255, 0.09);
-  border-color: rgba(217, 140, 175, 0.4);
+  border-color: rgba(45, 212, 191, 0.4);
   color: #ffffff;
   transform: scale(1.08);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 14px rgba(198, 106, 147, 0.25);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 14px rgba(0, 245, 212, 0.25);
 }
 
 .bookmark-toggle:active {
@@ -192,10 +193,10 @@
 
 /* Active State (Bookmarked in 4D Core) */
 .bookmark-toggle.active {
-  background: rgba(198, 106, 147, 0.18);
-  border-color: rgba(217, 140, 175, 0.6);
+  background: rgba(0, 245, 212, 0.18);
+  border-color: rgba(45, 212, 191, 0.6);
   color: var(--accent-pink);
-  box-shadow: 0 0 18px rgba(214, 140, 175, 0.45), 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 18px rgba(0, 245, 212, 0.45), 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .bookmark-toggle.active .bookmark-icon {
@@ -222,7 +223,7 @@
   border-radius: 10px;
   color: rgba(212, 204, 239, 0.45);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   flex-shrink: 0;
 }
 .card-menu-btn svg {

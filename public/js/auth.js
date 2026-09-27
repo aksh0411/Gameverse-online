@@ -1,7 +1,30 @@
+// ===== GAMEVERSE Auth — Tab-Scoped sessionStorage + 4-Hour Ceiling =====
+
+const SESSION_TOKEN_KEY = 'admin_token';
+const SESSION_EXPIRY_KEY = 'admin_token_expiry';
+const SESSION_LIFETIME_MS = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
+
+// --- Core auth state check ---
 function isAdmin() {
-    return !!localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem(SESSION_TOKEN_KEY);
+    if (!token) return false;
+    const expiry = parseInt(sessionStorage.getItem(SESSION_EXPIRY_KEY), 10);
+    if (!expiry || Date.now() > expiry) {
+        // Token expired — purge silently
+        clearAdminSession();
+        return false;
+    }
+    return true;
 }
 
+function clearAdminSession() {
+    sessionStorage.removeItem(SESSION_TOKEN_KEY);
+    sessionStorage.removeItem(SESSION_EXPIRY_KEY);
+    // Also purge any legacy localStorage tokens from older sessions
+    localStorage.removeItem(SESSION_TOKEN_KEY);
+}
+
+// --- Login modal ---
 function openLoginModal(message) {
     const loginModal = document.getElementById('loginModal');
     if (loginModal) {
@@ -11,7 +34,7 @@ function openLoginModal(message) {
             if (message) {
                 loginError.textContent = message;
                 loginError.classList.remove('hidden');
-                loginError.style.color = '#e879f9';
+                loginError.style.color = '#00f5d4';
             } else {
                 loginError.classList.add('hidden');
             }
@@ -33,6 +56,7 @@ function requireAdmin(actionDescription = 'modify collection data') {
 }
 window.requireAdmin = requireAdmin;
 
+// --- Admin UI visibility ---
 function showAdminControls() {
     document.querySelectorAll('.admin-login-btn, #adminLoginBtn').forEach(b => b.classList.add('hidden'));
     document.querySelectorAll('.admin-logout-btn, #adminLogoutBtn').forEach(b => b.classList.remove('hidden'));
@@ -41,6 +65,9 @@ function showAdminControls() {
 
     if (addGameFab) addGameFab.classList.remove('hidden');
     if (adminMenu) adminMenu.classList.remove('hidden');
+
+    // Reveal admin-only menus (modal & standalone 3-dot menus)
+    document.querySelectorAll('.more-menu-wrapper').forEach(el => el.classList.remove('hidden'));
 }
 
 function hideAdminControls() {
@@ -51,14 +78,42 @@ function hideAdminControls() {
 
     if (addGameFab) addGameFab.classList.add('hidden');
     if (adminMenu) adminMenu.classList.add('hidden');
+
+    // Hide admin-only menus (modal & standalone 3-dot menus)
+    document.querySelectorAll('.more-menu-wrapper').forEach(el => el.classList.add('hidden'));
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    if (isAdmin()) {
-        showAdminControls();
-    } else {
+// --- Async backend verification on page load (secure-by-default) ---
+async function verifyAdminSession() {
+    if (!isAdmin()) {
+        hideAdminControls();
+        return;
+    }
+    // Token exists and has not expired client-side — verify with backend
+    const token = sessionStorage.getItem(SESSION_TOKEN_KEY);
+    try {
+        const res = await fetch(`${API_BASE}/admin/verify`, {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+            showAdminControls();
+        } else {
+            // Token rejected by server (expired, tampered, or invalid)
+            clearAdminSession();
+            hideAdminControls();
+        }
+    } catch (err) {
+        // Network error — keep visitor mode but don't purge (could be offline refresh)
         hideAdminControls();
     }
+}
+
+// --- DOMContentLoaded: wire up everything ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Secure-by-default: start in visitor mode, then verify async
+    hideAdminControls();
+    verifyAdminSession();
 
     // Login Modal & About Modal Handlers
     const loginModal = document.getElementById('loginModal');
@@ -85,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const logout = confirm('Are you sure you want to log out of Admin?');
             if (logout) {
-                localStorage.removeItem('admin_token');
+                clearAdminSession();
                 hideAdminControls();
                 window.location.reload();
             }
@@ -146,10 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const formData = new FormData(loginForm);
             
-            // Expected that the backend accepts form data or json. Let's send json here as per usual setup, 
-            // but OAuth2 password bearer expects form data. Assuming simple post.
             try {
-                // If backend expects x-www-form-urlencoded
                 const data = new URLSearchParams(formData);
                 const res = await fetch(`${API_BASE}/admin/login`, {
                     method: 'POST',
@@ -162,14 +214,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 const result = await res.json();
-                localStorage.setItem('admin_token', result.access_token);
+                // Store in sessionStorage (tab-scoped) with 4-hour expiry
+                const expiry = Date.now() + SESSION_LIFETIME_MS;
+                sessionStorage.setItem(SESSION_TOKEN_KEY, result.access_token);
+                sessionStorage.setItem(SESSION_EXPIRY_KEY, expiry.toString());
+                // Clean up any legacy localStorage tokens
+                localStorage.removeItem(SESSION_TOKEN_KEY);
                 
                 loginModal.classList.add('hidden');
                 showAdminControls();
                 loginForm.reset();
                 loginError.classList.add('hidden');
                 
-                // Optionally refresh page to load admin tools
                 window.location.reload();
             } catch (err) {
                 loginError.textContent = err.message;
@@ -181,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminLogoutBtn = document.getElementById('adminLogoutBtn');
     if (adminLogoutBtn) {
         adminLogoutBtn.addEventListener('click', () => {
-            localStorage.removeItem('admin_token');
+            clearAdminSession();
             hideAdminControls();
             window.location.reload();
         });

@@ -9,15 +9,15 @@ const statusLabels = {
 };
 
 const statusColors = {
-    not_started: '#7d6ca8',
-    playing: '#c66a93',
-    play_later: '#9c52cf',
-    completed: '#7a96bc',
-    wont_play: '#6b2d4b'
+    not_started: '#0e7490',
+    playing: '#00f5d4',
+    play_later: '#06b6d4',
+    completed: '#38bdf8',
+    wont_play: '#044343'
 };
 
 // 1. Vertical 2:3 Poster Card for "My Collection" Carousel
-function renderPosterCard(game) {
+function renderPosterCard(game, index = 0) {
     const card = document.createElement('a');
     const gameId = game.id || game.game_id;
     const gameName = game.name || game.game_name || 'Untitled Game';
@@ -28,8 +28,9 @@ function renderPosterCard(game) {
     card.href = `game.html?id=${gameId}`;
     card.dataset.gameId = gameId;
 
+    const isVisibleAboveFold = index < 3;
     const imgElement = imgUrl 
-        ? `<img class="poster-img" src="${imgUrl}" alt="${gameName}" loading="lazy" decoding="async" onerror="if(!this.dataset.retry){this.dataset.retry='1';this.src='/static/images/'+(this.src.split('/').pop());}else if(this.dataset.retry==='1'){this.dataset.retry='2';this.src='/frontend/static/images/'+(this.src.split('/').pop());}else{this.outerHTML='<div class=poster-placeholder><span>🎮</span></div>';}">`
+        ? `<img class="poster-img" src="${imgUrl}" alt="${gameName}" loading="${isVisibleAboveFold ? 'eager' : 'lazy'}" decoding="async" ${isVisibleAboveFold ? 'fetchpriority="high"' : 'fetchpriority="low"'} onerror="if(!this.dataset.retry){this.dataset.retry='1';this.src='/static/images/'+(this.src.split('/').pop());}else if(this.dataset.retry==='1'){this.dataset.retry='2';this.src='/frontend/static/images/'+(this.src.split('/').pop());}else{this.outerHTML='<div class=poster-placeholder><span>🎮</span></div>';}">`
         : `<div class="poster-placeholder"><span>🎮</span></div>`;
 
     card.innerHTML = `

@@ -55,11 +55,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (carousel) {
             carousel.innerHTML = '';
             const frag = document.createDocumentFragment();
-            games.forEach((game) => {
+            games.forEach((game, index) => {
                 if (typeof renderPosterCard === 'function') {
-                    frag.appendChild(renderPosterCard(game));
+                    frag.appendChild(renderPosterCard(game, index));
                 } else {
-                    frag.appendChild(renderGameCard(game));
+                    frag.appendChild(renderGameCard(game, index));
                 }
             });
             carousel.appendChild(frag);

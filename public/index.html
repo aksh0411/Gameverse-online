@@ -9,25 +9,25 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="css/style.css?v=8.0">
-  <link rel="stylesheet" href="css/home.css?v=10.0">
+  <link rel="stylesheet" href="css/style.css?v=9.0">
+  <link rel="stylesheet" href="css/home.css?v=10.1">
   <link rel="stylesheet" href="css/cards.css?v=8.0">
   <link rel="stylesheet" href="css/game-detail.css?v=8.0">
-  <link rel="stylesheet" href="css/shared-transition.css?v=1.0">
+  <link rel="stylesheet" href="css/shared-transition.css?v=2.0">
   <link rel="stylesheet" href="css/admin.css?v=8.0">
-  <link rel="stylesheet" href="css/responsive.css?v=8.0">
+  <link rel="stylesheet" href="css/responsive.css?v=8.1">
 </head>
 <body>
-  <!-- Minimal Floating Header -->
-  <header class="floating-header">
-    <a href="#hero" class="brand-logo">
+  <!-- Global Shared Top Navigation Bar (Persists Across All Pages & Modals) -->
+  <header class="floating-header" id="globalHeader">
+    <a href="index.html" class="brand-logo" id="globalBrandLogo">
       <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="4"></rect><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"></path></svg>
       <span>GAME<span class="logo-accent">VERSE</span></span>
     </a>
 
     <div class="top-icon-cluster">
       <!-- Search Button -->
-      <button class="icon-circle-btn" id="searchToggle" title="Search Collection (Press / or Ctrl+K)">
+      <button class="icon-circle-btn" id="searchToggle" title="Search Collection (Press / or Ctrl+K)" aria-label="Search collection">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="11" cy="11" r="7"></circle>
           <line x1="21" y1="21" x2="16.5" y2="16.5"></line>
@@ -35,20 +35,20 @@
       </button>
 
       <!-- Avatar Button -->
-      <div class="avatar-circle-btn" id="avatarBtn" title="Admin / Profile">V</div>
+      <div class="avatar-circle-btn" id="avatarBtn" title="Admin / Profile" aria-label="Admin profile">V</div>
     </div>
   </header>
 
   <!-- Spotlight Search Modal Overlay -->
-  <div class="spotlight-overlay hidden" id="searchOverlay">
+  <div class="spotlight-overlay hidden" id="searchOverlay" role="dialog" aria-modal="true" aria-label="Search collection modal">
     <div class="spotlight-dialog glass-panel">
       <div class="spotlight-input-row">
-        <svg class="spotlight-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="spotlight-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="11" cy="11" r="7"></circle>
           <line x1="21" y1="21" x2="16.5" y2="16.5"></line>
         </svg>
-        <input type="text" id="searchInput" placeholder="Search any game in universe (title, genre, platform)..." autocomplete="off">
-        <button class="spotlight-close" id="searchClose">&times;</button>
+        <input type="text" id="searchInput" placeholder="Search any game in universe (title, genre, platform)…" aria-label="Search games by title, genre, or platform" autocomplete="off">
+        <button class="spotlight-close" id="searchClose" aria-label="Close search">&times;</button>
       </div>
       <div class="spotlight-results hidden" id="searchResults"></div>
     </div>
@@ -85,7 +85,8 @@
             <span class="hero-pill-text">PERSONAL GAME ARCHIVE</span>
           </div>
 
-          <h1>Enter My<br><span class="text-gradient">Game Universe</span></h1>
+          <h1 class="sr-only">Welcome to GameVerse</h1>
+          <div id="particleTextHero" class="particle-text-container" aria-hidden="true"></div>
           <p class="hero-desc">A living collection of worlds, stories and experiments — projected through a dimensional lens.</p>
           
           <div class="hero-buttons">
@@ -123,24 +124,24 @@
           <div class="core-sidebar" id="radarFilterTabs">
             <div class="sidebar-header">YOUR COLLECTION</div>
 
-            <button class="core-filter-card active" data-filter="bookmarked" id="filterBtnBookmarked">
-              <span class="filter-card-icon icon-bookmarked">
+            <button class="core-filter-card active" data-filter="bookmarked" id="filterBtnBookmarked" aria-pressed="true" aria-label="Filter Bookmarked worlds">
+              <span class="filter-card-icon icon-bookmarked" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
               </span>
               <span class="filter-card-label">Bookmarked</span>
               <span class="filter-card-count" id="radarCountBookmarked">0</span>
             </button>
 
-            <button class="core-filter-card" data-filter="favorited" id="filterBtnFavorited">
-              <span class="filter-card-icon icon-liked">
+            <button class="core-filter-card" data-filter="favorited" id="filterBtnFavorited" aria-pressed="false" aria-label="Filter Liked worlds">
+              <span class="filter-card-icon icon-liked" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
               </span>
               <span class="filter-card-label">Liked</span>
               <span class="filter-card-count" id="radarCountFavorited">0</span>
             </button>
 
-            <button class="core-filter-card" data-filter="playing" id="filterBtnPlaying">
-              <span class="filter-card-icon icon-playing">
+            <button class="core-filter-card" data-filter="playing" id="filterBtnPlaying" aria-pressed="false" aria-label="Filter Playing worlds">
+              <span class="filter-card-icon icon-playing" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4m-2-2v4m6-3h.01m4 0h.01"></path></svg>
               </span>
               <span class="filter-card-label">Playing</span>
@@ -178,11 +179,11 @@
         <h2>My <span class="text-gradient">Collection</span></h2>
       </div>
       <div class="carousel-nav-buttons">
-        <button class="nav-arrow-circle prev" id="carouselPrev" title="Previous Games">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        <button class="nav-arrow-circle prev" id="carouselPrev" title="Previous Games" aria-label="Previous games in collection">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </button>
-        <button class="nav-arrow-circle next" id="carouselNext" title="Next Games">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        <button class="nav-arrow-circle next" id="carouselNext" title="Next Games" aria-label="Next games in collection">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </button>
       </div>
     </div>
@@ -231,7 +232,7 @@
   </footer>
 
   <!-- About Me Modal Overlay (Opens on Avatar Click or Navigation) -->
-  <div class="modal-overlay hidden" id="aboutModal">
+  <div class="modal-overlay hidden" id="aboutModal" role="dialog" aria-modal="true" aria-label="About Akshay personal profile">
     <div class="about-card glass-panel about-modal-inner" id="aboutModalCard">
       <!-- Ambient card background glow -->
       <div class="about-glow-orb" aria-hidden="true"></div>
@@ -348,12 +349,12 @@
 
       <!-- Heading & Roles -->
       <h2 class="about-heading">Hey, I’m <span class="text-gradient">Akshay</span> 👋</h2>
-      <p class="about-subtitle">3rd year CS student &nbsp;·&nbsp; Builder &nbsp;·&nbsp; Gamer</p>
+      <p class="about-subtitle">2nd year CS student &nbsp;·&nbsp; Builder &nbsp;·&nbsp; Gamer</p>
 
       <!-- Story paragraphs -->
       <div class="about-story-flow">
         <p class="about-paragraph">
-          I’m a 20-year-old 3rd year CS student who got tired of having 50+ games scattered across platforms with zero way to track what I’ve actually played.
+          I’m a 20-year-old 2nd year CS student who got tired of having 50+ games scattered across platforms with zero way to track what I’ve actually played.
         </p>
         <p class="about-paragraph about-highlight-line">
           So I built <span class="text-gradient">Gameverse</span>.
@@ -447,16 +448,16 @@
   </div>
 
   <!-- Admin Login Modal -->
-  <div class="modal-overlay hidden" id="loginModal">
+  <div class="modal-overlay hidden" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
     <div class="modal glass-panel">
-      <button class="modal-close" id="loginClose">&times;</button>
-      <h3>Admin Login</h3>
+      <button class="modal-close" id="loginClose" aria-label="Close login modal">&times;</button>
+      <h3 id="loginModalTitle">Admin Login</h3>
       <form id="loginForm">
         <div class="form-group">
-          <input type="text" name="username" placeholder="Username" required>
+          <input type="text" name="username" placeholder="Username" aria-label="Admin username" autocomplete="username" required>
         </div>
         <div class="form-group">
-          <input type="password" name="password" placeholder="Password" required>
+          <input type="password" name="password" placeholder="Password" aria-label="Admin password" autocomplete="current-password" required>
         </div>
         <button type="submit" class="btn-primary" style="width:100%">Login</button>
         <p class="error-msg hidden" id="loginError"></p>
@@ -465,9 +466,9 @@
   </div>
 
   <!-- Admin: Add/Edit Game Modal -->
-  <div class="modal-overlay hidden" id="addGameModal">
+  <div class="modal-overlay hidden" id="addGameModal" role="dialog" aria-modal="true" aria-labelledby="gameFormTitle">
     <div class="modal modal-large glass-panel">
-      <button class="modal-close" id="gameModalClose">&times;</button>
+      <button class="modal-close" id="gameModalClose" aria-label="Close game form modal">&times;</button>
       <h3 id="gameFormTitle">Add New Game</h3>
       <form id="gameForm" enctype="multipart/form-data">
         <input type="hidden" name="game_id" id="editGameId">
@@ -609,36 +610,41 @@
       <div class="game-detail-hero-card" id="modalHeroCard">
         <!-- Background Artwork Layer (fades into black on left & bottom) -->
         <div class="hero-backdrop" id="modalHeroBg">
-          <img id="modalHeroImg" class="hero-img-element" alt="Game Artwork" />
+          <img id="modalHeroImg" class="hero-img-element" alt="Game Artwork" loading="lazy" decoding="async" />
         </div>
         <div class="hero-backdrop-gradient"></div>
         
         <!-- Top Action Bar Inside Hero Card -->
         <div class="hero-top-nav">
-          <button type="button" class="hero-back-pill" id="modalBackBtn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          <button type="button" class="hero-back-pill" id="modalBackBtn" aria-label="Back to Collection">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
             Back to Collection
           </button>
           
           <div class="hero-right-actions">
-            <button class="hero-circle-btn" id="modalBookmarkBtn" title="Toggle Bookmark">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            <button class="hero-circle-btn" id="modalBookmarkBtn" title="Toggle Bookmark" aria-label="Toggle Bookmark">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
             </button>
 
-            <button class="hero-circle-btn" id="modalFavoriteBtn" title="Toggle Favorite">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <button class="hero-circle-btn" id="modalFavoriteBtn" title="Toggle Favorite" aria-label="Toggle Favorite">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </button>
-            
-            <button type="button" class="detail-close-circle" id="modalCloseBtn" title="Close (Esc)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
+            <div class="more-menu-wrapper hidden" id="modalAdminMenuWrapper">
+              <button class="hero-circle-btn" id="modalAdminMenuToggle" title="More Options" aria-label="More Options">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </button>
+              <div class="more-dropdown glass-panel hidden" id="modalAdminMenuDropdown">
+                <button id="modalEditGameBtn">✏️ Edit Game</button>
+                <button id="modalDeleteGameBtn" class="delete-opt">🗑️ Delete Game</button>
+              </div>
+            </div>
           </div>
         </div>
 
         <!-- Hero Details Info (Status Badge, Huge Title, Tagline) -->
         <div class="hero-text-content" id="modalHeroText">
           <div class="hero-status-tag" id="modalStatusTag">PLAYING</div>
-          <h1 class="hero-game-title" id="modalGameName">Loading Game...</h1>
+          <h1 class="hero-game-title" id="modalGameName">Loading Game…</h1>
           <p class="hero-game-tagline" id="modalGameDescription"></p>
         </div>
       </div>
@@ -721,11 +727,12 @@
   <script src="js/api.js?v=8.0"></script>
   <script src="js/auth.js?v=10.0"></script>
   <script src="js/cards.js?v=9.0"></script>
-  <script src="js/shared-transition.js?v=1.0"></script>
-  <script src="js/search.js?v=8.0"></script>
+  <script src="js/shared-transition.js?v=2.1"></script>
+  <script src="js/search.js?v=9.0"></script>
   <script src="js/admin.js?v=8.0"></script>
   <script src="js/collection-core.js?v=9.0"></script>
-  <script src="js/home.js?v=10.0"></script>
-  <script src="js/decrypted-text.js?v=1.0"></script>
+  <script src="js/particle-text.js?v=1.0"></script>
+  <script src="js/home.js?v=10.1"></script>
+
 </body>
 </html>

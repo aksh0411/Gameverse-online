@@ -87,7 +87,8 @@ textarea { resize: vertical; }
   display: inline-block;
   background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
   padding: 5px 12px; border-radius: 20px; font-size: 0.85rem;
-  cursor: pointer; transition: all 0.2s;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 .checkbox-pill input { display: none; }
 .checkbox-pill.selected { background: var(--accent-purple); border-color: var(--accent-purple); color: #fff; }
@@ -105,11 +106,11 @@ textarea { resize: vertical; }
   min-width: 38px;
   padding: 0 11px;
   border-radius: 9999px;
-  background: rgba(14, 10, 24, 0.85);
+  background: rgba(4, 20, 29, 0.88);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(45, 212, 191, 0.20);
+  color: rgba(224, 248, 252, 0.85);
   font-family: var(--font-heading, 'Space Grotesk', sans-serif);
   font-size: 0.8rem;
   font-weight: 500;
@@ -120,7 +121,7 @@ textarea { resize: vertical; }
   cursor: pointer;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
   z-index: 1000;
-  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), background 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease, color 0.28s ease, padding 0.28s ease;
   overflow: hidden;
 }
 
@@ -143,16 +144,16 @@ textarea { resize: vertical; }
 }
 
 .fab:hover {
-  background: rgba(24, 18, 40, 0.95);
-  border-color: rgba(168, 85, 247, 0.45);
+  background: rgba(8, 32, 45, 0.95);
+  border-color: rgba(0, 245, 212, 0.5);
   color: #ffffff;
-  box-shadow: 0 0 16px rgba(168, 85, 247, 0.25), 0 6px 20px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 0 16px rgba(0, 245, 212, 0.3), 0 6px 20px rgba(0, 0, 0, 0.55);
   padding: 0 14px 0 10px;
 }
 
 .fab:hover .fab-icon {
   transform: rotate(90deg);
-  color: #c084fc;
+  color: #00f5d4;
 }
 
 .fab:hover .fab-label {

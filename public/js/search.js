@@ -109,14 +109,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             const genres = (game.genres || []).map(g => typeof g === 'object' ? g.genre_name : g).slice(0, 2).join(', ') || 'Game';
 
                             const poster = imgUrl 
-                                ? `<img class="spotlight-item-poster" src="${imgUrl}" alt="${gameName}" onerror="if(!this.dataset.retry){this.dataset.retry='1';this.src='/static/images/'+(this.src.split('/').pop());}else if(this.dataset.retry==='1'){this.dataset.retry='2';this.src='/frontend/static/images/'+(this.src.split('/').pop());}else{this.outerHTML='<div class=spotlight-item-poster style=display:flex;align-items:center;justify-content:center;color:#666>🎮</div>';}">`
+                                ? `<img class="spotlight-item-poster" src="${imgUrl}" alt="${gameName}" loading="lazy" decoding="async" onerror="if(!this.dataset.retry){this.dataset.retry='1';this.src='/static/images/'+(this.src.split('/').pop());}else if(this.dataset.retry==='1'){this.dataset.retry='2';this.src='/frontend/static/images/'+(this.src.split('/').pop());}else{this.outerHTML='<div class=spotlight-item-poster style=display:flex;align-items:center;justify-content:center;color:#666>🎮</div>';}">`
                                 : `<div class="spotlight-item-poster" style="display:flex;align-items:center;justify-content:center;color:#888;">🎮</div>`;
 
                             item.innerHTML = `
                                 ${poster}
                                 <div class="spotlight-item-info">
                                     <span class="spotlight-item-title">${gameName}</span>
-                                    <span class="spotlight-item-meta">${genres} · <span style="color:#c66a93">${playStatus}</span></span>
+                                    <span class="spotlight-item-meta">${genres} · <span style="color:#2dd4bf">${playStatus}</span></span>
                                 </div>
                                 <span style="color:rgba(212,204,239,0.4); font-size:0.8rem;">↵</span>
                             `;
@@ -139,5 +139,61 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }, 250);
         });
+    }
+
+    // ===== Global Persistent Top Navigation Bar Controller =====
+    const globalHeader = document.getElementById('globalHeader') || document.querySelector('.floating-header');
+    if (globalHeader) {
+        const updateNavbarScroll = () => {
+            const modalView = document.getElementById('gameDetailModalView');
+            const isModalActive = modalView && modalView.classList.contains('active');
+            const scrollPos = isModalActive ? modalView.scrollTop : (window.pageYOffset || document.documentElement.scrollTop || 0);
+            if (scrollPos > 15) {
+                globalHeader.classList.add('scrolled');
+            } else {
+                globalHeader.classList.remove('scrolled');
+            }
+        };
+
+        window.addEventListener('scroll', updateNavbarScroll, { passive: true });
+
+        const modalView = document.getElementById('gameDetailModalView');
+        if (modalView) {
+            modalView.addEventListener('scroll', updateNavbarScroll, { passive: true });
+        }
+
+        // Initial check
+        updateNavbarScroll();
+
+        // Brand logo interaction: smooth close if in modal view, smooth scroll to top if on home
+        const brandLogo = document.getElementById('globalBrandLogo') || globalHeader.querySelector('.brand-logo');
+        if (brandLogo) {
+            brandLogo.addEventListener('click', (e) => {
+                if (window.isDetailOpen) {
+                    e.preventDefault();
+                    if (typeof window.closeGameDetail === 'function') {
+                        window.closeGameDetail();
+                    }
+                } else if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/')) {
+                    const hero = document.getElementById('hero');
+                    if (hero) {
+                        e.preventDefault();
+                        hero.scrollIntoView({ behavior: 'smooth' });
+                        try { history.pushState(null, '', window.location.pathname); } catch(err){}
+                    }
+                }
+            });
+        }
+
+        // Global Avatar button behavior for pages without about modal (like standalone game page)
+        const avatarBtn = document.getElementById('avatarBtn');
+        if (avatarBtn && !document.getElementById('aboutModal')) {
+            avatarBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (typeof window.openLoginModal === 'function') {
+                    window.openLoginModal();
+                }
+            });
+        }
     }
 });

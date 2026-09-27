@@ -9,23 +9,23 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="css/style.css?v=8.0">
+  <link rel="stylesheet" href="css/style.css?v=9.0">
   <link rel="stylesheet" href="css/cards.css?v=8.0">
   <link rel="stylesheet" href="css/admin.css?v=8.0">
   <link rel="stylesheet" href="css/game-detail.css?v=8.0">
-  <link rel="stylesheet" href="css/responsive.css?v=8.0">
+  <link rel="stylesheet" href="css/responsive.css?v=8.1">
 </head>
 <body class="standalone-game-page">
-  <!-- Minimal Floating Header -->
-  <header class="floating-header">
-    <a href="index.html" class="brand-logo">
+  <!-- Global Shared Top Navigation Bar (Persists Across All Pages & Modals) -->
+  <header class="floating-header" id="globalHeader">
+    <a href="index.html" class="brand-logo" id="globalBrandLogo">
       <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="4"></rect><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"></path></svg>
       <span>GAME<span class="logo-accent">VERSE</span></span>
     </a>
 
     <div class="top-icon-cluster">
       <!-- Search Button -->
-      <button class="icon-circle-btn" id="searchToggle" title="Search Collection (Press / or Ctrl+K)">
+      <button class="icon-circle-btn" id="searchToggle" title="Search Collection (Press / or Ctrl+K)" aria-label="Search collection">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="11" cy="11" r="7"></circle>
           <line x1="21" y1="21" x2="16.5" y2="16.5"></line>
@@ -33,20 +33,20 @@
       </button>
 
       <!-- Avatar Button -->
-      <div class="avatar-circle-btn" id="avatarBtn" title="Admin / Profile">V</div>
+      <div class="avatar-circle-btn" id="avatarBtn" title="Admin / Profile" aria-label="Admin profile">V</div>
     </div>
   </header>
 
   <!-- Spotlight Search Modal Overlay -->
-  <div class="spotlight-overlay hidden" id="searchOverlay">
+  <div class="spotlight-overlay hidden" id="searchOverlay" role="dialog" aria-modal="true" aria-label="Search collection modal">
     <div class="spotlight-dialog glass-panel">
       <div class="spotlight-input-row">
-        <svg class="spotlight-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="spotlight-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="11" cy="11" r="7"></circle>
           <line x1="21" y1="21" x2="16.5" y2="16.5"></line>
         </svg>
-        <input type="text" id="searchInput" placeholder="Search any game in universe (title, genre, platform)..." autocomplete="off">
-        <button class="spotlight-close" id="searchClose">&times;</button>
+        <input type="text" id="searchInput" placeholder="Search any game in universe (title, genre, platform)…" aria-label="Search games by title, genre, or platform" autocomplete="off">
+        <button class="spotlight-close" id="searchClose" aria-label="Close search">&times;</button>
       </div>
       <div class="spotlight-results hidden" id="searchResults"></div>
     </div>
@@ -59,29 +59,29 @@
     <div class="game-detail-hero-card">
       <!-- Background Artwork Layer (fades into black on left & bottom) -->
       <div class="hero-backdrop" id="gameHeroBg">
-        <img id="gameHeroImg" class="hero-img-element" alt="Game Artwork" />
+        <img id="gameHeroImg" class="hero-img-element" alt="Game Artwork" decoding="async" />
       </div>
       <div class="hero-backdrop-gradient"></div>
       
       <!-- Top Action Bar Inside Hero Card -->
       <div class="hero-top-nav">
-        <a href="index.html" class="hero-back-pill">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        <a href="index.html" class="hero-back-pill" aria-label="Back to Collection">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
           Back to Collection
         </a>
         
         <div class="hero-right-actions">
-          <button class="hero-circle-btn" id="bookmarkBtn" title="Toggle Bookmark">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          <button class="hero-circle-btn" id="bookmarkBtn" title="Toggle Bookmark" aria-label="Toggle Bookmark">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
           </button>
 
-          <button class="hero-circle-btn" id="favoriteBtn" title="Toggle Favorite">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <button class="hero-circle-btn" id="favoriteBtn" title="Toggle Favorite" aria-label="Toggle Favorite">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
           </button>
           
-          <div class="more-menu-wrapper">
-            <button class="hero-circle-btn" id="adminMenuToggle" title="More Options">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+          <div class="more-menu-wrapper hidden" id="adminMenuWrapper">
+            <button class="hero-circle-btn" id="adminMenuToggle" title="More Options" aria-label="More Options">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
             </button>
             <div class="more-dropdown glass-panel hidden" id="adminMenuDropdown">
               <button id="editGameBtn">✏️ Edit Game</button>
@@ -94,7 +94,7 @@
       <!-- Hero Details Info (Status Badge, Huge Title, Tagline) -->
       <div class="hero-text-content">
         <div class="hero-status-tag" id="gameStatusTag">PLAYING</div>
-        <h1 class="hero-game-title" id="gameName">Loading Game...</h1>
+        <h1 class="hero-game-title" id="gameName">Loading Game…</h1>
         <p class="hero-game-tagline" id="gameDescription"></p>
       </div>
     </div>

@@ -15,9 +15,26 @@ async function apiGet(endpoint) {
     return res.json();
 }
 
+function getAuthToken() {
+    const token = sessionStorage.getItem('admin_token');
+    if (!token) return null;
+    const expiry = parseInt(sessionStorage.getItem('admin_token_expiry'), 10);
+    if (expiry && Date.now() > expiry) {
+        sessionStorage.removeItem('admin_token');
+        sessionStorage.removeItem('admin_token_expiry');
+        localStorage.removeItem('admin_token');
+        if (typeof hideAdminControls === 'function') hideAdminControls();
+        return null;
+    }
+    return token;
+}
+
 async function handleAuthError(res) {
     if (res.status === 401) {
+        sessionStorage.removeItem('admin_token');
+        sessionStorage.removeItem('admin_token_expiry');
         localStorage.removeItem('admin_token');
+        if (typeof hideAdminControls === 'function') hideAdminControls();
         const loginModal = document.getElementById('loginModal');
         if (loginModal) loginModal.classList.remove('hidden');
         throw new Error('Your admin session has expired or is not logged in. Please log in as Admin.');
@@ -27,7 +44,7 @@ async function handleAuthError(res) {
 }
 
 async function apiPost(endpoint, data, isFormData = false) {
-    const token = localStorage.getItem('admin_token');
+    const token = getAuthToken();
     const headers = {};
     if (token) headers['Authorization'] = `Bearer ${token}`;
     if (!isFormData) headers['Content-Type'] = 'application/json';
@@ -44,7 +61,7 @@ async function apiPost(endpoint, data, isFormData = false) {
 }
 
 async function apiPut(endpoint, data, isFormData = false) {
-    const token = localStorage.getItem('admin_token');
+    const token = getAuthToken();
     const headers = {};
     if (token) headers['Authorization'] = `Bearer ${token}`;
     if (!isFormData) headers['Content-Type'] = 'application/json';
@@ -61,7 +78,7 @@ async function apiPut(endpoint, data, isFormData = false) {
 }
 
 async function apiPatch(endpoint, data) {
-    const token = localStorage.getItem('admin_token');
+    const token = getAuthToken();
     const res = await fetch(`${API_BASE}${endpoint}`, {
         method: 'PATCH',
         headers: {
@@ -77,7 +94,7 @@ async function apiPatch(endpoint, data) {
 }
 
 async function apiDelete(endpoint) {
-    const token = localStorage.getItem('admin_token');
+    const token = getAuthToken();
     const res = await fetch(`${API_BASE}${endpoint}`, {
         method: 'DELETE',
         headers: token ? {'Authorization': `Bearer ${token}`} : {}

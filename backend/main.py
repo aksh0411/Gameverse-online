@@ -27,7 +27,7 @@ from routes.modes import router as modes_router
 async def lifespan(app: FastAPI):
     # Startup
     try:
-        database.pool = ConnectionPool(conninfo=database.conninfo, open=False)
+        database.pool = database.create_pool(open_pool=False)
         database.pool.open()
         print(" Connected to PostgreSQL database pool.")
 

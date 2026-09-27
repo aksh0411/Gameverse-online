@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         not_started: {
             label: 'NOT STARTED',
             tagBg: 'rgba(125, 108, 168, 0.15)',
-            tagColor: '#bbaedf',
+            tagColor: '#67e8f9',
             tagBorder: 'rgba(187, 174, 223, 0.3)'
         },
         play_later: {
@@ -385,25 +385,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // 10. Admin Menu Toggle (Edit / Delete / Login)
+    // 10. Admin Menu Toggle (Edit / Delete / Logout)
+    const adminMenuWrapper = document.getElementById('adminMenuWrapper');
     const adminMenuToggle = document.getElementById('adminMenuToggle');
     const adminMenuDropdown = document.getElementById('adminMenuDropdown');
     
     if (adminMenuToggle && adminMenuDropdown) {
         if (!isAdmin()) {
-            adminMenuDropdown.innerHTML = `
-                <button id="adminDetailLoginBtn">🔑 Admin Login</button>
-            `;
-            const detailLoginBtn = document.getElementById('adminDetailLoginBtn');
-            if (detailLoginBtn) {
-                detailLoginBtn.addEventListener('click', () => {
-                    adminMenuDropdown.classList.add('hidden');
-                    if (typeof openLoginModal === 'function') {
-                        openLoginModal();
-                    }
-                });
-            }
+            if (adminMenuWrapper) adminMenuWrapper.classList.add('hidden');
         } else {
+            if (adminMenuWrapper) adminMenuWrapper.classList.remove('hidden');
             adminMenuDropdown.innerHTML = `
                 <button id="editGameBtn">✏️ Edit Game</button>
                 <button id="deleteGameBtn" class="delete-opt">🗑️ Delete Game</button>
@@ -419,7 +410,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             await apiDelete(`/games/${gameId}`);
                             window.location.href = 'index.html';
                         } catch (e) {
-                            alert('Error deleting game');
+                            alert(e.message || 'Error deleting game. Please ensure you are logged in as admin.');
                         }
                     }
                 });
@@ -435,6 +426,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const logoutBtn = document.getElementById('adminDetailLogoutBtn');
             if (logoutBtn) {
                 logoutBtn.addEventListener('click', () => {
+                    sessionStorage.removeItem('admin_token');
+                    sessionStorage.removeItem('admin_token_expiry');
                     localStorage.removeItem('admin_token');
                     window.location.reload();
                 });
@@ -443,6 +436,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         adminMenuToggle.addEventListener('click', (e) => {
             e.stopPropagation();
+            if (!isAdmin()) return;
             adminMenuDropdown.classList.toggle('hidden');
         });
         document.addEventListener('click', () => adminMenuDropdown.classList.add('hidden'));
