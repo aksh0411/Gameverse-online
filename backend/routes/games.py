@@ -6,6 +6,53 @@ import psycopg
 import os
 import shutil
 import json
+import base64
+import time
+
+def process_cover_image(
+    cover_image: Optional[UploadFile],
+    cover_image_url: Optional[str],
+    game_name: str,
+    game_id: Optional[int] = None
+) -> Optional[str]:
+    # 1. If explicit URL provided, prioritize it
+    if cover_image_url and cover_image_url.strip():
+        return cover_image_url.strip()
+
+    # 2. If no file uploaded (or empty filename), return None
+    if not cover_image or not getattr(cover_image, 'filename', None):
+        return None
+
+    # Determine static images directory (public/static/images preferred over frontend/static/images)
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    img_dir = os.path.join(project_root, "public", "static", "images")
+    if not os.path.exists(os.path.dirname(img_dir)):
+        img_dir = os.path.join(project_root, "frontend", "static", "images")
+
+    file_ext = os.path.splitext(cover_image.filename)[1].lower() or ".jpg"
+    safe_name = game_name.replace(' ', '_').lower()
+    suffix = f"_{game_id}" if game_id else f"_{int(time.time())}"
+    file_name = f"{safe_name}{suffix}{file_ext}"
+    full_path = os.path.join(img_dir, file_name)
+
+    try:
+        os.makedirs(img_dir, exist_ok=True)
+        with open(full_path, "wb") as buffer:
+            shutil.copyfileobj(cover_image.file, buffer)
+        return f"/static/images/{file_name}"
+    except (OSError, PermissionError) as fs_err:
+        # Read-only filesystem (e.g. Vercel Serverless / AWS Lambda)
+        # Convert uploaded file bytes into a base64 Data URL and store in DB
+        try:
+            cover_image.file.seek(0)
+            file_bytes = cover_image.file.read()
+            if file_bytes:
+                content_type = cover_image.content_type or "image/jpeg"
+                b64_str = base64.b64encode(file_bytes).decode('utf-8')
+                return f"data:{content_type};base64,{b64_str}"
+        except Exception as b64_err:
+            print(f"Error encoding image to base64: {b64_err}")
+        return "/static/images/game_1.png"
 
 router = APIRouter(prefix="/api/games", tags=["Games"])
 
@@ -254,24 +301,15 @@ def create_game(
     story_type_ids: str = Form("[]"),
     sys_req: str = Form("{}"),
     cover_image: Optional[UploadFile] = File(None),
+    cover_image_url: Optional[str] = Form(None),
     admin: str = Depends(get_current_admin),
     db = Depends(get_db)
 ):
     try:
         conn = db.connection
         with conn.transaction():
-            # Handle image upload
-            image_path = None
-            if cover_image:
-                frontend_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "frontend")
-                img_dir = os.path.join(frontend_path, "static", "images")
-                os.makedirs(img_dir, exist_ok=True)
-                file_ext = os.path.splitext(cover_image.filename)[1]
-                file_name = f"{game_name.replace(' ', '_').lower()}_{int(os.path.getmtime(img_dir) if os.path.exists(img_dir) else 0)}{file_ext}"
-                full_path = os.path.join(img_dir, file_name)
-                with open(full_path, "wb") as buffer:
-                    shutil.copyfileobj(cover_image.file, buffer)
-                image_path = f"/static/images/{file_name}"
+            # Handle image upload safely across both local and serverless read-only environments
+            image_path = process_cover_image(cover_image, cover_image_url, game_name)
             
             # Ensure sequence is synchronized
             db.execute("""
@@ -361,6 +399,7 @@ def update_game(
     story_type_ids: str = Form("[]"),
     sys_req: str = Form("{}"),
     cover_image: Optional[UploadFile] = File(None),
+    cover_image_url: Optional[str] = Form(None),
     admin: str = Depends(get_current_admin),
     db = Depends(get_db)
 ):
@@ -374,16 +413,9 @@ def update_game(
                 
             image_path = existing['cover_image']
             
-            if cover_image:
-                frontend_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "frontend")
-                img_dir = os.path.join(frontend_path, "static", "images")
-                os.makedirs(img_dir, exist_ok=True)
-                file_ext = os.path.splitext(cover_image.filename)[1]
-                file_name = f"{game_name.replace(' ', '_').lower()}_upd_{game_id}{file_ext}"
-                full_path = os.path.join(img_dir, file_name)
-                with open(full_path, "wb") as buffer:
-                    shutil.copyfileobj(cover_image.file, buffer)
-                image_path = f"/static/images/{file_name}"
+            new_image = process_cover_image(cover_image, cover_image_url, game_name, game_id)
+            if new_image:
+                image_path = new_image
                 
             rd = release_date if release_date else None
             

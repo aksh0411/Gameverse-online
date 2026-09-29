@@ -59,7 +59,7 @@ async def lifespan(app: FastAPI):
         print(" Synced PostgreSQL primary key sequences.")
     except Exception as e:
         print(f" Database connection failed on startup: {e}")
-        print("Please check your DB_PASSWORD in backend/.env")
+        print("Please check your DATABASE_URL in backend/.env or Vercel Environment Variables")
     yield
     # Shutdown
     if database.pool:

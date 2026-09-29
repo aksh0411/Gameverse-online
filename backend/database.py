@@ -9,18 +9,14 @@ _backend_dir = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(_backend_dir, ".env"))
 load_dotenv()
 
+# Supabase PostgreSQL Pooler Connection String (Transaction Mode port 6543 for serverless/Vercel)
+SUPABASE_URL = "postgresql://postgres.unxmuodcltqyywggihdh:avinash2004aksh@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres"
+
 DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL or not DATABASE_URL.strip():
+    DATABASE_URL = SUPABASE_URL
 
-if DATABASE_URL:
-    conninfo = DATABASE_URL
-else:
-    DB_HOST = os.getenv("DB_HOST", "localhost")
-    DB_PORT = os.getenv("DB_PORT", "5432")
-    DB_NAME = os.getenv("DB_NAME", "games_db")
-    DB_USER = os.getenv("DB_USER", "postgres")
-    DB_PASSWORD = os.getenv("DB_PASSWORD", "your_password_here")
-    conninfo = f"host={DB_HOST} port={DB_PORT} dbname={DB_NAME} user={DB_USER} password={DB_PASSWORD}"
-
+conninfo = DATABASE_URL
 
 # Initialize pool as None, will be set in main.py lifespan or lazily on first request
 pool = None
@@ -29,9 +25,9 @@ def create_pool(open_pool: bool = True):
     return ConnectionPool(
         conninfo=conninfo,
         min_size=1,
-        max_size=5,
-        max_idle=60.0,
-        max_lifetime=300.0,
+        max_size=3,
+        max_idle=30.0,
+        max_lifetime=180.0,
         check=ConnectionPool.check_connection,
         open=open_pool
     )

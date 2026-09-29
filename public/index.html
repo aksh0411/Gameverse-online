@@ -511,7 +511,12 @@
         <!-- Cover Image -->
         <div class="form-section">
           <h4>Cover Image</h4>
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label>Image URL (Optional / Direct Link)</label>
+            <input type="text" name="cover_image_url" id="f_cover_image_url" placeholder="https://... or /static/images/game_1.png">
+          </div>
           <div class="image-upload">
+            <label style="font-size:0.85rem; color:rgba(212,204,239,0.7); display:block; margin-bottom:6px;">Or Upload File:</label>
             <input type="file" name="cover_image" accept="image/*" id="coverImageInput">
             <div class="image-preview" id="imagePreview">No image selected</div>
           </div>
@@ -724,12 +729,12 @@
 
   <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="js/api.js?v=8.0"></script>
+  <script src="js/api.js?v=9.0"></script>
   <script src="js/auth.js?v=10.0"></script>
   <script src="js/cards.js?v=9.0"></script>
   <script src="js/shared-transition.js?v=2.1"></script>
   <script src="js/search.js?v=9.0"></script>
-  <script src="js/admin.js?v=8.0"></script>
+  <script src="js/admin.js?v=9.0"></script>
   <script src="js/collection-core.js?v=9.0"></script>
   <script src="js/particle-text.js?v=1.0"></script>
   <script src="js/home.js?v=10.1"></script>

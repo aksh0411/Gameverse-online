@@ -1,11 +1,8 @@
 const API_BASE = (() => {
     if (window.location.protocol.startsWith('http')) {
-        // If served by FastAPI (port 8000 or production cloud domain like render/railway)
-        if (window.location.port === '8000' || (!['localhost', '127.0.0.1'].includes(window.location.hostname))) {
-            return `${window.location.origin}/api`;
-        }
+        return `${window.location.origin}/api`;
     }
-    // Local development fallback (e.g. Live Server on port 5500 or file://)
+    // Local development fallback (file:// protocol)
     return 'http://localhost:8000/api';
 })();
 
@@ -125,22 +122,12 @@ function getImageUrl(imgUrl) {
     }
     const relPath = cleanPath;
 
-    // Production deployment (Railway, Render, etc.) — not localhost
-    if (window.location.protocol.startsWith('http') && !['localhost', '127.0.0.1'].includes(window.location.hostname)) {
+    // For any HTTP/HTTPS environment (Vercel, production, local server)
+    if (window.location.protocol.startsWith('http')) {
         return `/${relPath}`;
     }
 
-    // If served from backend port 8000
-    if (window.location.protocol.startsWith('http') && window.location.port === '8000') {
-        return `/${relPath}`;
-    }
-
-    // If page is loaded under /frontend/ path (e.g. Live Server running on project root)
-    if (window.location.pathname.includes('/frontend/')) {
-        return `${window.location.origin}/frontend/${relPath}`;
-    }
-
-    // Relative to current html file (index.html / game.html)
+    // Relative to current html file (file:// protocol)
     return `./${relPath}`;
 }
 

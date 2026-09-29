@@ -83,6 +83,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    const coverUrlInput = document.getElementById('f_cover_image_url');
+    if (coverUrlInput) {
+        coverUrlInput.addEventListener('input', function() {
+            const val = this.value.trim();
+            if (val) {
+                const resolved = typeof getImageUrl === 'function' ? getImageUrl(val) : val;
+                imagePreview.innerHTML = `<img src="${resolved}" alt="Preview" onerror="this.parentElement.innerHTML='<span style=\\'color:#ff8ba7\\'>Invalid image URL</span>';">`;
+            } else if (!coverImageInput.files || !coverImageInput.files[0]) {
+                imagePreview.innerHTML = 'No image selected';
+            }
+        });
+    }
+
     // Handle Form Submit
     gameForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -133,6 +146,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             recommended_storage: document.getElementById('f_rec_storage')?.value || ''
         };
         formData.append('sys_req', JSON.stringify(sysReq));
+
+        const urlInput = document.getElementById('f_cover_image_url');
+        if (urlInput && urlInput.value.trim()) {
+            formData.append('cover_image_url', urlInput.value.trim());
+        }
 
         const fileInput = document.getElementById('coverImageInput');
         if (fileInput && fileInput.files && fileInput.files[0]) {
@@ -213,8 +231,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 selectPills(game.modes, 'mode_ids');
             }, 500);
 
+            const coverUrlInp = document.getElementById('f_cover_image_url');
+            if (coverUrlInp) coverUrlInp.value = game.cover_image || '';
+
             if (game.cover_image) {
-                imagePreview.innerHTML = `<img src="${game.cover_image}" alt="Preview">`;
+                const resolved = typeof getImageUrl === 'function' ? getImageUrl(game.cover_image) : game.cover_image;
+                imagePreview.innerHTML = `<img src="${resolved}" alt="Preview">`;
+            } else {
+                imagePreview.innerHTML = 'No image selected';
             }
 
             addGameModal.classList.remove('hidden');

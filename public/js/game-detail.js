@@ -64,16 +64,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         const heroFile = `hero_${gameId}.jpg`;
         const coverFile = (gameData.cover_image || `game_${gameId}.jpg`).split('/').pop();
         
-        // Candidate paths guaranteed to resolve across Live Server, FastAPI, and file protocols
+        // Candidate paths guaranteed to resolve across all hosting environments
         const imgCandidates = [
-            `static/images/${heroFile}`,
-            `/frontend/static/images/${heroFile}`,
             `/static/images/${heroFile}`,
-            `static/images/${coverFile}`,
-            `/frontend/static/images/${coverFile}`,
+            `static/images/${heroFile}`,
             `/static/images/${coverFile}`,
-            `http://localhost:8000/static/images/${heroFile}`,
-            `http://localhost:8000/static/images/${coverFile}`
+            `static/images/${coverFile}`
         ];
 
         if (heroImg) {
