@@ -230,6 +230,14 @@ function createHeroScene(container) {
     container.innerHTML = '';
     container.appendChild(renderer.domElement);
 
+    // ── WebThreads-style flowing-line backdrop (straight lines, no bending) ──
+    let threads = null;
+    if (window.createThreadsBackground) {
+        threads = window.createThreadsBackground({ opacity: 0.85, threadCount: 6, speed: 0.2 });
+        threads.resize(width, height, renderer.getPixelRatio());
+        renderer.autoClear = false;
+    }
+
     let basePosX = width > 900 ? (width > 1300 ? 1.40 : 1.10) : 0;
     let basePosY = width <= 768 ? 1.20 : 0.42;
     const baseScale = width <= 768 ? 0.85 : 1.0;
@@ -601,6 +609,12 @@ function createHeroScene(container) {
         orbPoints.position.y = -mouse.y * 0.14;
         orbPoints.position.z = -mouseDist * 0.10;
 
+        if (threads) {
+            threads.setMouse(mouse.x, mouse.y);
+            threads.update(time);
+            renderer.clear();
+            threads.render(renderer);
+        }
         renderer.render(scene, camera);
     }
     animate();
@@ -611,6 +625,7 @@ function createHeroScene(container) {
             camera.aspect = w / h;
             camera.updateProjectionMatrix();
             renderer.setSize(w, h);
+            if (threads) threads.resize(w, h, renderer.getPixelRatio());
             basePosX = w > 900 ? (w > 1300 ? 1.40 : 1.10) : 0;
             basePosY = w <= 768 ? 1.20 : 0.42;
             const s = w <= 768 ? 0.85 : 1.0;
@@ -1346,6 +1361,19 @@ function createRadarCoreScene(canvasContainer, pillsContainer, games) {
     }
     scene.add(rootGroup);
 
+    // ── WebThreads-style flowing-line backdrop (subtle, keeps pills readable) ──
+    let threads = null;
+    if (window.createThreadsBackground) {
+        threads = window.createThreadsBackground(isRadarWidget ? {
+            opacity: 0.55, threadCount: 5, speed: 0.16, thickness: 1.1,
+            brightness: 0.62, glow: 0.03, falloff: 0.4, mouseStrength: 0.2
+        } : {
+            opacity: 0.4, threadCount: 5, speed: 0.18, thickness: 1.0, brightness: 0.55
+        });
+        threads.resize(width, height, renderer.getPixelRatio());
+        renderer.autoClear = false;
+    }
+
     _universeState.renderer = renderer;
     _universeState.scene = scene;
     _universeState.camera = camera;
@@ -1988,6 +2016,12 @@ function createRadarCoreScene(canvasContainer, pillsContainer, games) {
             node.element.classList.toggle('dimmed', hasAnyHover && !sp.isHovered);
         });
 
+        if (threads) {
+            threads.setMouse(mouse.x, mouse.y);
+            threads.update(time);
+            renderer.clear();
+            threads.render(renderer);
+        }
         renderer.render(scene, camera);
     }
     animate();
@@ -1999,6 +2033,7 @@ function createRadarCoreScene(canvasContainer, pillsContainer, games) {
             camera.aspect = w / h;
             camera.updateProjectionMatrix();
             renderer.setSize(w, h);
+            if (threads) threads.resize(w, h, renderer.getPixelRatio());
             if (isRadarWidget) {
                 rootGroup.position.x = 0;
                 rootGroup.position.y = 0.45;
