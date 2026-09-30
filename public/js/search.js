@@ -34,6 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (searchClose) searchClose.addEventListener('click', closeSearch);
 
+    // Exposed so other controls (library topbar, game detail modal navbar) can open the spotlight
+    window.openSpotlightSearch = openSearch;
+
     if (searchOverlay) {
         searchOverlay.addEventListener('click', (e) => {
             if (e.target === searchOverlay) closeSearch();

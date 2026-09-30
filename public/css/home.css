@@ -1366,3 +1366,29 @@ section:not(#hero):not(#collection-core) {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
 }
+
+/* ========================================================================= */
+/* HERO-ONLY HOME — the orbit hero IS the whole page (no scroll, no content  */
+/* below; the collection lives in library.html)                              */
+/* ========================================================================= */
+body.hero-only {
+  overflow: hidden;
+  height: 100%;
+}
+body.hero-only .universe-shell {
+  min-height: 100vh;
+}
+body.hero-only #hero {
+  min-height: 100vh;
+  padding-bottom: 0;
+}
+body.hero-only .hero-grid {
+  min-height: calc(100vh - 140px);
+  padding: 110px 48px 24px;
+}
+/* Very short viewports: let the hero breathe instead of clipping content */
+@media (max-height: 600px) {
+  body.hero-only {
+    overflow-y: auto;
+  }
+}

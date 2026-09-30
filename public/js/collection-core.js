@@ -1109,7 +1109,14 @@ function rebuildRadarNodes(filteredGames) {
     const list = Array.isArray(filteredGames) ? filteredGames : [];
 
     if (list.length === 0) {
-        const filterLabels = { bookmarked: 'bookmarked', favorited: 'liked', playing: 'currently playing' };
+        const filterLabels = {
+            all: 'loaded',
+            bookmarked: 'bookmarked',
+            favorited: 'liked',
+            playing: 'currently playing',
+            backlog: 'in the backlog',
+            completed: 'completed'
+        };
         const label = filterLabels[_currentRadarFilter] || 'matching';
         pillsContainer.innerHTML = `
             <div class="collection-core-empty-state animate-fade-in" role="status" aria-live="polite">
@@ -1298,6 +1305,11 @@ function createRadarCoreScene(canvasContainer, pillsContainer, games) {
     _universeState.canvasContainer = canvasContainer;
     _universeState.pillsContainer = pillsContainer;
 
+    // The dashboard radar widget always orbits the ENTIRE library (no bookmark pre-filter)
+    if (canvasContainer.id === 'radarCore3d') {
+        _currentRadarFilter = 'all';
+    }
+
     const width = canvasContainer.clientWidth || 800;
     const height = canvasContainer.clientHeight || 720;
 
@@ -1315,12 +1327,23 @@ function createRadarCoreScene(canvasContainer, pillsContainer, games) {
     canvasContainer.appendChild(renderer.domElement);
 
     // Root Group: Shifted up and scaled so outer bounds never clip at bottom
+    // Compact widget mode (library dashboard radar card): centered scene at reduced scale
+    const isRadarWidget = canvasContainer.id === 'radarCore3d';
     const rootGroup = new THREE.Group();
-    let baseRadarX = width > 900 ? (width > 1300 ? 1.25 : 0.95) : 0;
-    rootGroup.position.x = baseRadarX;
-    rootGroup.position.y = 0.38;
-    const baseScale = width > 1300 ? 0.82 : (width > 900 ? 0.76 : 0.68);
-    rootGroup.scale.set(baseScale, baseScale, baseScale);
+    let baseRadarX;
+    if (isRadarWidget) {
+        baseRadarX = 0;
+        // Lifted + slightly smaller scale so the outer ring never clips at the card's bottom edge
+        rootGroup.position.set(0, 0.45, 0);
+        const ws = Math.min(1.05, Math.max(0.6, width / 1150));
+        rootGroup.scale.set(ws, ws, ws);
+    } else {
+        baseRadarX = width > 900 ? (width > 1300 ? 1.25 : 0.95) : 0;
+        rootGroup.position.x = baseRadarX;
+        rootGroup.position.y = 0.38;
+        const baseScale = width > 1300 ? 0.82 : (width > 900 ? 0.76 : 0.68);
+        rootGroup.scale.set(baseScale, baseScale, baseScale);
+    }
     scene.add(rootGroup);
 
     _universeState.renderer = renderer;
@@ -1894,16 +1917,23 @@ function createRadarCoreScene(canvasContainer, pillsContainer, games) {
             }
             screenX += labelOffset;
 
-            // Core Avoidance
+            // Core Avoidance (compact widget uses a tighter exclusion box)
+            const avoidW = isRadarWidget ? 55 : 85;
+            const avoidH = isRadarWidget ? 34 : 55;
+            const avoidShift = isRadarWidget ? 24 : 32;
             const distToCoreX = screenX - coreScreenX;
             const distToCoreY = screenY - coreScreenY;
-            if (Math.abs(distToCoreX) < 85 && Math.abs(distToCoreY) < 55) {
-                screenY += distToCoreY >= 0 ? 32 : -32;
+            if (Math.abs(distToCoreX) < avoidW && Math.abs(distToCoreY) < avoidH) {
+                screenY += distToCoreY >= 0 ? avoidShift : -avoidShift;
             }
 
             // Viewport Clamping: Never cuts off at bottom or collides with top
-            screenY = Math.max(50 + pillH / 2, Math.min(containerH - 35 - pillH / 2, screenY));
-            screenX = Math.max(340 + pillW / 2, Math.min(containerW - 20 - pillW / 2, screenX));
+            // (full-page core keeps a 340px left clearance for its filter sidebar; the widget clamps to its own
+            //  edges and keeps labels clear of the floating header text in its top-left corner)
+            const pillLeftClearance = isRadarWidget ? 10 : 340;
+            const pillTopClearance = isRadarWidget ? (screenX < 520 ? 145 : 38) : 50;
+            screenY = Math.max(pillTopClearance + pillH / 2, Math.min(containerH - 35 - pillH / 2, screenY));
+            screenX = Math.max(pillLeftClearance + pillW / 2, Math.min(containerW - 10 - pillW / 2, screenX));
 
             node.screenPos = {
                 x: screenX,
@@ -1969,10 +1999,17 @@ function createRadarCoreScene(canvasContainer, pillsContainer, games) {
             camera.aspect = w / h;
             camera.updateProjectionMatrix();
             renderer.setSize(w, h);
-            baseRadarX = w > 900 ? (w > 1300 ? 1.25 : 0.95) : 0;
-            rootGroup.position.x = baseRadarX;
-            const s = w > 1300 ? 0.82 : (w > 900 ? 0.76 : 0.68);
-            rootGroup.scale.set(s, s, s);
+            if (isRadarWidget) {
+                rootGroup.position.x = 0;
+                rootGroup.position.y = 0.45;
+                const s = Math.min(1.05, Math.max(0.6, w / 1150));
+                rootGroup.scale.set(s, s, s);
+            } else {
+                baseRadarX = w > 900 ? (w > 1300 ? 1.25 : 0.95) : 0;
+                rootGroup.position.x = baseRadarX;
+                const s = w > 1300 ? 0.82 : (w > 900 ? 0.76 : 0.68);
+                rootGroup.scale.set(s, s, s);
+            }
         }
     });
 }
@@ -2001,10 +2038,17 @@ window.setRadarFilter = function (filterName) {
     const list = _allLoadedGames && _allLoadedGames.length > 0 ? _allLoadedGames : (window.__ALL_GAMES__ || []);
 
     let filtered = [];
-    if (filterName === 'favorited') {
+    if (filterName === 'all') {
+        filtered = list;
+    } else if (filterName === 'favorited') {
         filtered = list.filter(g => Boolean(g.is_favorited || g.favorited));
     } else if (filterName === 'playing') {
         filtered = list.filter(g => (g.play_status || '').toLowerCase() === 'playing');
+    } else if (filterName === 'backlog') {
+        // Backlog view = play later games only
+        filtered = list.filter(g => (g.play_status || '').toLowerCase() === 'play_later');
+    } else if (filterName === 'completed') {
+        filtered = list.filter(g => (g.play_status || '').toLowerCase() === 'completed');
     } else {
         filtered = list.filter(g => Boolean(g.is_bookmarked || g.bookmarked));
     }
@@ -2012,7 +2056,8 @@ window.setRadarFilter = function (filterName) {
     const pillsLayer = _universeState.pillsContainer || document.getElementById('corePillsLayer');
     const coreGroup = _universeState.coreGroup;
 
-    if (coreGroup) {
+    const isWidgetCore = _universeState.canvasContainer && _universeState.canvasContainer.id === 'radarCore3d';
+    if (coreGroup && !isWidgetCore) {
         coreGroup.scale.set(1.25, 1.25, 1.25);
     }
 

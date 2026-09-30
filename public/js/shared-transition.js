@@ -685,6 +685,30 @@
             scrim.addEventListener('click', () => window.closeGameDetail());
         }
 
+        // Modal Navbar: logo closes the game view (same convention as the global brand logo)
+        const modalNavLogo = document.getElementById('modalNavLogo');
+        if (modalNavLogo) {
+            modalNavLogo.addEventListener('click', (e) => {
+                if (isDetailOpen) {
+                    e.preventDefault();
+                    window.closeGameDetail();
+                }
+            });
+        }
+
+        // Modal Navbar: search opens the spotlight overlay (search.js on both pages)
+        const modalNavSearch = document.getElementById('modalNavSearch');
+        if (modalNavSearch) {
+            modalNavSearch.addEventListener('click', () => {
+                if (typeof window.openSpotlightSearch === 'function') {
+                    window.openSpotlightSearch();
+                } else {
+                    const searchToggle = document.getElementById('searchToggle');
+                    if (searchToggle) searchToggle.click();
+                }
+            });
+        }
+
         // Close on back pill or close button
         const backBtn = document.getElementById('modalBackBtn');
         if (backBtn) {
@@ -715,7 +739,9 @@
                     if (typeof requireAdmin === 'function' && !requireAdmin('edit game')) return;
                     if (!activeGameData) return;
                     const gid = activeGameData.id || activeGameData.game_id;
-                    window.location.href = `index.html?edit=${gid}`;
+                    // Stay on the current page (both index.html and library.html carry the full edit form)
+                    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+                    window.location.href = `${currentPage}?edit=${gid}`;
                 });
             }
 
@@ -739,8 +765,10 @@
             }
         }
 
-        // Close on Escape key
+        // Close on Escape key (but not while the spotlight search overlay is open on top)
         document.addEventListener('keydown', (e) => {
+            const searchOverlay = document.getElementById('searchOverlay');
+            if (searchOverlay && !searchOverlay.classList.contains('hidden')) return;
             if (e.key === 'Escape' && isDetailOpen && !isTransitioning) {
                 window.closeGameDetail();
             }

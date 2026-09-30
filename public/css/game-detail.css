@@ -567,3 +567,73 @@ body.standalone-game-page {
     padding: 20px;
   }
 }
+
+/* ── Modal Navbar (GAMEVERSE logo · search · profile inside the detail view) ── */
+.modal-navbar {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 58px;
+  z-index: 930;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 22px;
+  background: rgba(3, 10, 16, 0.85);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(45, 212, 191, 0.12);
+}
+.game-detail-modal-view.active .modal-navbar { display: flex; }
+
+.modal-nav-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--font-heading, 'Space Grotesk', sans-serif);
+  font-size: 1.02rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #ffffff;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+.modal-nav-logo:hover { opacity: 0.85; }
+.modal-nav-logo svg {
+  width: 21px;
+  height: 21px;
+  color: var(--accent-pink, #00f5d4);
+  filter: drop-shadow(0 0 6px rgba(0, 245, 212, 0.45));
+}
+
+.modal-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-nav-profile {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(45, 212, 191, 0.35);
+  background: #00f5d4;
+  color: #020b10;
+  font-family: var(--font-heading, 'Space Grotesk', sans-serif);
+  font-weight: 700;
+  font-size: 0.84rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+}
+.modal-nav-profile:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 14px rgba(0, 245, 212, 0.4);
+}
+
+@media (max-width: 768px) {
+  .modal-navbar { height: 52px; padding: 0 14px; }
+}
