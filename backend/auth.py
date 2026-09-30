@@ -11,16 +11,23 @@ _backend_dir = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(_backend_dir, ".env"))
 load_dotenv()
 
-SECRET_KEY = os.getenv("JWT_SECRET", "gameverse-super-secret-jwt-key-2026")
+# Auth credentials come ONLY from environment variables — this repository is
+# public, so no secret may ever be hardcoded here. The server refuses to boot
+# without them (fail closed) rather than falling back to known defaults.
+#   Local:  backend/.env            (JWT_SECRET=, ADMIN_USERNAME=, ADMIN_PASSWORD_HASH=)
+#   Vercel: Project Settings → Environment Variables
+SECRET_KEY = os.getenv("JWT_SECRET")
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
+ADMIN_PASSWORD_HASH = os.getenv("ADMIN_PASSWORD_HASH")
+if not SECRET_KEY or not ADMIN_USERNAME or not ADMIN_PASSWORD_HASH:
+    raise RuntimeError(
+        "JWT_SECRET, ADMIN_USERNAME and ADMIN_PASSWORD_HASH must all be set in "
+        "backend/.env (local) or the Vercel Environment Variables (production). "
+        "Generate a JWT_SECRET with: python -c \"import secrets; print(secrets.token_hex(32))\" "
+        "and a password hash with: python -c \"import bcrypt; print(bcrypt.hashpw(b'YOUR-PASSWORD', bcrypt.gensalt()).decode())\""
+    )
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 4 * 60  # 4 hours
-
-ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
-# Default hash for password 'admin123'
-DEFAULT_HASH = "$2b$12$WvZYgsG1DEbWjlWZfGG1P.7hA2x5O0AhfuYCmgZEQQ0GPV83I9/NW"
-ADMIN_PASSWORD_HASH = os.getenv("ADMIN_PASSWORD_HASH", DEFAULT_HASH)
-if not ADMIN_PASSWORD_HASH or ADMIN_PASSWORD_HASH.startswith("<"):
-    ADMIN_PASSWORD_HASH = DEFAULT_HASH
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/admin/login")
 

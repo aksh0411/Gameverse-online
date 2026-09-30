@@ -9,14 +9,21 @@ _backend_dir = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(_backend_dir, ".env"))
 load_dotenv()
 
-# Supabase PostgreSQL Pooler Connection String (Transaction Mode port 6543 for serverless/Vercel)
-SUPABASE_URL = "postgresql://postgres.unxmuodcltqyywggihdh:avinash2004aksh@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres"
-
+# Database credentials come ONLY from environment variables — this repository is
+# public, so no connection string may ever be hardcoded here.
+#   Local:  backend/.env            (DATABASE_URL=...)
+#   Vercel: Project Settings → Environment Variables
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL or not DATABASE_URL.strip():
-    DATABASE_URL = SUPABASE_URL
+    raise RuntimeError(
+        "DATABASE_URL is not set. Add it to backend/.env (local) or to the "
+        "Vercel Environment Variables (production). Never hardcode it in source."
+    )
 
+# Enforce TLS to the database even when the connection string omits sslmode
 conninfo = DATABASE_URL
+if "sslmode=" not in conninfo:
+    conninfo += ("&" if "?" in conninfo else "?") + "sslmode=require"
 
 # Initialize pool as None, will be set in main.py lifespan or lazily on first request
 pool = None
