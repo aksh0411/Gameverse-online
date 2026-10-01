@@ -65,7 +65,17 @@ async def lifespan(app: FastAPI):
     if database.pool:
         database.pool.close()
 
-app = FastAPI(title="GAMEVERSE API", lifespan=lifespan)
+# Disable the auto docs in production (Vercel) — they advertise the whole API
+# surface to strangers. Local development keeps /docs, /redoc and /openapi.json.
+_is_prod = bool(os.getenv("VERCEL"))
+
+app = FastAPI(
+    title="GAMEVERSE API",
+    lifespan=lifespan,
+    docs_url=None if _is_prod else "/docs",
+    redoc_url=None if _is_prod else "/redoc",
+    openapi_url=None if _is_prod else "/openapi.json",
+)
 
 @app.get("/health")
 @app.get("/api/health")

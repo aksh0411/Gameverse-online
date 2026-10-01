@@ -6,6 +6,16 @@ const API_BASE = (() => {
     return 'http://localhost:8000/api';
 })();
 
+// HTML-escape any string that came from the database before it goes into
+// innerHTML (element text, attribute values). Prevents stored XSS.
+function escHtml(value) {
+    if (value === null || value === undefined) return '';
+    return String(value).replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+}
+window.escHtml = escHtml;
+
 async function apiGet(endpoint) {
     const res = await fetch(`${API_BASE}${endpoint}`);
     if (!res.ok) throw new Error(`API Error: ${res.status}`);

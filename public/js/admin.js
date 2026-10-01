@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 items.forEach(item => {
                     const label = document.createElement('label');
                     label.className = 'checkbox-pill';
-                    label.innerHTML = `<input type="checkbox" name="${name}" value="${item.id}"> ${item.name}`;
+                    label.innerHTML = `<input type="checkbox" name="${name}" value="${item.id}"> ${escHtml(item.name)}`;
                     label.addEventListener('change', (e) => {
                         if(e.target.checked) label.classList.add('selected');
                         else label.classList.remove('selected');

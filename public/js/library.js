@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (gamesContainer) {
                 gamesContainer.innerHTML = `
                     <div class="catalog-empty-state">
-                        <p>Error loading library: ${err.message}</p>
+                        <p>Error loading library: ${escHtml(err.message)}</p>
                     </div>
                 `;
             }
@@ -352,7 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const isFav = Boolean(game.is_favorited);
 
         card.innerHTML = `
-            <img class="wide-card-bg" src="${coverUrl}" alt="${game.name || game.game_name}" loading="lazy" onerror="this.src='static/images/game_1.jpg';">
+            <img class="wide-card-bg" src="${escHtml(coverUrl)}" alt="${escHtml(game.name || game.game_name)}" loading="lazy" onerror="this.src='static/images/game_1.jpg';">
             <div class="wide-card-gradient"></div>
             <div class="wide-card-top">
                 <span class="wide-status-pill status-${rawStatus}">
@@ -366,10 +366,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 </button>
             </div>
             <div class="wide-card-bottom">
-                <h3 class="wide-card-title">${game.name || game.game_name}</h3>
-                <p class="wide-card-subtitle">${subtitle}</p>
+                <h3 class="wide-card-title">${escHtml(game.name || game.game_name)}</h3>
+                <p class="wide-card-subtitle">${escHtml(subtitle)}</p>
                 <div class="wide-card-footer">
-                    <span class="wide-card-genre">${gameGenres(game, 2, ' · ')}</span>
+                    <span class="wide-card-genre">${escHtml(gameGenres(game, 2, ' · '))}</span>
                     <span class="wide-card-rating">
                         <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
                         ${starScore(game)}
@@ -408,7 +408,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof openGameDetail === 'function') {
             openGameDetail(element, game);
         } else {
-            window.location.href = `game.html?id=${game.id || game.game_id}`;
+            window.location.href = `library.html?game=${game.id || game.game_id}`;
         }
     }
 
@@ -441,7 +441,7 @@ document.addEventListener('DOMContentLoaded', () => {
             header.className = 'genre-bundle-header';
             header.innerHTML = `
                 <span class="genre-bundle-diamond">◈</span>
-                <h3 class="genre-bundle-name">${genre}</h3>
+                <h3 class="genre-bundle-name">${escHtml(genre)}</h3>
                 <span class="genre-bundle-count">${bundleGames.length} game${bundleGames.length === 1 ? '' : 's'}</span>
             `;
             bundle.appendChild(header);
@@ -472,9 +472,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const rawStatus = displayStatus(game);
 
             row.innerHTML = `
-                <img class="list-thumb" src="${coverUrl}" alt="${game.name || game.game_name}" loading="lazy">
-                <span class="list-title">${game.name || game.game_name}</span>
-                <span class="list-meta">${gameGenres(game, 2, ', ')}</span>
+                <img class="list-thumb" src="${escHtml(coverUrl)}" alt="${escHtml(game.name || game.game_name)}" loading="lazy">
+                <span class="list-title">${escHtml(game.name || game.game_name)}</span>
+                <span class="list-meta">${escHtml(gameGenres(game, 2, ', '))}</span>
                 <span class="list-meta wide-status-pill status-${rawStatus}" style="font-size: 0.7rem; padding: 2px 8px;">
                     ${statusLabel(rawStatus)}
                 </span>
@@ -539,14 +539,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const playStatus = (game.play_status || 'not_started').replace('_', ' ').toUpperCase();
 
                 const poster = coverUrl
-                    ? `<img class="spotlight-item-poster" src="${coverUrl}" alt="${gameName}" loading="lazy" decoding="async" onerror="this.outerHTML='<div class=spotlight-item-poster style=display:flex;align-items:center;justify-content:center;color:#888>🎮</div>';">`
+                    ? `<img class="spotlight-item-poster" src="${escHtml(coverUrl)}" alt="${escHtml(gameName)}" loading="lazy" decoding="async" onerror="this.outerHTML='<div class=spotlight-item-poster style=display:flex;align-items:center;justify-content:center;color:#888>🎮</div>';">`
                     : `<div class="spotlight-item-poster" style="display:flex;align-items:center;justify-content:center;color:#888;">🎮</div>`;
 
                 item.innerHTML = `
                     ${poster}
                     <div class="spotlight-item-info">
-                        <span class="spotlight-item-title">${gameName}</span>
-                        <span class="spotlight-item-meta">${gameGenres(game, 2, ', ')} · <span style="color:#2dd4bf">${playStatus}</span></span>
+                        <span class="spotlight-item-title">${escHtml(gameName)}</span>
+                        <span class="spotlight-item-meta">${escHtml(gameGenres(game, 2, ', '))} · <span style="color:#2dd4bf">${playStatus}</span></span>
                     </div>
                     <span style="color:rgba(212,204,239,0.4); font-size:0.8rem;">↵</span>
                 `;

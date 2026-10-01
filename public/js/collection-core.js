@@ -1166,14 +1166,14 @@ function rebuildRadarNodes(filteredGames) {
 
         // ── 1. Screen Capsule Badge (● Game Title) ──
         const pill = document.createElement('a');
-        pill.href = `game.html?id=${gid}`;
+        pill.href = `library.html?game=${gid}`;
         pill.className = `orbital-badge-pill ${palette.theme}${isDefaultVisible ? '' : ' hidden-label'}`;
         pill.dataset.gameId = gid;
         pill.tabIndex = 0;
         pill.setAttribute('aria-label', `View details for ${gameName}`);
         pill.innerHTML = `
             <span class="pill-status-dot" style="background:${palette.dot};box-shadow:0 0 8px ${palette.dot}" aria-hidden="true"></span>
-            <span>${gameName}</span>
+            <span>${escHtml(gameName)}</span>
         `;
 
         pill.addEventListener('click', (e) => {
@@ -1184,7 +1184,7 @@ function rebuildRadarNodes(filteredGames) {
                     return;
                 }
             }
-            window.location.href = `game.html?id=${gid}`;
+            window.location.href = `library.html?game=${gid}`;
         });
 
         pill.addEventListener('keydown', (e) => {

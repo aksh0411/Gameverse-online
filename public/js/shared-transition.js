@@ -90,6 +90,7 @@
      */
     function formatAboutMarkdown(rawText) {
         if (!rawText) return '<p class="about-paragraph">No description provided.</p>';
+        rawText = escHtml(rawText);
         const lines = rawText.split('\n');
         let html = '';
         let currentParagraph = [];
@@ -198,7 +199,7 @@
                     </div>
                     <div class="meta-text">
                         <span class="meta-label">Genre</span>
-                        <span class="meta-val" title="${genreStr}">${genreStr}</span>
+                        <span class="meta-val" title="${escHtml(genreStr)}">${escHtml(genreStr)}</span>
                     </div>
                 </div>
                 <div class="meta-item">
@@ -209,7 +210,7 @@
                     </div>
                     <div class="meta-text">
                         <span class="meta-label">Developer</span>
-                        <span class="meta-val" title="${devName}">${devName}</span>
+                        <span class="meta-val" title="${escHtml(devName)}">${escHtml(devName)}</span>
                     </div>
                 </div>
                 <div class="meta-item">
@@ -223,7 +224,7 @@
                     </div>
                     <div class="meta-text">
                         <span class="meta-label">Released</span>
-                        <span class="meta-val" title="${releaseStr}">${releaseStr}</span>
+                        <span class="meta-val" title="${escHtml(releaseStr)}">${escHtml(releaseStr)}</span>
                     </div>
                 </div>
                 <div class="meta-item">
@@ -236,7 +237,7 @@
                     </div>
                     <div class="meta-text">
                         <span class="meta-label">Platform</span>
-                        <span class="meta-val" title="${platformStr}">${platformStr}</span>
+                        <span class="meta-val" title="${escHtml(platformStr)}">${escHtml(platformStr)}</span>
                     </div>
                 </div>
                 <div class="meta-item">
@@ -248,7 +249,7 @@
                     </div>
                     <div class="meta-text">
                         <span class="meta-label">Engine</span>
-                        <span class="meta-val" title="${engineName}">${engineName}</span>
+                        <span class="meta-val" title="${escHtml(engineName)}">${escHtml(engineName)}</span>
                     </div>
                 </div>
             `;
@@ -333,7 +334,7 @@
                         </div>
                         <div class="meta-text">
                             <span class="meta-label">Genre</span>
-                            <span class="meta-val" title="${fGenre}">${fGenre}</span>
+                            <span class="meta-val" title="${escHtml(fGenre)}">${escHtml(fGenre)}</span>
                         </div>
                     </div>
                     <div class="meta-item">
@@ -344,7 +345,7 @@
                         </div>
                         <div class="meta-text">
                             <span class="meta-label">Developer</span>
-                            <span class="meta-val" title="${fDev}">${fDev}</span>
+                            <span class="meta-val" title="${escHtml(fDev)}">${escHtml(fDev)}</span>
                         </div>
                     </div>
                     <div class="meta-item">
@@ -358,7 +359,7 @@
                         </div>
                         <div class="meta-text">
                             <span class="meta-label">Released</span>
-                            <span class="meta-val" title="${fRelease}">${fRelease}</span>
+                            <span class="meta-val" title="${escHtml(fRelease)}">${escHtml(fRelease)}</span>
                         </div>
                     </div>
                     <div class="meta-item">
@@ -371,7 +372,7 @@
                         </div>
                         <div class="meta-text">
                             <span class="meta-label">Platform</span>
-                            <span class="meta-val" title="${fPlatform}">${fPlatform}</span>
+                            <span class="meta-val" title="${escHtml(fPlatform)}">${escHtml(fPlatform)}</span>
                         </div>
                     </div>
                     <div class="meta-item">
@@ -383,7 +384,7 @@
                         </div>
                         <div class="meta-text">
                             <span class="meta-label">Engine</span>
-                            <span class="meta-val" title="${fEngine}">${fEngine}</span>
+                            <span class="meta-val" title="${escHtml(fEngine)}">${escHtml(fEngine)}</span>
                         </div>
                     </div>
                 `;
@@ -408,18 +409,18 @@
             if (minTable && recTable) {
                 if (sysReq && (sysReq.minimum_cpu || sysReq.minimum_gpu || sysReq.minimum_ram || sysReq.operating_system)) {
                     minTable.innerHTML = `
-                        <tr><th>OS</th><td>${sysReq.operating_system || '—'}</td></tr>
-                        <tr><th>CPU</th><td>${sysReq.minimum_cpu || '—'}</td></tr>
-                        <tr><th>GPU</th><td>${sysReq.minimum_gpu || '—'}</td></tr>
-                        <tr><th>RAM</th><td>${sysReq.minimum_ram || '—'}</td></tr>
-                        <tr><th>Storage</th><td>${sysReq.minimum_storage || '—'}</td></tr>
+                        <tr><th>OS</th><td>${escHtml(sysReq.operating_system) || '—'}</td></tr>
+                        <tr><th>CPU</th><td>${escHtml(sysReq.minimum_cpu) || '—'}</td></tr>
+                        <tr><th>GPU</th><td>${escHtml(sysReq.minimum_gpu) || '—'}</td></tr>
+                        <tr><th>RAM</th><td>${escHtml(sysReq.minimum_ram) || '—'}</td></tr>
+                        <tr><th>Storage</th><td>${escHtml(sysReq.minimum_storage) || '—'}</td></tr>
                     `;
                     recTable.innerHTML = `
-                        <tr><th>OS</th><td>${sysReq.operating_system || '—'}</td></tr>
-                        <tr><th>CPU</th><td>${sysReq.recommended_cpu || '—'}</td></tr>
-                        <tr><th>GPU</th><td>${sysReq.recommended_gpu || '—'}</td></tr>
-                        <tr><th>RAM</th><td>${sysReq.recommended_ram || '—'}</td></tr>
-                        <tr><th>Storage</th><td>${sysReq.recommended_storage || '—'}</td></tr>
+                        <tr><th>OS</th><td>${escHtml(sysReq.operating_system) || '—'}</td></tr>
+                        <tr><th>CPU</th><td>${escHtml(sysReq.recommended_cpu) || '—'}</td></tr>
+                        <tr><th>GPU</th><td>${escHtml(sysReq.recommended_gpu) || '—'}</td></tr>
+                        <tr><th>RAM</th><td>${escHtml(sysReq.recommended_ram) || '—'}</td></tr>
+                        <tr><th>Storage</th><td>${escHtml(sysReq.recommended_storage) || '—'}</td></tr>
                     `;
                 } else {
                     minTable.innerHTML = '<tr><td colspan="2" style="color:rgba(255,255,255,0.45); padding:16px 0;">No minimum system requirements recorded.</td></tr>';
@@ -539,7 +540,7 @@
         textWrap.className = 'transition-title-wrap';
         textWrap.innerHTML = `
             <span style="font-family: var(--font-heading); font-size: 0.85rem; letter-spacing: 6px; color: ${accentColor}; text-transform: uppercase; margin-bottom: 8px; text-shadow: 0 0 16px ${accentColor}; font-weight: 600;">ENTERING</span>
-            <h1 style="font-family: var(--font-heading); font-size: clamp(2rem, 5.5vw, 4rem); font-weight: 800; color: #ffffff; letter-spacing: -0.02em; margin: 0; text-shadow: 0 0 35px ${accentColor}80, 0 4px 20px rgba(0,0,0,0.9); line-height: 1.1;">${gameTitle}</h1>
+            <h1 style="font-family: var(--font-heading); font-size: clamp(2rem, 5.5vw, 4rem); font-weight: 800; color: #ffffff; letter-spacing: -0.02em; margin: 0; text-shadow: 0 0 35px ${accentColor}80, 0 4px 20px rgba(0,0,0,0.9); line-height: 1.1;">${escHtml(gameTitle)}</h1>
         `;
         panel.appendChild(textWrap);
 

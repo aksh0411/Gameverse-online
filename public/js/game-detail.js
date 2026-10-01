@@ -186,7 +186,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     <div class="meta-text">
                         <span class="meta-label">Genre</span>
-                        <span class="meta-val" title="${genreStr}">${genreStr}</span>
+                        <span class="meta-val" title="${escHtml(genreStr)}">${escHtml(genreStr)}</span>
                     </div>
                 </div>
 
@@ -199,7 +199,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     <div class="meta-text">
                         <span class="meta-label">Developer</span>
-                        <span class="meta-val" title="${devName}">${devName}</span>
+                        <span class="meta-val" title="${escHtml(devName)}">${escHtml(devName)}</span>
                     </div>
                 </div>
 
@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     <div class="meta-text">
                         <span class="meta-label">Released</span>
-                        <span class="meta-val" title="${releaseStr}">${releaseStr}</span>
+                        <span class="meta-val" title="${escHtml(releaseStr)}">${escHtml(releaseStr)}</span>
                     </div>
                 </div>
 
@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     <div class="meta-text">
                         <span class="meta-label">Platform</span>
-                        <span class="meta-val" title="${platformStr}">${platformStr}</span>
+                        <span class="meta-val" title="${escHtml(platformStr)}">${escHtml(platformStr)}</span>
                     </div>
                 </div>
 
@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     <div class="meta-text">
                         <span class="meta-label">Engine</span>
-                        <span class="meta-val" title="${engineName}">${engineName}</span>
+                        <span class="meta-val" title="${escHtml(engineName)}">${escHtml(engineName)}</span>
                     </div>
                 </div>
             `;
@@ -316,18 +316,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (minTable && recTable) {
             if (sysReq && (sysReq.minimum_cpu || sysReq.minimum_gpu || sysReq.minimum_ram || sysReq.operating_system)) {
                 minTable.innerHTML = `
-                    <tr><th>OS</th><td>${sysReq.operating_system || '—'}</td></tr>
-                    <tr><th>CPU</th><td>${sysReq.minimum_cpu || '—'}</td></tr>
-                    <tr><th>GPU</th><td>${sysReq.minimum_gpu || '—'}</td></tr>
-                    <tr><th>RAM</th><td>${sysReq.minimum_ram || '—'}</td></tr>
-                    <tr><th>Storage</th><td>${sysReq.minimum_storage || '—'}</td></tr>
+                    <tr><th>OS</th><td>${escHtml(sysReq.operating_system) || '—'}</td></tr>
+                    <tr><th>CPU</th><td>${escHtml(sysReq.minimum_cpu) || '—'}</td></tr>
+                    <tr><th>GPU</th><td>${escHtml(sysReq.minimum_gpu) || '—'}</td></tr>
+                    <tr><th>RAM</th><td>${escHtml(sysReq.minimum_ram) || '—'}</td></tr>
+                    <tr><th>Storage</th><td>${escHtml(sysReq.minimum_storage) || '—'}</td></tr>
                 `;
                 recTable.innerHTML = `
-                    <tr><th>OS</th><td>${sysReq.operating_system || '—'}</td></tr>
-                    <tr><th>CPU</th><td>${sysReq.recommended_cpu || '—'}</td></tr>
-                    <tr><th>GPU</th><td>${sysReq.recommended_gpu || '—'}</td></tr>
-                    <tr><th>RAM</th><td>${sysReq.recommended_ram || '—'}</td></tr>
-                    <tr><th>Storage</th><td>${sysReq.recommended_storage || '—'}</td></tr>
+                    <tr><th>OS</th><td>${escHtml(sysReq.operating_system) || '—'}</td></tr>
+                    <tr><th>CPU</th><td>${escHtml(sysReq.recommended_cpu) || '—'}</td></tr>
+                    <tr><th>GPU</th><td>${escHtml(sysReq.recommended_gpu) || '—'}</td></tr>
+                    <tr><th>RAM</th><td>${escHtml(sysReq.recommended_ram) || '—'}</td></tr>
+                    <tr><th>Storage</th><td>${escHtml(sysReq.recommended_storage) || '—'}</td></tr>
                 `;
             } else {
                 minTable.innerHTML = '<tr><td colspan="2" style="color:rgba(255,255,255,0.45); padding:16px 0;">No minimum system requirements recorded.</td></tr>';
@@ -445,6 +445,9 @@ document.addEventListener('DOMContentLoaded', async () => {
  */
 function formatAboutMarkdown(rawText) {
     if (!rawText) return '<p class="about-paragraph">No description provided.</p>';
+
+    // Escape BEFORE any markup is applied — DB text is never trusted as HTML
+    rawText = escHtml(rawText);
 
     const lines = rawText.split('\n');
     let html = '';

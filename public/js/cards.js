@@ -25,19 +25,19 @@ function renderPosterCard(game, index = 0) {
     const imgUrl = typeof getImageUrl === 'function' ? getImageUrl(rawImg) : rawImg;
 
     card.className = 'poster-card';
-    card.href = `game.html?id=${gameId}`;
+    card.href = `library.html?game=${gameId}`;
     card.dataset.gameId = gameId;
 
     const isVisibleAboveFold = index < 3;
-    const imgElement = imgUrl 
-        ? `<img class="poster-img" src="${imgUrl}" alt="${gameName}" loading="${isVisibleAboveFold ? 'eager' : 'lazy'}" decoding="async" ${isVisibleAboveFold ? 'fetchpriority="high"' : 'fetchpriority="low"'} onerror="if(!this.dataset.retry){this.dataset.retry='1';this.src='/static/images/'+(this.src.split('/').pop());}else if(this.dataset.retry==='1'){this.dataset.retry='2';this.src='/frontend/static/images/'+(this.src.split('/').pop());}else{this.outerHTML='<div class=poster-placeholder><span>🎮</span></div>';}">`
+    const imgElement = imgUrl
+        ? `<img class="poster-img" src="${escHtml(imgUrl)}" alt="${escHtml(gameName)}" loading="${isVisibleAboveFold ? 'eager' : 'lazy'}" decoding="async" ${isVisibleAboveFold ? 'fetchpriority="high"' : 'fetchpriority="low"'} onerror="if(!this.dataset.retry){this.dataset.retry='1';this.src='/static/images/'+(this.src.split('/').pop());}else if(this.dataset.retry==='1'){this.dataset.retry='2';this.src='/frontend/static/images/'+(this.src.split('/').pop());}else{this.outerHTML='<div class=poster-placeholder><span>🎮</span></div>';}">`
         : `<div class="poster-placeholder"><span>🎮</span></div>`;
 
     card.innerHTML = `
         ${imgElement}
         <div class="poster-gradient-bottom"></div>
         <div class="poster-title-bar">
-            <div class="poster-title" title="${gameName}">${gameName}</div>
+            <div class="poster-title" title="${escHtml(gameName)}">${escHtml(gameName)}</div>
         </div>
     `;
 
@@ -50,7 +50,7 @@ function renderPosterCard(game, index = 0) {
                 return;
             }
         }
-        window.location.href = `game.html?id=${gameId}`;
+        window.location.href = `library.html?game=${gameId}`;
     });
 
     // Hover sync with 4D Collection Core
@@ -83,8 +83,8 @@ function renderGameCard(game, index = 0) {
     const baseRotateX = (index % 2) * 1;
     card.style.transform = `perspective(1000px) rotateY(${baseRotateY}deg) rotateX(${baseRotateX}deg)`;
 
-    const imageContent = imgUrl 
-        ? `<img src="${imgUrl}" alt="${gameName}" loading="lazy" decoding="async" onerror="if(!this.dataset.retry){this.dataset.retry='1';this.src='/static/images/'+(this.src.split('/').pop());}else if(this.dataset.retry==='1'){this.dataset.retry='2';this.src='/frontend/static/images/'+(this.src.split('/').pop());}else{this.parentElement.innerHTML='<div class=card-image-placeholder>🎮</div>';}">`
+    const imageContent = imgUrl
+        ? `<img src="${escHtml(imgUrl)}" alt="${escHtml(gameName)}" loading="lazy" decoding="async" onerror="if(!this.dataset.retry){this.dataset.retry='1';this.src='/static/images/'+(this.src.split('/').pop());}else if(this.dataset.retry==='1'){this.dataset.retry='2';this.src='/frontend/static/images/'+(this.src.split('/').pop());}else{this.parentElement.innerHTML='<div class=card-image-placeholder>🎮</div>';}">`
         : `<div class="card-image-placeholder">🎮</div>`;
 
     card.innerHTML = `
@@ -93,11 +93,11 @@ function renderGameCard(game, index = 0) {
             ${imageContent}
         </div>
         <div class="card-info">
-            <h3 class="card-title">${gameName}</h3>
-            <p class="card-desc">${game.description || 'No description available.'}</p>
+            <h3 class="card-title">${escHtml(gameName)}</h3>
+            <p class="card-desc">${escHtml(game.description) || 'No description available.'}</p>
         </div>
         <div class="card-actions">
-            <a href="game.html?id=${gameId}" class="btn-sm">
+            <a href="library.html?game=${gameId}" class="btn-sm">
                 <span>Open</span>
                 <svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </a>
@@ -198,7 +198,7 @@ function renderGameCard(game, index = 0) {
                 return;
             }
         }
-        window.location.href = `game.html?id=${gameId}`;
+        window.location.href = `library.html?game=${gameId}`;
     });
 
     return card;
