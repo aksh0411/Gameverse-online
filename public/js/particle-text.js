@@ -49,7 +49,13 @@ class ParticleText {
         this._scatter();
 
         // Events
-        this._onResize = () => { this._resize(); this._sampleText(); };
+        let resizeTimer = null;
+        this._onResize = () => {
+            // Debounce: continuous resizing (devtools, mobile URL-bar collapse)
+            // would rebuild particles on every tick
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => { this._resize(); this._sampleText(); }, 120);
+        };
         this._onMouse = (e) => {
             const rect = this.canvas.getBoundingClientRect();
             this.mouse.x = (e.clientX - rect.left) * this.dpr;
@@ -92,9 +98,12 @@ class ParticleText {
     }
 
     _resize() {
+        // Re-read DPR every time: browser zoom / devtools device emulation /
+        // moving between monitors changes it AFTER construction
+        this.dpr = Math.min(window.devicePixelRatio || 1, 2);
         const rect = this.container.getBoundingClientRect();
-        this.width = rect.width * this.dpr;
-        this.height = rect.height * this.dpr;
+        this.width = Math.max(1, Math.round(rect.width * this.dpr));
+        this.height = Math.max(1, Math.round(rect.height * this.dpr));
         this.canvas.width = this.width;
         this.canvas.height = this.height;
     }
@@ -117,11 +126,11 @@ class ParticleText {
             // Multi-line mode
             const totalLines = this.lines.length;
             const lineGap = 8 * this.dpr;
-            
+
             // Measure total height
             let totalTextHeight = 0;
             const lineMeasurements = [];
-            
+
             this.lines.forEach((line) => {
                 const fSize = this._parseFontSize(line.fontSize || this.fontSize);
                 ctx.font = `${line.fontWeight || this.fontWeight} ${fSize}px ${line.fontFamily || this.fontFamily}`;
@@ -131,6 +140,22 @@ class ParticleText {
                 totalTextHeight += lineHeight;
             });
             totalTextHeight += lineGap * (totalLines - 1);
+
+            // Fit-to-container: vw-based font sizes are parsed against
+            // window.innerWidth, but the canvas tracks the (narrower) container,
+            // so scale down if the widest line would overflow the bitmap
+            const available = Math.max(10 * this.dpr, w - 12 * this.dpr);
+            let widest = 0;
+            lineMeasurements.forEach(m => { widest = Math.max(widest, m.width); });
+            const fitScale = widest > available ? available / widest : 1;
+            if (fitScale < 1) {
+                lineMeasurements.forEach(m => {
+                    m.fSize *= fitScale;
+                    m.lineHeight *= fitScale;
+                    m.width *= fitScale;
+                });
+                totalTextHeight = totalTextHeight * fitScale + lineGap * (totalLines - 1);
+            }
 
             let currentY = Math.max(10 * this.dpr, (h - totalTextHeight) / 2);
 
@@ -146,8 +171,14 @@ class ParticleText {
             });
         } else {
             // Single text mode
-            const fSize = this._parseFontSize(this.fontSize);
+            let fSize = this._parseFontSize(this.fontSize);
             ctx.font = `${this.fontWeight} ${fSize}px ${this.fontFamily}`;
+            const available = Math.max(10 * this.dpr, w - 12 * this.dpr);
+            const measured = ctx.measureText(this.text).width;
+            if (measured > available) {
+                fSize *= available / measured;
+                ctx.font = `${this.fontWeight} ${fSize}px ${this.fontFamily}`;
+            }
             const xPos = align === 'left' ? 4 * this.dpr : (align === 'right' ? w - 4 * this.dpr : w / 2);
             ctx.fillText(this.text, xPos, h / 2);
         }
@@ -169,7 +200,7 @@ class ParticleText {
 
         // Build/update particles
         if (!oldParticleTargets) {
-            // First time — create particles
+            // First time — create particles with the cinematic scatter + stagger
             this.particles = newTargets.map((t, i) => ({
                 x: t.x + (Math.random() - 0.5) * this.scatter * this.dpr,
                 y: t.y + (Math.random() - 0.5) * this.scatter * this.dpr,
@@ -177,35 +208,28 @@ class ParticleText {
                 ty: t.y,
                 vx: 0,
                 vy: 0,
-                delay: i * (this.stagger / newTargets.length),
+                delay: i * (this.stagger / Math.max(1, newTargets.length)),
                 size: this.particleSize * this.dpr * (0.6 + Math.random() * 0.8),
                 driftPhase: Math.random() * Math.PI * 2,
                 driftSpeed: 0.3 + Math.random() * 0.7,
                 gathered: false
             }));
         } else {
-            // On resize — just update targets
-            const minLen = Math.min(this.particles.length, newTargets.length);
-            for (let i = 0; i < minLen; i++) {
-                this.particles[i].tx = newTargets[i].x;
-                this.particles[i].ty = newTargets[i].y;
-            }
-            // Add new or trim excess
-            if (newTargets.length > this.particles.length) {
-                for (let i = this.particles.length; i < newTargets.length; i++) {
-                    this.particles.push({
-                        x: newTargets[i].x, y: newTargets[i].y,
-                        tx: newTargets[i].x, ty: newTargets[i].y,
-                        vx: 0, vy: 0, delay: 0,
-                        size: this.particleSize * this.dpr * (0.6 + Math.random() * 0.8),
-                        driftPhase: Math.random() * Math.PI * 2,
-                        driftSpeed: 0.3 + Math.random() * 0.7,
-                        gathered: true
-                    });
-                }
-            } else {
-                this.particles.length = newTargets.length;
-            }
+            // Re-sample (resize / fonts loaded) — rebuild fresh so particles can
+            // never hold targets from two different layouts (ghost double-exposure)
+            this.particles = newTargets.map((t) => ({
+                x: t.x,
+                y: t.y,
+                tx: t.x,
+                ty: t.y,
+                vx: 0,
+                vy: 0,
+                delay: 0,
+                size: this.particleSize * this.dpr * (0.6 + Math.random() * 0.8),
+                driftPhase: Math.random() * Math.PI * 2,
+                driftSpeed: 0.3 + Math.random() * 0.7,
+                gathered: true
+            }));
         }
 
         ctx.clearRect(0, 0, w, h);
