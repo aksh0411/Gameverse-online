@@ -77,7 +77,7 @@
     font-size: clamp(2.0rem, 7vw, 2.5rem);
   }
   .particle-text-container {
-    height: 135px;
+    height: 155px;
   }
   .hero-desc {
     font-size: 0.95rem;

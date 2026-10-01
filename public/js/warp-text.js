@@ -1,14 +1,11 @@
 // =========================================================================
-// WARP TEXT ENGINE — Vanilla WebGL Text Warp/Bend Animation
-// Vanilla port of the ReactBits WarpText component (no build step).
-// Renders a statement to an offscreen canvas, uploads it as a texture and
-// displaces it in a fragment shader: flowing warp + pointer bulge +
-// expanding ripple + chromatic refraction.
+// WARP TEXT ENGINE — Vanilla WebGL port of the ReactBits WarpText
+// component (no build step). Faithful to the original shader:
+// ultra-subtle fbm ambient drift + pointer lens bulge + ripple ring +
+// directional chromatic refraction. No sine-wave bending.
 //
 // Usage:
-//   new WarpText(document.getElementById('warpTextHero'), {
-//       text: 'Explore 100+ Games', ...options
-//   });
+//   new WarpText(document.getElementById('warpTextHero'), { text: '...' });
 // =========================================================================
 
 class WarpText {
@@ -19,21 +16,19 @@ class WarpText {
         this.warpStrength = options.warpStrength || 0.08;
         this.warpScale = options.warpScale || 1.7;
         this.speed = options.speed || 0.55;
-        this.pointerInfluence = options.pointerInfluence || 0.42;  // radius (fraction of width)
-        this.pointerStrength = options.pointerStrength || 0.38;    // displacement amount
-        this.refraction = options.refraction || 0.018;             // chromatic offset
+        this.pointerInfluence = options.pointerInfluence || 0.42;
+        this.pointerStrength = options.pointerStrength || 0.38;
+        this.refraction = options.refraction || 0.018;
         this.ripple = options.ripple !== false;
-        this.fontSize = options.fontSize || 76;                    // px, fit-scaled to container
+        this.fontSize = options.fontSize || 76;            // px, fit-scaled to container
         this.fontWeight = options.fontWeight || 800;
         this.fontFamily = options.fontFamily || "'Space Grotesk', sans-serif";
-        this.letterSpacing = options.letterSpacing || -0.06;       // em
-        this.maxFontSize = options.maxFontSize || null;            // hard cap override
+        this.letterSpacing = options.letterSpacing || -0.06; // em
         this.glow = options.glow !== false;
 
         this.dpr = Math.min(window.devicePixelRatio || 1, 2);
-        this.pointer = { x: 0.5, y: 0.5, tx: 0.5, ty: 0.5, inside: 0, target: 0 };
-        this.rippleT = 10;          // ripple start time (seconds); 10 = no active ripple
-        this.rippleOrigin = { x: 0.5, y: 0.5 };
+        this.reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        this.pointer = { x: 0.5, y: 0.5, tx: 0.5, ty: 0.5, active: 0, activeTarget: 0 };
         this.animId = null;
         this.startTime = performance.now();
         this.isVisible = false;
@@ -50,7 +45,6 @@ class WarpText {
 
         const gl = this.canvas.getContext('webgl', { alpha: true, antialias: true, premultipliedAlpha: false });
         if (!gl) {
-            // Graceful fallback: plain styled text
             this.container.innerHTML = `<span style="font-family:${this.fontFamily};font-weight:${this.fontWeight};font-size:clamp(1.6rem,6vw,${this.fontSize}px);color:${this.color};letter-spacing:${this.letterSpacing}em;">${this.text}</span>`;
             return;
         }
@@ -75,30 +69,20 @@ class WarpText {
             const rect = this.canvas.getBoundingClientRect();
             this.pointer.tx = (e.clientX - rect.left) / Math.max(1, rect.width);
             this.pointer.ty = 1 - (e.clientY - rect.top) / Math.max(1, rect.height);
-            this.pointer.target = 1;
+            this.pointer.activeTarget = 1;
         };
-        this._onLeave = () => { this.pointer.target = 0; };
-        this._onDown = (e) => {
-            if (!this.ripple) return;
-            const rect = this.canvas.getBoundingClientRect();
-            this.rippleOrigin.x = (e.clientX - rect.left) / Math.max(1, rect.width);
-            this.rippleOrigin.y = 1 - (e.clientY - rect.top) / Math.max(1, rect.height);
-            this.rippleT = (performance.now() - this.startTime) / 1000;
-        };
+        this._onLeave = () => { this.pointer.activeTarget = 0; };
         this.canvas.addEventListener('mousemove', this._onMove);
         this.canvas.addEventListener('mouseleave', this._onLeave);
-        this.canvas.addEventListener('mousedown', this._onDown);
         this.canvas.addEventListener('touchmove', this._onMove, { passive: true });
-        this.canvas.addEventListener('touchstart', (e) => { this._onMove(e); this._onDown(e); }, { passive: true });
         this.canvas.addEventListener('touchend', this._onLeave);
 
         if (document.fonts && document.fonts.ready) {
             document.fonts.ready.then(() => { if (!this.destroyed) { this._resize(); this._renderTextTexture(); } });
         }
 
-        // WebGL context loss (GPU reset, too many contexts, driver churn):
-        // without this the canvas freezes on a stale frame and every later
-        // texture/uniform change silently no-ops
+        // WebGL context loss: without handling, the canvas freezes on a stale
+        // frame and every later texture/uniform change silently no-ops
         this._onContextLost = (e) => {
             e.preventDefault();
             console.warn('[WarpText] WebGL context lost — pausing until restored');
@@ -126,7 +110,6 @@ class WarpText {
             if (entries[0].isIntersecting && !this.isVisible) {
                 this.isVisible = true;
                 this.startTime = performance.now();
-                this.rippleT = 10;
                 this._animate();
             } else if (!entries[0].isIntersecting) {
                 this.isVisible = false;
@@ -159,82 +142,104 @@ class WarpText {
             }
         `;
 
+        // Faithful GLSL ES 1.0 port of the ReactBits WarpText fragment shader
         const fs = `
             precision highp float;
             varying vec2 vUv;
             uniform sampler2D uText;
             uniform vec2 uResolution;
-            uniform float uTime;
             uniform vec2 uPointer;
-            uniform float uPointerIn;
-            uniform float uRippleT;
-            uniform vec2 uRippleOrigin;
+            uniform float uPointerActive;
+            uniform float uTime;
             uniform float uWarpStrength;
             uniform float uWarpScale;
             uniform float uSpeed;
+            uniform float uPointerInfluence;
             uniform float uPointerStrength;
             uniform float uRefraction;
-            uniform vec3 uColor;
+            uniform float uRipple;
+            uniform float uMotion;
+
+            float hash(vec2 p) {
+                p = fract(p * vec2(123.34, 456.21));
+                p += dot(p, p + 45.32);
+                return fract(p.x * p.y);
+            }
+
+            float noise(vec2 p) {
+                vec2 i = floor(p);
+                vec2 f = fract(p);
+                vec2 u = f * f * (3.0 - 2.0 * f);
+                float a = hash(i);
+                float b = hash(i + vec2(1.0, 0.0));
+                float c = hash(i + vec2(0.0, 1.0));
+                float d = hash(i + vec2(1.0, 1.0));
+                return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+            }
+
+            float fbm(vec2 p) {
+                float value = 0.0;
+                float amplitude = 0.5;
+                for (int i = 0; i < 4; i++) {
+                    value += amplitude * noise(p);
+                    p *= 2.02;
+                    amplitude *= 0.5;
+                }
+                return value;
+            }
+
+            vec4 sampleText(vec2 uv) {
+                if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
+                    return vec4(0.0);
+                }
+                return texture2D(uText, uv);
+            }
 
             void main() {
-                // Aspect-corrected space for uniform distortion
-                float aspect = uResolution.x / max(uResolution.y, 1.0);
                 vec2 uv = vUv;
+                float aspect = uResolution.x / max(uResolution.y, 1.0);
+                float time = uTime * uSpeed;
+                float scale = max(uWarpScale, 0.001);
 
-                // 1. Flowing ribbon bend — vertical displacement along the
-                // horizontal axis, so the line waves like a ribbon and each
-                // glyph stays readable (horizontal shear would destroy it)
-                float bend = sin(vUv.x * uWarpScale * 6.2831853 + uTime * uSpeed * 2.0) * uWarpStrength;
-                float bendSlow = sin(vUv.x * uWarpScale * 3.14159265 + uTime * uSpeed * 1.1) * uWarpStrength * 0.6;
+                // Ambient drift — near-imperceptible fbm noise (NOT a wave)
+                vec2 drift = vec2(time * 0.055, -time * 0.045);
+                float n1 = fbm(uv * scale * 3.1 + drift);
+                float n2 = fbm((uv + 19.17) * scale * 3.4 - drift.yx);
+                vec2 ambient = (vec2(n1, n2) - 0.5) * uWarpStrength * 0.045 * uMotion;
 
-                // 2. Pointer bulge — text displaces away from the cursor.
-                // influence ramps to uPointerIn * uPointerStrength (~0.3), so
-                // the push damping keeps the shift to a few pixels, and the
-                // falloff radius stays tight (~100px) around the cursor
-                vec2 toPointer = uv - uPointer;
-                toPointer.x *= aspect;
-                float pd = length(toPointer);
-                float radius = 0.06 + uPointerIn * 0.14;
-                float influence = smoothstep(radius, 0.0, pd) * uPointerIn * uPointerStrength;
-                vec2 pushDir = normalize(toPointer + vec2(0.0, 0.0001));
-                vec2 push = pushDir * influence;
+                // Pointer lens: smooth bulge pushing glyphs away from the cursor
+                vec2 pointerDelta = uv - uPointer;
+                vec2 aspectDelta = vec2(pointerDelta.x * aspect, pointerDelta.y);
+                float dist = length(aspectDelta);
+                float radius = max(uPointerInfluence, 0.001);
+                float t = clamp(dist / radius, 0.0, 1.0);
+                float lens = smoothstep(radius, 0.0, dist) * uPointerActive;
+                float bulge = t * (1.0 - t) * (1.0 - t) * 6.75 * uPointerActive;
+                vec2 dir = dist > 0.0001 ? vec2(aspectDelta.x / aspect, aspectDelta.y) / dist : vec2(0.0);
 
-                // 3. Expanding ripple from the last pointer-down / touch
-                float rt = uTime - uRippleT;
-                float ripple = 0.0;
-                if (rt > 0.0 && rt < 2.2) {
-                    vec2 rDelta = uv - uRippleOrigin;
-                    rDelta.x *= aspect;
-                    float rdist = length(rDelta);
-                    float wavefront = rt * 0.55;
-                    float band = exp(-pow((rdist - wavefront) * 9.0, 2.0));
-                    float decay = 1.0 - rt / 2.2;
-                    ripple = sin(rdist * 40.0 - rt * 10.0) * band * decay * 0.035;
-                }
+                // Ripple ring travelling around the pointer
+                float rippleWave = sin(dist * 28.0 - time * 4.2) * 0.5 + 0.5;
+                float rippleRing = (rippleWave - 0.5) * uRipple;
+                vec2 pointerWarp = -dir * bulge * uPointerStrength * 0.045;
+                pointerWarp += dir * rippleRing * bulge * uPointerStrength * 0.016;
 
-                // Apply displacement — damped for legibility at hero scale:
-                // one dominant ribbon bend + a subtle secondary sway; the
-                // pointer push is capped so glyphs displace, not explode
-                vec2 disp = vec2(0.0, (bend + bendSlow * 0.35) * 0.8);
-                disp += vec2(push.x / aspect, push.y) * 0.09;
-                disp += vec2(ripple / aspect, ripple) * 0.5;
+                vec2 displaced = uv + ambient + pointerWarp;
 
-                // 4. Chromatic refraction — subtle glassy edge; hard-capped so
-                // the R/B channel split stays ~1-3px (uv-scale offsets here
-                // translate to many pixels, which ghosts the glyphs apart)
-                float refr = min(uRefraction * (1.0 + abs(bend) * 6.0 + influence * 8.0) * 0.3, 0.006);
-                float r = texture2D(uText, uv + disp + vec2(refr, 0.0)).r;
-                float g = texture2D(uText, uv + disp).g;
-                float b = texture2D(uText, uv + disp - vec2(refr, 0.0)).b;
-                float a = texture2D(uText, uv + disp).a;
+                // Directional chromatic refraction along the distortion
+                vec2 splitDir = ambient + pointerWarp;
+                float splitLen = length(splitDir);
+                splitDir = splitLen > 0.00001 ? splitDir / splitLen : vec2(0.7071, 0.7071);
+                vec2 split = splitDir * uRefraction * 0.16 * (0.35 + lens * 1.65);
 
-                vec3 base = uColor;
-                float lum = (r + g + b) / 3.0;
-                // Tint towards cyan on the refracted edges for a glassy look
-                vec3 tinted = mix(base, vec3(0.18, 0.96, 0.83), refr * 22.0 * lum);
+                vec4 base = sampleText(displaced);
+                float r = sampleText(displaced + split).r;
+                float g = base.g;
+                float b = sampleText(displaced - split).b;
+                float a = max(max(sampleText(displaced + split).a, base.a), sampleText(displaced - split).a);
 
+                vec3 color = vec3(r, g, b) + lens * base.a * 0.055;
                 if (a < 0.01) discard;
-                gl_FragColor = vec4(tinted * a, a);
+                gl_FragColor = vec4(color, a);
             }
         `;
 
@@ -252,17 +257,17 @@ class WarpText {
         this._uniforms = {
             uText: gl.getUniformLocation(this._program, 'uText'),
             uResolution: gl.getUniformLocation(this._program, 'uResolution'),
-            uTime: gl.getUniformLocation(this._program, 'uTime'),
             uPointer: gl.getUniformLocation(this._program, 'uPointer'),
-            uPointerIn: gl.getUniformLocation(this._program, 'uPointerIn'),
-            uRippleT: gl.getUniformLocation(this._program, 'uRippleT'),
-            uRippleOrigin: gl.getUniformLocation(this._program, 'uRippleOrigin'),
+            uPointerActive: gl.getUniformLocation(this._program, 'uPointerActive'),
+            uTime: gl.getUniformLocation(this._program, 'uTime'),
             uWarpStrength: gl.getUniformLocation(this._program, 'uWarpStrength'),
             uWarpScale: gl.getUniformLocation(this._program, 'uWarpScale'),
             uSpeed: gl.getUniformLocation(this._program, 'uSpeed'),
+            uPointerInfluence: gl.getUniformLocation(this._program, 'uPointerInfluence'),
             uPointerStrength: gl.getUniformLocation(this._program, 'uPointerStrength'),
             uRefraction: gl.getUniformLocation(this._program, 'uRefraction'),
-            uColor: gl.getUniformLocation(this._program, 'uColor')
+            uRipple: gl.getUniformLocation(this._program, 'uRipple'),
+            uMotion: gl.getUniformLocation(this._program, 'uMotion')
         };
     }
 
@@ -297,12 +302,11 @@ class WarpText {
         ctx.clearRect(0, 0, w, h);
 
         // Fit-scale the text to the container (never clip, never overflow)
-        let fSize = Math.min(this.fontSize, this.maxFontSize || Infinity) * this.dpr;
+        let fSize = this.fontSize * this.dpr;
         const maxWidth = w * 0.94;
         const setFont = (size) => {
             const spacingPx = this.letterSpacing * size;
             ctx.font = `${this.fontWeight} ${size}px ${this.fontFamily}`;
-            // canvas2d has no letterSpacing in older browsers — measure manually
             let width = 0;
             for (const ch of this.text) width += ctx.measureText(ch).width + spacingPx;
             return width - spacingPx;
@@ -324,7 +328,7 @@ class WarpText {
             x += ctx.measureText(ch).width + spacingPx;
         }
 
-        // Small glow baked into the texture
+        // Subtle glow baked into the texture
         if (this.glow) {
             ctx.shadowColor = 'rgba(45, 212, 191, 0.55)';
             ctx.shadowBlur = 12 * this.dpr;
@@ -359,12 +363,18 @@ class WarpText {
         try {
             const gl = this.gl;
             const now = performance.now();
-            const t = (now - this.startTime) / 1000;
+            const elapsed = (now - this.startTime) / 1000;
 
-            // Ease pointer + presence
-            this.pointer.x += (this.pointer.tx - this.pointer.x) * 0.08;
-            this.pointer.y += (this.pointer.ty - this.pointer.y) * 0.08;
-            this.pointer.inside += (this.pointer.target - this.pointer.inside) * 0.08;
+            // Pointer eases toward the cursor; when idle it wanders slowly so
+            // the lens effect feels alive (same idle wander as ReactBits)
+            const idleX = 0.5 + Math.sin(elapsed * 0.33) * 0.12;
+            const idleY = 0.5 + Math.cos(elapsed * 0.27) * 0.1;
+            const tx = this.pointer.activeTarget > 0 ? this.pointer.tx : idleX;
+            const ty = this.pointer.activeTarget > 0 ? this.pointer.ty : idleY;
+            const damping = this.pointer.activeTarget > 0 ? 0.12 : 0.035;
+            this.pointer.x += (tx - this.pointer.x) * damping;
+            this.pointer.y += (ty - this.pointer.y) * damping;
+            this.pointer.active += ((this.pointer.activeTarget > 0 ? 1 : 0.18) - this.pointer.active) * 0.06;
 
             gl.clearColor(0, 0, 0, 0);
             gl.clear(gl.COLOR_BUFFER_BIT);
@@ -375,18 +385,17 @@ class WarpText {
             gl.bindTexture(gl.TEXTURE_2D, this._texture);
             gl.uniform1i(this._uniforms.uText, 0);
             gl.uniform2f(this._uniforms.uResolution, this.width, this.height);
-            gl.uniform1f(this._uniforms.uTime, t);
             gl.uniform2f(this._uniforms.uPointer, this.pointer.x, this.pointer.y);
-            gl.uniform1f(this._uniforms.uPointerIn, this.pointer.inside);
-            gl.uniform1f(this._uniforms.uRippleT, this.rippleT);
-            gl.uniform2f(this._uniforms.uRippleOrigin, this.rippleOrigin.x, this.rippleOrigin.y);
+            gl.uniform1f(this._uniforms.uPointerActive, this.reduceMotion ? this.pointer.active * 0.35 : this.pointer.active);
+            gl.uniform1f(this._uniforms.uTime, this.reduceMotion ? 0 : elapsed);
             gl.uniform1f(this._uniforms.uWarpStrength, this.warpStrength);
             gl.uniform1f(this._uniforms.uWarpScale, this.warpScale);
             gl.uniform1f(this._uniforms.uSpeed, this.speed);
+            gl.uniform1f(this._uniforms.uPointerInfluence, this.pointerInfluence);
             gl.uniform1f(this._uniforms.uPointerStrength, this.pointerStrength);
             gl.uniform1f(this._uniforms.uRefraction, this.refraction);
-            const c = this._hexToRgb(this.color);
-            gl.uniform3f(this._uniforms.uColor, c[0], c[1], c[2]);
+            gl.uniform1f(this._uniforms.uRipple, this.ripple ? 1 : 0);
+            gl.uniform1f(this._uniforms.uMotion, this.reduceMotion ? 0 : 1);
 
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         } catch (err) {
@@ -396,16 +405,15 @@ class WarpText {
         }
     }
 
-    _hexToRgb(hex) {
-        const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return m ? [parseInt(m[1], 16) / 255, parseInt(m[2], 16) / 255, parseInt(m[3], 16) / 255] : [0.97, 0.96, 1];
-    }
-
     destroy() {
         this.destroyed = true;
         if (this.animId) cancelAnimationFrame(this.animId);
         if (this._observer) this._observer.disconnect();
         window.removeEventListener('resize', this._onResize);
+        this.canvas.removeEventListener('mousemove', this._onMove);
+        this.canvas.removeEventListener('mouseleave', this._onLeave);
+        this.canvas.removeEventListener('touchmove', this._onMove);
+        this.canvas.removeEventListener('touchend', this._onLeave);
         this.canvas.removeEventListener('webglcontextlost', this._onContextLost);
         this.canvas.removeEventListener('webglcontextrestored', this._onContextRestored);
     }
@@ -420,12 +428,12 @@ function initHeroWarpText() {
     window.__heroWarpText = new WarpText(container, {
         text: 'Explore 100+ Games',
         color: '#f8f5ff',
-        warpStrength: 0.09,
-        warpScale: 1.4,
+        warpStrength: 0.08,
+        warpScale: 1.7,
         speed: 0.55,
         pointerInfluence: 0.42,
-        pointerStrength: 0.35,
-        refraction: 0.014,
+        pointerStrength: 0.38,
+        refraction: 0.018,
         ripple: true,
         fontSize: 76,
         fontWeight: 800,

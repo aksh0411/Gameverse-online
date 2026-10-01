@@ -384,14 +384,14 @@ function initHeroParticleText() {
         lines: [
             {
                 text: 'Welcome to',
-                fontSize: 'clamp(2.0rem, 3.8vw, 3.0rem)',
+                fontSize: 'clamp(2.4rem, 4.5vw, 3.5rem)',
                 fontWeight: 700,
                 color: '#f8fafc',
                 highlightColor: '#2dd4bf'
             },
             {
                 text: 'GAMEVERSE',
-                fontSize: 'clamp(2.6rem, 5.5vw, 4.2rem)',
+                fontSize: 'clamp(3.1rem, 6.6vw, 5.0rem)',
                 fontWeight: 800,
                 color: '#f8fafc',
                 highlightColor: '#00f5d4'
