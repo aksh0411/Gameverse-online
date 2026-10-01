@@ -11,12 +11,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
   <link rel="stylesheet" href="css/style.css?v=9.0">
-  <link rel="stylesheet" href="css/home.css?v=10.1">
+  <link rel="stylesheet" href="css/home.css?v=10.2">
   <link rel="stylesheet" href="css/cards.css?v=8.0">
   <link rel="stylesheet" href="css/game-detail.css?v=8.0">
   <link rel="stylesheet" href="css/shared-transition.css?v=2.0">
   <link rel="stylesheet" href="css/admin.css?v=8.0">
-  <link rel="stylesheet" href="css/responsive.css?v=8.2">
+  <link rel="stylesheet" href="css/responsive.css?v=8.3">
 </head>
 <body class="hero-only">
   <!-- Global Shared Top Navigation Bar (Persists Across All Pages & Modals) -->
@@ -27,14 +27,6 @@
     </a>
 
     <div class="top-icon-cluster">
-      <!-- Search Button -->
-      <button class="icon-circle-btn" id="searchToggle" title="Search Collection (Press / or Ctrl+K)" aria-label="Search collection">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="7"></circle>
-          <line x1="21" y1="21" x2="16.5" y2="16.5"></line>
-        </svg>
-      </button>
-
       <!-- Avatar Button -->
       <div class="avatar-circle-btn" id="avatarBtn" title="Admin / Profile" aria-label="Admin profile">V</div>
     </div>
@@ -81,11 +73,6 @@
       <div class="hero-grid">
         <!-- Left: Text content -->
         <div class="hero-content animate-fade-up">
-          <div class="hero-status-pill glass-panel">
-            <span class="status-dot" style="background:#c66a93; animation: pulse 2s infinite;"></span>
-            <span class="hero-pill-text">PERSONAL GAME ARCHIVE</span>
-          </div>
-
           <h1 class="sr-only">Welcome to GameVerse</h1>
           <div id="particleTextHero" class="particle-text-container" aria-hidden="true"></div>
           <p class="hero-desc">A living collection of worlds, stories and experiments — projected through a dimensional lens.</p>
@@ -94,9 +81,7 @@
             <a href="library.html" class="btn-primary" id="exploreCollectionBtn">Explore Collection <span class="arrow">→</span></a>
           </div>
 
-          <div class="stats" id="statsContainer">
-            <!-- Filled by JS -->
-          </div>
+          <div id="warpTextHero" class="warp-text-container" aria-hidden="true"></div>
         </div>
       </div>
     </section>
@@ -623,7 +608,8 @@
   <script src="js/threads-background.js?v=1.0"></script>
   <script src="js/collection-core.js?v=9.3"></script>
   <script src="js/particle-text.js?v=1.1"></script>
-  <script src="js/home.js?v=10.3"></script>
+  <script src="js/warp-text.js?v=2.2"></script>
+  <script src="js/home.js?v=10.4"></script>
 
 </body>
 </html>

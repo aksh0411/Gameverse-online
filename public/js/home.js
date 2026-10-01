@@ -1,31 +1,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    window.refreshStats = async function() {
-        const statsContainer = document.getElementById('statsContainer');
-        if (!statsContainer) return;
-        const stats = await apiGet('/stats').catch(() => null);
-        let total = 0, playing = 0, completed = 0, bookmarked = 0;
-        
-        if (stats) {
-            total = stats.total_games || 0;
-            playing = stats.playing || 0;
-            completed = stats.completed || 0;
-            bookmarked = stats.bookmarked || 0;
-        } else if (window.__ALL_GAMES__) {
-            const games = window.__ALL_GAMES__;
-            total = games.length;
-            playing = games.filter(g => (g.play_status || '').toLowerCase() === 'playing').length;
-            completed = games.filter(g => (g.play_status || '').toLowerCase() === 'completed').length;
-            bookmarked = games.filter(g => g.is_bookmarked).length;
-        }
-
-        const pad = (n) => String(n).padStart(2, '0');
-        statsContainer.innerHTML = `
-            <div class="stat-item"><span class="num">${pad(total)}</span><span class="label">GAMES</span></div>
-            <div class="stat-item"><span class="num">${pad(playing)}</span><span class="label">PLAYING</span></div>
-            <div class="stat-item"><span class="num">${pad(completed)}</span><span class="label">COMPLETED</span></div>
-            <div class="stat-item"><span class="num">${pad(bookmarked)}</span><span class="label">BOOKMARKED</span></div>
-        `;
-    };
+    // Stats strip was replaced by the WarpText statement — keep a no-op shim
+    // because bookmark/status handlers in shared code call window.refreshStats().
+    window.refreshStats = async function() {};
 
     window.refreshGrids = function() {
         if (!window.__ALL_GAMES__) return;
@@ -40,15 +16,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.initHeroScene();
     }
 
-    // 2. Fetch Stats & Games concurrently with Promise.all
+    // 2. Fetch games (live total can be reflected in the warp statement)
     try {
-        const [statsResult, gamesResult] = await Promise.all([
-            window.refreshStats(),
-            apiGet('/games?limit=100').catch(() => ({ games: [] }))
-        ]);
+        const gamesResult = await apiGet('/games?limit=100').catch(() => ({ games: [] }));
 
         const games = Array.isArray(gamesResult) ? gamesResult : (gamesResult.games || []);
         window.__ALL_GAMES__ = games;
+        if (window.__heroWarpText && games.length) {
+            window.__heroWarpText.setText(`Explore ${games.length}+ Games`);
+        }
 
         // Populate "My Collection" Full Library Poster Carousel using DocumentFragment
         const carousel = document.getElementById('collectionCarousel');
