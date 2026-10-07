@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 2. Fetch games (live total can be reflected in the warp statement)
     try {
-        const gamesResult = await apiGet('/games?limit=100').catch(() => ({ games: [] }));
+        const gamesResult = await apiGet('/games?limit=500').catch(() => ({ games: [] }));
 
         const games = Array.isArray(gamesResult) ? gamesResult : (gamesResult.games || []);
         window.__ALL_GAMES__ = games;

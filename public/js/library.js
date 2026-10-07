@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── 1. Fetch & Initialize Collection ──
     async function loadLibrary() {
         try {
-            const data = await apiGet('/games?limit=150');
+            const data = await apiGet('/games?limit=500');
             allGames = Array.isArray(data) ? data : (data.games || []);
             window.__ALL_GAMES__ = allGames;
 
