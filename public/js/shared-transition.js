@@ -79,7 +79,7 @@
      * Formats array of genres/platforms/modes to display string
      */
     function formatList(arr) {
-        if (!arr || arr.length === 0) return '—';
+        if (!arr || arr.length === 0) return 'Unknown';
         return arr.map(item => (typeof item === 'object' && item !== null) 
             ? (item.name || item.genre_name || item.platform_name || item.mode_name || item.story_type || '') 
             : String(item)).filter(Boolean).join(', ') || '—';

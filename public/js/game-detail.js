@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // 3. Format Lists & Strings
         const formatList = (arr) => {
-            if (!arr || arr.length === 0) return '—';
+            if (!arr || arr.length === 0) return 'Unknown';
             return arr.map(item => (typeof item === 'object' && item !== null) ? (item.name || item.genre_name || item.platform_name || item.mode_name || item.story_type || JSON.stringify(item)) : String(item)).join(', ');
         };
 
