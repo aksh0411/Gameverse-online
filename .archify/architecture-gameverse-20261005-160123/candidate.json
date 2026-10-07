@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "GameVerse System Architecture",
+    "output": ".archify/architecture-gameverse-20261005-160123/gameverse.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/aksh0411/test-2.git",
+      "provider": "github",
+      "revision": "bdefa5348ddd0f70116b6a880420797e1d1efccb"
+    }
+  },
+  "components": [
+    {
+      "id": "visitors",
+      "type": "external",
+      "label": "Players & Admin",
+      "sublabel": "Browser",
+      "pos": [40, 300],
+      "size": [120, 60]
+    },
+    {
+      "id": "frontend",
+      "type": "frontend",
+      "label": "Game Web UI",
+      "sublabel": "index.html · library.html",
+      "tag": "vanilla JS",
+      "pos": [240, 300],
+      "size": [170, 64],
+      "sources": [
+        { "path": "public/js/api.js", "line": 1, "end_line": 7, "label": "API base URL" },
+        { "path": "public/js/api.js", "line": 53, "end_line": 113, "label": "fetch + Bearer token" },
+        { "path": "public/js/auth.js", "line": 206, "end_line": 206, "label": "admin login call" }
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "GAMEVERSE API",
+      "sublabel": "FastAPI · REST",
+      "tag": "7 route modules",
+      "pos": [590, 300],
+      "size": [160, 64],
+      "sources": [
+        { "path": "backend/main.py", "line": 72, "end_line": 78, "label": "FastAPI app" },
+        { "path": "backend/main.py", "line": 107, "end_line": 114, "label": "routers mounted" },
+        { "path": "backend/routes/games.py", "line": 57, "end_line": 59, "label": "games prefix" }
+      ]
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "label": "Admin Auth",
+      "sublabel": "JWT HS256 · 4h",
+      "tag": "rate-limited",
+      "pos": [590, 80],
+      "size": [160, 64],
+      "sources": [
+        { "path": "backend/auth.py", "line": 21, "end_line": 31, "label": "env credentials" },
+        { "path": "backend/auth.py", "line": 94, "end_line": 115, "label": "login endpoint" },
+        { "path": "backend/auth.py", "line": 117, "end_line": 135, "label": "JWT guard" }
+      ]
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "PostgreSQL",
+      "sublabel": "Supabase Postgres",
+      "tag": "sslmode=require",
+      "pos": [910, 300],
+      "size": [150, 64],
+      "sources": [
+        { "path": "backend/database.py", "line": 16, "end_line": 26, "label": "env + TLS enforced" },
+        { "path": "backend/database.py", "line": 31, "end_line": 40, "label": "connection pool" },
+        { "path": "backend/main.py", "line": 30, "end_line": 31, "label": "opened at startup" }
+      ]
+    },
+    {
+      "id": "vercel",
+      "type": "cloud",
+      "label": "Vercel Functions",
+      "sublabel": "api/index.py adapter",
+      "pos": [585, 500],
+      "size": [170, 64],
+      "sources": [
+        { "path": "api/index.py", "line": 14, "end_line": 14, "label": "imports app" },
+        { "path": "api/index.py", "line": 17, "end_line": 54, "label": "path restore middleware" },
+        { "path": "vercel.json", "line": 14, "end_line": 23, "label": "/api rewrites" }
+      ]
+    }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "GAMEVERSE FastAPI app", "wraps": ["api", "auth"] }
+  ],
+  "connections": [
+    { "id": "visitors-frontend", "from": "visitors", "to": "frontend", "label": "HTTPS" },
+    { "id": "frontend-api", "from": "frontend", "to": "api", "label": "reads + guarded writes", "variant": "emphasis" },
+    { "id": "frontend-auth", "from": "frontend", "to": "auth", "label": "POST /api/admin/login" },
+    { "id": "api-auth", "from": "api", "to": "auth", "label": "verify Bearer JWT", "variant": "security" },
+    { "id": "api-db", "from": "api", "to": "db", "label": "SQL (psycopg pool)" },
+    { "id": "vercel-api", "from": "vercel", "to": "api", "label": "path restore", "variant": "dashed" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Request path",
+      "items": [
+        "vercel.json rewrites /api/* to api/index.py, whose middleware restores the original path from ?realpath before routing",
+        "Locally, uvicorn serves public/ at / and /static, adding no-cache headers to html/js/css responses",
+        "Health check at /health and /api/health; /docs, /redoc and /openapi.json are disabled when VERCEL is set"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Data layer",
+      "items": [
+        "psycopg pool (1-3 connections) opens at startup and re-syncs primary-key sequences for 8 tables",
+        "Game list supports search, genre, platform, status, bookmark and favorite filters with paging",
+        "Cover uploads write to public/static/images; on read-only serverless filesystems they fall back to base64 stored in the DB"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Security",
+      "items": [
+        "All secrets come from environment variables only; startup fails closed without DATABASE_URL, JWT_SECRET or admin credentials",
+        "Admin login verifies a bcrypt hash and issues a 4-hour HS256 JWT; 10 failed attempts per 15 minutes per IP return 429",
+        "TLS to PostgreSQL is enforced (sslmode=require); CORS allows all origins with credentials"
+      ]
+    }
+  ]
+}
