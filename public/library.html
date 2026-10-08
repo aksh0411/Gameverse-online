@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="css/game-detail.css?v=8.0">
   <link rel="stylesheet" href="css/shared-transition.css?v=2.2">
   <link rel="stylesheet" href="css/admin.css?v=9.0">
-  <link rel="stylesheet" href="css/library.css?v=1.0">
+  <link rel="stylesheet" href="css/library.css?v=2.0">
   <link rel="stylesheet" href="css/responsive.css?v=8.2">
 </head>
 <body class="library-page">
@@ -26,130 +26,138 @@
 
     <!-- ── 1. Left Command Sidebar ── -->
     <aside class="dashboard-sidebar" id="dashboardSidebar">
-      <div>
-        <a href="index.html" class="sidebar-brand">
-          <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="2" y="6" width="20" height="12" rx="4"></rect>
-            <path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"></path>
-          </svg>
-          <span>GAME<span class="logo-accent">VERSE</span></span>
-        </a>
+      <!-- Sidebar Collapse/Expand Toggle -->
+      <button class="sidebar-collapse-toggle" id="sidebarCollapseToggle" title="Toggle sidebar" aria-label="Toggle sidebar collapse">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      <div class="sidebar-inner">
+        <div>
+          <a href="index.html" class="sidebar-brand">
+            <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="6" width="20" height="12" rx="4"></rect>
+              <path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"></path>
+            </svg>
+            <span>GAME<span class="logo-accent">VERSE</span></span>
+          </a>
 
-        <!-- Primary Navigation -->
-        <ul class="sidebar-nav-list">
-          <li>
-            <button class="sidebar-nav-item active" data-filter="all">
-              <span class="sidebar-nav-left">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="3" y="3" width="7" height="7"></rect>
-                  <rect x="14" y="3" width="7" height="7"></rect>
-                  <rect x="14" y="14" width="7" height="7"></rect>
-                  <rect x="3" y="14" width="7" height="7"></rect>
-                </svg>
-                <span>Library</span>
-              </span>
-              <span class="sidebar-badge" id="badgeCountAll">0</span>
-            </button>
-          </li>
-          <li>
-            <button class="sidebar-nav-item" data-filter="favorites">
-              <span class="sidebar-nav-left">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                </svg>
-                <span>Favorites</span>
-              </span>
-              <span class="sidebar-badge" id="badgeCountFav">0</span>
-            </button>
-          </li>
-          <li>
-            <button class="sidebar-nav-item" data-filter="collections">
-              <span class="sidebar-nav-left">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-                </svg>
-                <span>Collections</span>
-              </span>
-              <span class="sidebar-badge" id="badgeCountCollections">0</span>
-            </button>
-          </li>
-        </ul>
+          <!-- Primary Navigation -->
+          <ul class="sidebar-nav-list">
+            <li>
+              <button class="sidebar-nav-item active" data-filter="all">
+                <span class="sidebar-nav-left">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                  </svg>
+                  <span>Library</span>
+                </span>
+                <span class="sidebar-badge" id="badgeCountAll">0</span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-nav-item" data-filter="favorites">
+                <span class="sidebar-nav-left">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                  </svg>
+                  <span>Favorites</span>
+                </span>
+                <span class="sidebar-badge" id="badgeCountFav">0</span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-nav-item" data-filter="collections">
+                <span class="sidebar-nav-left">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                  </svg>
+                  <span>Collections</span>
+                </span>
+                <span class="sidebar-badge" id="badgeCountCollections">0</span>
+              </button>
+            </li>
+          </ul>
 
-        <!-- Status Categories -->
-        <h4 class="sidebar-section-title">Your Collections</h4>
-        <ul class="sidebar-nav-list">
-          <li>
-            <button class="sidebar-nav-item" data-filter="playing">
-              <span class="sidebar-nav-left">
-                <span class="status-indicator-dot dot-amber"></span>
-                <span>Currently Playing</span>
-              </span>
-              <span class="sidebar-badge" id="badgeCountPlaying">0</span>
-            </button>
-          </li>
-          <li>
-            <button class="sidebar-nav-item" data-filter="backlog">
-              <span class="sidebar-nav-left">
-                <span class="status-indicator-dot dot-rose"></span>
-                <span>Backlog</span>
-              </span>
-              <span class="sidebar-badge" id="badgeCountBacklog">0</span>
-            </button>
-          </li>
-          <li>
-            <button class="sidebar-nav-item" data-filter="completed">
-              <span class="sidebar-nav-left">
-                <span class="status-indicator-dot dot-cyan"></span>
-                <span>Completed</span>
-              </span>
-              <span class="sidebar-badge" id="badgeCountCompleted">0</span>
-            </button>
-          </li>
-          <li>
-            <button class="sidebar-nav-item" data-filter="bookmarked">
-              <span class="sidebar-nav-left">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-                </svg>
-                <span>Bookmarked</span>
-              </span>
-              <span class="sidebar-badge" id="badgeCountBookmarked">0</span>
-            </button>
-          </li>
-        </ul>
-      </div>
+          <!-- Status Categories -->
+          <h4 class="sidebar-section-title">Your Collections</h4>
+          <ul class="sidebar-nav-list">
+            <li>
+              <button class="sidebar-nav-item" data-filter="playing">
+                <span class="sidebar-nav-left">
+                  <span class="status-indicator-dot dot-amber"></span>
+                  <span>Currently Playing</span>
+                </span>
+                <span class="sidebar-badge" id="badgeCountPlaying">0</span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-nav-item" data-filter="backlog">
+                <span class="sidebar-nav-left">
+                  <span class="status-indicator-dot dot-rose"></span>
+                  <span>Backlog</span>
+                </span>
+                <span class="sidebar-badge" id="badgeCountBacklog">0</span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-nav-item" data-filter="completed">
+                <span class="sidebar-nav-left">
+                  <span class="status-indicator-dot dot-cyan"></span>
+                  <span>Completed</span>
+                </span>
+                <span class="sidebar-badge" id="badgeCountCompleted">0</span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-nav-item" data-filter="bookmarked">
+                <span class="sidebar-nav-left">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                  </svg>
+                  <span>Bookmarked</span>
+                </span>
+                <span class="sidebar-badge" id="badgeCountBookmarked">0</span>
+              </button>
+            </li>
+          </ul>
+        </div>
 
-      <!-- Bottom Nav & Cosmic Mood Card -->
-      <div class="sidebar-bottom">
-        <ul class="sidebar-nav-list">
-          <li>
-            <a href="index.html" class="sidebar-nav-item">
-              <span class="sidebar-nav-left">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
-                </svg>
-                <span>Game Verse</span>
-              </span>
-            </a>
-          </li>
-          <li>
-            <button class="sidebar-nav-item" id="aboutBtn">
-              <span class="sidebar-nav-left">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="12" y1="16" x2="12" y2="12"></line>
-                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                </svg>
-                <span>About</span>
-              </span>
-            </button>
-          </li>
-        </ul>
+        <!-- Bottom Nav & Cosmic Mood Card -->
+        <div class="sidebar-bottom">
+          <ul class="sidebar-nav-list">
+            <li>
+              <a href="index.html" class="sidebar-nav-item" data-tooltip="Game Verse">
+                <span class="sidebar-nav-left">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+                  </svg>
+                  <span>Game Verse</span>
+                </span>
+              </a>
+            </li>
+            <li>
+              <button class="sidebar-nav-item" id="aboutBtn" data-tooltip="About">
+                <span class="sidebar-nav-left">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                  </svg>
+                  <span>About</span>
+                </span>
+              </button>
+            </li>
+          </ul>
 
-        <div class="sidebar-ambient-card">
-          <img src="static/images/game_1.jpg" alt="Cosmic Horizon" class="sidebar-ambient-img" onerror="this.style.display='none';">
-          <p class="sidebar-ambient-text">A living collection of worlds, stories and experiments — projected through a dimensional lens.</p>
+          <div class="sidebar-ambient-card">
+            <img src="static/images/game_1.jpg" alt="Cosmic Horizon" class="sidebar-ambient-img" onerror="this.style.display='none';">
+            <p class="sidebar-ambient-text">A living collection of worlds, stories and experiments — projected through a dimensional lens.</p>
+          </div>
         </div>
       </div>
     </aside>
@@ -796,6 +804,6 @@
   <script src="js/admin.js?v=9.1"></script>
   <script src="js/threads-background.js?v=1.0"></script>
   <script src="js/collection-core.js?v=9.3"></script>
-  <script src="js/library.js?v=1.4"></script>
+  <script src="js/library.js?v=2.0"></script>
 </body>
 </html>

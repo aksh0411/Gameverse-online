@@ -33,56 +33,138 @@ html:has(body.library-page) {
     align-items: stretch;
 }
 
-/* ── 2. Left Command Sidebar ── */
+/* ── 2. Left Command Sidebar (Collapsible Rail) ── */
+/* Sidebar width custom properties */
+.dashboard-shell {
+    --sidebar-width-expanded: 280px;
+    --sidebar-width-collapsed: 80px;
+    --sidebar-transition: 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 .dashboard-sidebar {
     position: sticky;
+    position: -webkit-sticky;
     top: 0;
-    width: 264px;
+    width: var(--sidebar-width-expanded);
     flex-shrink: 0;
     height: 100vh;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    padding: 26px 18px 20px;
-    background: linear-gradient(180deg, rgba(4, 16, 24, 0.92), rgba(2, 10, 16, 0.96));
+    padding: 24px 14px 20px;
+    background: linear-gradient(180deg, rgba(4, 16, 24, 0.94), rgba(2, 10, 16, 0.98));
     border-right: 1px solid rgba(45, 212, 191, 0.10);
-    overflow-y: auto;
+    overflow: visible;
     z-index: 200;
+    transition: width var(--sidebar-transition), padding var(--sidebar-transition);
 }
 
-.dashboard-sidebar::-webkit-scrollbar { width: 4px; }
-.dashboard-sidebar::-webkit-scrollbar-thumb {
-    background: rgba(45, 212, 191, 0.25);
-    border-radius: 10px;
+/* Scrollable inner wrapper — handles overflow so toggle button can protrude */
+.sidebar-inner {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* Hide scrollbar */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.sidebar-inner::-webkit-scrollbar { display: none; width: 0; height: 0; }
+
+/* ── Collapsed State ── */
+.dashboard-sidebar.collapsed {
+    width: var(--sidebar-width-collapsed);
+    padding: 24px 14px 20px;
 }
 
+/* Sidebar brand: hide text when collapsed */
 .sidebar-brand {
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    padding: 4px 6px;
+    padding: 6px 14px;
     font-family: var(--font-heading);
     font-size: 1.12rem;
     font-weight: 700;
     letter-spacing: 1.5px;
     color: #ffffff;
     text-decoration: none;
-    transition: opacity 0.2s ease;
+    transition: opacity 0.2s ease, gap var(--sidebar-transition);
+    white-space: nowrap;
+    overflow: hidden;
 }
 .sidebar-brand:hover { opacity: 0.85; }
 .sidebar-brand .brand-icon {
     width: 24px;
     height: 24px;
+    min-width: 24px;
     color: var(--accent-pink);
     filter: drop-shadow(0 0 8px rgba(0, 245, 212, 0.45));
+    flex-shrink: 0;
 }
 
+/* Brand text hides in collapsed state */
+.sidebar-brand > span:last-child {
+    white-space: nowrap;
+    overflow: hidden;
+    transition: opacity 200ms ease, width var(--sidebar-transition), transform var(--sidebar-transition);
+}
+.dashboard-sidebar.collapsed .sidebar-brand {
+    gap: 0;
+}
+.dashboard-sidebar.collapsed .sidebar-brand > span:last-child {
+    opacity: 0;
+    width: 0;
+    transform: translateX(-8px);
+    pointer-events: none;
+}
+
+/* ── Collapse Toggle Button (Chevron) ── */
+.sidebar-collapse-toggle {
+    position: absolute;
+    top: 50%;
+    right: -14px;
+    transform: translateY(-50%);
+    z-index: 210;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(4, 20, 29, 0.96);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(45, 212, 191, 0.28);
+    color: var(--accent-pink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6), 0 0 10px rgba(0, 245, 212, 0.15);
+    transition: background 0.22s ease, border-color 0.22s ease, color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
+}
+.sidebar-collapse-toggle:hover {
+    background: rgba(8, 145, 178, 0.4);
+    border-color: rgba(0, 245, 212, 0.7);
+    color: #ffffff;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.7), 0 0 16px rgba(0, 245, 212, 0.4);
+    transform: translateY(-50%) scale(1.1);
+}
+.sidebar-collapse-toggle svg {
+    transition: transform var(--sidebar-transition);
+}
+/* Flip chevron when collapsed (point right = expand) */
+.dashboard-sidebar.collapsed .sidebar-collapse-toggle svg {
+    transform: rotate(180deg);
+}
+
+/* ── Nav Items: Collapsed State Adaptations ── */
 .sidebar-nav-list {
     list-style: none;
     display: flex;
     flex-direction: column;
     gap: 4px;
-    margin-top: 22px;
+    margin-top: 18px;
 }
 
 .sidebar-section-title {
@@ -92,7 +174,21 @@ html:has(body.library-page) {
     letter-spacing: 2.5px;
     text-transform: uppercase;
     color: rgba(165, 243, 252, 0.38);
-    margin: 24px 8px 6px;
+    margin: 22px 14px 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: opacity 200ms ease, max-height var(--sidebar-transition), margin var(--sidebar-transition);
+    max-height: 20px;
+    opacity: 1;
+}
+
+/* Hide section titles in collapsed state */
+.dashboard-sidebar.collapsed .sidebar-section-title {
+    opacity: 0;
+    max-height: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    pointer-events: none;
 }
 
 .sidebar-nav-item {
@@ -101,7 +197,7 @@ html:has(body.library-page) {
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    padding: 10px 12px;
+    padding: 10px 14px;
     background: transparent;
     border: 1px solid transparent;
     border-radius: 11px;
@@ -113,7 +209,8 @@ html:has(body.library-page) {
     text-decoration: none;
     cursor: pointer;
     user-select: none;
-    transition: background 0.22s ease, border-color 0.22s ease, color 0.22s ease, box-shadow 0.22s ease;
+    transition: background 0.22s ease, border-color 0.22s ease, color 0.22s ease, box-shadow 0.22s ease, gap var(--sidebar-transition);
+    position: relative;
 }
 
 .sidebar-nav-item:hover {
@@ -132,19 +229,48 @@ html:has(body.library-page) {
 .sidebar-nav-left {
     display: inline-flex;
     align-items: center;
-    gap: 11px;
+    gap: 12px;
     min-width: 0;
+    transition: gap var(--sidebar-transition);
 }
 .sidebar-nav-left svg {
-    width: 17px;
-    height: 17px;
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
     flex-shrink: 0;
     opacity: 0.85;
 }
+/* Status dots aligned with icons */
+.sidebar-nav-left .status-indicator-dot {
+    width: 9px;
+    height: 9px;
+    min-width: 9px;
+    margin: 0 4.5px;
+    flex-shrink: 0;
+}
 
+/* Nav item label text (the span after the icon) */
+.sidebar-nav-left > span:last-child {
+    white-space: nowrap;
+    overflow: hidden;
+    transition: opacity 200ms ease, width var(--sidebar-transition), transform var(--sidebar-transition);
+    display: inline-block;
+}
+.dashboard-sidebar.collapsed .sidebar-nav-left > span:last-child {
+    opacity: 0;
+    width: 0;
+    transform: translateX(-10px);
+    pointer-events: none;
+}
+
+.dashboard-sidebar.collapsed .sidebar-nav-left {
+    gap: 0;
+}
+
+/* Hide badges in collapsed state */
 .sidebar-badge {
-    min-width: 26px;
-    padding: 2px 8px;
+    min-width: 24px;
+    padding: 2px 7px;
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.07);
     color: rgba(224, 248, 252, 0.62);
@@ -153,11 +279,24 @@ html:has(body.library-page) {
     font-weight: 600;
     letter-spacing: 0.5px;
     text-align: center;
-    transition: background 0.22s ease, color 0.22s ease;
+    transition: background 0.22s ease, color 0.22s ease, opacity 200ms ease, width var(--sidebar-transition), padding var(--sidebar-transition), transform var(--sidebar-transition);
+    white-space: nowrap;
+    overflow: hidden;
+    flex-shrink: 0;
 }
 .sidebar-nav-item.active .sidebar-badge {
     background: rgba(0, 245, 212, 0.18);
     color: var(--accent-pink);
+}
+.dashboard-sidebar.collapsed .sidebar-badge {
+    opacity: 0;
+    width: 0;
+    min-width: 0;
+    padding: 0;
+    margin: 0;
+    border: none;
+    transform: scale(0.8);
+    pointer-events: none;
 }
 
 /* Status indicator dots */
@@ -173,7 +312,7 @@ html:has(body.library-page) {
 .dot-emerald { background: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.55); }
 
 /* Sidebar bottom (nav + ambient art card) */
-.sidebar-bottom { margin-top: 26px; }
+.sidebar-bottom { margin-top: 24px; }
 .sidebar-bottom .sidebar-nav-list { margin-top: 0; }
 
 .sidebar-ambient-card {
@@ -182,6 +321,9 @@ html:has(body.library-page) {
     overflow: hidden;
     border: 1px solid rgba(45, 212, 191, 0.14);
     background: rgba(8, 32, 45, 0.4);
+    transition: opacity 200ms ease, max-height var(--sidebar-transition), margin var(--sidebar-transition);
+    max-height: 240px;
+    opacity: 1;
 }
 .sidebar-ambient-img {
     width: 100%;
@@ -195,6 +337,23 @@ html:has(body.library-page) {
     font-size: 0.76rem;
     line-height: 1.55;
     color: rgba(165, 243, 252, 0.5);
+}
+
+/* Hide ambient card when collapsed */
+.dashboard-sidebar.collapsed .sidebar-ambient-card {
+    opacity: 0;
+    max-height: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    border: 0;
+    pointer-events: none;
+}
+/* Hide bottom nav label text when collapsed */
+.dashboard-sidebar.collapsed .sidebar-bottom .sidebar-nav-left > span:last-child {
+    opacity: 0;
+    width: 0;
+    transform: translateX(-10px);
+    pointer-events: none;
 }
 
 /* Mobile sidebar backdrop */
@@ -221,6 +380,7 @@ html:has(body.library-page) {
     min-width: 0;
     display: flex;
     flex-direction: column;
+    transition: margin-left 0s; /* main flexes naturally via flex: 1 */
 }
 
 .dashboard-topbar {
@@ -971,12 +1131,45 @@ body.library-page .orbital-badge-pill {
         position: fixed;
         top: 0;
         left: 0;
+        height: 100vh;
+        width: var(--sidebar-width-expanded) !important;
+        padding: 26px 18px 20px;
+        overflow: visible;
         transform: translateX(-105%);
         transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         box-shadow: 24px 0 60px rgba(0, 0, 0, 0.6);
     }
     .dashboard-sidebar.mobile-open {
         transform: translateX(0);
+    }
+    /* Hide collapse toggle on mobile — use hamburger instead */
+    .sidebar-collapse-toggle { display: none; }
+    /* Reset collapsed state on mobile */
+    .dashboard-sidebar.collapsed {
+        width: var(--sidebar-width-expanded) !important;
+        padding: 26px 18px 20px;
+    }
+    .dashboard-sidebar.collapsed .sidebar-nav-left > span:last-child,
+    .dashboard-sidebar.collapsed .sidebar-brand > span:last-child {
+        opacity: 1;
+        width: auto;
+    }
+    .dashboard-sidebar.collapsed .sidebar-badge {
+        opacity: 1;
+        width: auto;
+        min-width: 26px;
+        padding: 2px 8px;
+    }
+    .dashboard-sidebar.collapsed .sidebar-section-title {
+        opacity: 1;
+        height: auto;
+        margin: 24px 8px 6px;
+    }
+    .dashboard-sidebar.collapsed .sidebar-ambient-card {
+        display: block;
+    }
+    .dashboard-sidebar.collapsed .sidebar-nav-item::after {
+        display: none;
     }
     .sidebar-backdrop { display: block; }
     .sidebar-toggle { display: flex; }

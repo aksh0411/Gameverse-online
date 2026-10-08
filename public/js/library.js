@@ -726,7 +726,62 @@ document.addEventListener('DOMContentLoaded', () => {
         modalNavProfile.addEventListener('click', openProfileUI);
     }
 
-    // ── 13. Mobile Sidebar Toggle ──
+    // ── 13. Sidebar Collapse / Expand (Desktop Rail) ──
+    const collapseToggle = document.getElementById('sidebarCollapseToggle');
+
+    // Update tooltips and accessibility attributes
+    function updateSidebarTooltips() {
+        const isCollapsed = dashboardSidebar && dashboardSidebar.classList.contains('collapsed');
+        document.querySelectorAll('.sidebar-nav-item').forEach(item => {
+            const labelEl = item.querySelector('.sidebar-nav-left > span:last-child');
+            if (labelEl && labelEl.textContent.trim()) {
+                const labelText = labelEl.textContent.trim();
+                item.setAttribute('data-tooltip', labelText);
+                if (isCollapsed) {
+                    item.setAttribute('title', labelText);
+                } else {
+                    item.removeAttribute('title');
+                }
+            }
+        });
+        if (collapseToggle) {
+            collapseToggle.setAttribute('title', isCollapsed ? 'Expand sidebar' : 'Collapse sidebar');
+            collapseToggle.setAttribute('aria-label', isCollapsed ? 'Expand sidebar' : 'Collapse sidebar');
+        }
+    }
+
+    // Restore sidebar state from localStorage (desktop only)
+    function restoreSidebarState() {
+        if (window.innerWidth <= 1024) return; // Don't apply on mobile
+        const saved = localStorage.getItem('gv-sidebar-collapsed');
+        if (saved === 'true' && dashboardSidebar) {
+            dashboardSidebar.classList.add('collapsed');
+        }
+        updateSidebarTooltips();
+    }
+    restoreSidebarState();
+
+    function toggleSidebarCollapse() {
+        if (!dashboardSidebar) return;
+        const willCollapse = !dashboardSidebar.classList.contains('collapsed');
+        dashboardSidebar.classList.toggle('collapsed', willCollapse);
+        localStorage.setItem('gv-sidebar-collapsed', willCollapse ? 'true' : 'false');
+        updateSidebarTooltips();
+
+        // Dispatch window resize after transition completes so Three.js / 3D canvases re-measure
+        setTimeout(() => {
+            window.dispatchEvent(new Event('resize'));
+        }, 320);
+    }
+
+    if (collapseToggle) {
+        collapseToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleSidebarCollapse();
+        });
+    }
+
+    // ── 14. Mobile Sidebar Toggle ──
     function closeMobileSidebar() {
         if (dashboardSidebar) dashboardSidebar.classList.remove('mobile-open');
         if (sidebarBackdrop) sidebarBackdrop.classList.remove('visible');
@@ -744,7 +799,19 @@ document.addEventListener('DOMContentLoaded', () => {
         sidebarBackdrop.addEventListener('click', closeMobileSidebar);
     }
 
-    // ── 14. Keyboard Shortcuts ──
+    // Reset collapsed state on resize to mobile (avoid stuck collapsed state on mobile)
+    let lastInnerWidth = window.innerWidth;
+    window.addEventListener('resize', () => {
+        if (window.innerWidth <= 1024 && lastInnerWidth > 1024) {
+            // Entered mobile: sidebar is an overlay drawer, no collapsed rail
+        } else if (window.innerWidth > 1024 && lastInnerWidth <= 1024) {
+            // Entered desktop: restore collapsed state
+            restoreSidebarState();
+        }
+        lastInnerWidth = window.innerWidth;
+    });
+
+    // ── 15. Keyboard Shortcuts ──
     // Ctrl/Cmd+K opens the shared spotlight search (search.js owns the overlay;
     // it also serves the game detail modal navbar). Escape still closes the
     // filter popover and the mobile sidebar.
