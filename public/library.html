@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="css/game-detail.css?v=8.0">
   <link rel="stylesheet" href="css/shared-transition.css?v=2.2">
   <link rel="stylesheet" href="css/admin.css?v=9.0">
-  <link rel="stylesheet" href="css/library.css?v=2.0">
+  <link rel="stylesheet" href="css/library.css?v=2.1">
   <link rel="stylesheet" href="css/responsive.css?v=8.2">
 </head>
 <body class="library-page">
@@ -26,6 +26,15 @@
 
     <!-- ── 1. Left Command Sidebar ── -->
     <aside class="dashboard-sidebar" id="dashboardSidebar">
+      <script>
+        (function() {
+          try {
+            if (window.innerWidth > 1024 && localStorage.getItem('gv-sidebar-collapsed') === 'true') {
+              document.getElementById('dashboardSidebar').classList.add('collapsed');
+            }
+          } catch(e) {}
+        })();
+      </script>
       <!-- Sidebar Collapse/Expand Toggle -->
       <button class="sidebar-collapse-toggle" id="sidebarCollapseToggle" title="Toggle sidebar" aria-label="Toggle sidebar collapse">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -803,7 +812,7 @@
   <script src="js/search.js?v=9.2"></script>
   <script src="js/admin.js?v=9.1"></script>
   <script src="js/threads-background.js?v=1.0"></script>
-  <script src="js/collection-core.js?v=9.3"></script>
-  <script src="js/library.js?v=2.0"></script>
+  <script src="js/collection-core.js?v=9.4"></script>
+  <script src="js/library.js?v=2.1"></script>
 </body>
 </html>

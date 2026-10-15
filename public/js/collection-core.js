@@ -617,14 +617,18 @@ function createHeroScene(container) {
         }
         renderer.render(scene, camera);
     }
-    animate();
 
-    window.addEventListener('resize', () => {
-        const w = container.clientWidth, h = container.clientHeight;
-        if (w > 0 && h > 0) {
+    let heroLastW = width;
+    let heroLastH = height;
+    function handleHeroResize(forcedW, forcedH) {
+        const w = forcedW || container.clientWidth;
+        const h = forcedH || container.clientHeight;
+        if (w > 0 && h > 0 && (Math.abs(w - heroLastW) > 0.5 || Math.abs(h - heroLastH) > 0.5)) {
+            heroLastW = w;
+            heroLastH = h;
             camera.aspect = w / h;
             camera.updateProjectionMatrix();
-            renderer.setSize(w, h);
+            renderer.setSize(w, h, false);
             if (threads) threads.resize(w, h, renderer.getPixelRatio());
             basePosX = w > 900 ? (w > 1300 ? 1.40 : 1.10) : 0;
             basePosY = w <= 768 ? 1.20 : 0.42;
@@ -633,7 +637,24 @@ function createHeroScene(container) {
             rootGroup.position.y = basePosY;
             rootGroup.scale.set(s, s, s);
         }
-    });
+    }
+
+    animate();
+
+    if (window.ResizeObserver) {
+        const ro = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                const cr = entry.contentRect;
+                if (cr && cr.width > 0 && cr.height > 0) {
+                    handleHeroResize(cr.width, cr.height);
+                } else {
+                    handleHeroResize();
+                }
+            }
+        });
+        ro.observe(container);
+    }
+    window.addEventListener('resize', () => handleHeroResize());
 }
 
 // =========================================================================
@@ -1797,6 +1818,33 @@ function createRadarCoreScene(canvasContainer, pillsContainer, games) {
     const projVector = new THREE.Vector3();
     const coreScreenPos = new THREE.Vector3();
 
+    let lastRadarW = width;
+    let lastRadarH = height;
+
+    function handleRadarResize(forcedW, forcedH) {
+        const w = forcedW || canvasContainer.clientWidth;
+        const h = forcedH || canvasContainer.clientHeight;
+        if (w > 0 && h > 0 && (Math.abs(w - lastRadarW) > 0.5 || Math.abs(h - lastRadarH) > 0.5)) {
+            lastRadarW = w;
+            lastRadarH = h;
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            renderer.setSize(w, h, false);
+            if (threads) threads.resize(w, h, renderer.getPixelRatio());
+            if (isRadarWidget) {
+                rootGroup.position.x = 0;
+                rootGroup.position.y = 0.45;
+                const s = Math.min(1.05, Math.max(0.6, w / 1150));
+                rootGroup.scale.set(s, s, s);
+            } else {
+                baseRadarX = w > 900 ? (w > 1300 ? 1.25 : 0.95) : 0;
+                rootGroup.position.x = baseRadarX;
+                const s = w > 1300 ? 0.82 : (w > 900 ? 0.76 : 0.68);
+                rootGroup.scale.set(s, s, s);
+            }
+        }
+    }
+
     function animate() {
         if (!isVisible) {
             animId = null;
@@ -1804,11 +1852,14 @@ function createRadarCoreScene(canvasContainer, pillsContainer, games) {
         }
         animId = requestAnimationFrame(animate);
 
+        // Continuous edge-to-edge synchronization: keeps 3D scene & backdrop 100% full width
+        handleRadarResize();
+
         _universeState.time += 0.016;
         const time = _universeState.time;
 
-        const containerW = canvasContainer.clientWidth || 800;
-        const containerH = canvasContainer.clientHeight || 720;
+        const containerW = canvasContainer.clientWidth || lastRadarW || 800;
+        const containerH = canvasContainer.clientHeight || lastRadarH || 720;
         const halfW = containerW * 0.5;
         const halfH = containerH * 0.5;
 
@@ -2026,27 +2077,21 @@ function createRadarCoreScene(canvasContainer, pillsContainer, games) {
     }
     animate();
 
-    // Responsive Canvas Resize
-    window.addEventListener('resize', () => {
-        const w = canvasContainer.clientWidth, h = canvasContainer.clientHeight;
-        if (w > 0 && h > 0) {
-            camera.aspect = w / h;
-            camera.updateProjectionMatrix();
-            renderer.setSize(w, h);
-            if (threads) threads.resize(w, h, renderer.getPixelRatio());
-            if (isRadarWidget) {
-                rootGroup.position.x = 0;
-                rootGroup.position.y = 0.45;
-                const s = Math.min(1.05, Math.max(0.6, w / 1150));
-                rootGroup.scale.set(s, s, s);
-            } else {
-                baseRadarX = w > 900 ? (w > 1300 ? 1.25 : 0.95) : 0;
-                rootGroup.position.x = baseRadarX;
-                const s = w > 1300 ? 0.82 : (w > 900 ? 0.76 : 0.68);
-                rootGroup.scale.set(s, s, s);
+    // Responsive Canvas Resize via ResizeObserver & Window Resize
+    if (window.ResizeObserver) {
+        const ro = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                const cr = entry.contentRect;
+                if (cr && cr.width > 0 && cr.height > 0) {
+                    handleRadarResize(cr.width, cr.height);
+                } else {
+                    handleRadarResize();
+                }
             }
-        }
-    });
+        });
+        ro.observe(canvasContainer);
+    }
+    window.addEventListener('resize', () => handleRadarResize());
 }
 
 // =========================================================================

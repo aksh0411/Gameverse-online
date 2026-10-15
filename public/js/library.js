@@ -36,6 +36,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const aboutBtn = document.getElementById('aboutBtn');
     const loginBtn = document.getElementById('loginBtn');
 
+    // Immediately restore sidebar state to prevent any layout shift before loading
+    if (window.innerWidth > 1024 && localStorage.getItem('gv-sidebar-collapsed') === 'true' && dashboardSidebar) {
+        dashboardSidebar.classList.add('collapsed');
+    }
+
     // Badges
     const badgeAll = document.getElementById('badgeCountAll');
     const badgeFav = document.getElementById('badgeCountFav');
@@ -768,10 +773,16 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('gv-sidebar-collapsed', willCollapse ? 'true' : 'false');
         updateSidebarTooltips();
 
-        // Dispatch window resize after transition completes so Three.js / 3D canvases re-measure
-        setTimeout(() => {
+        // Animate canvas dimensions smoothly across the 360ms transition
+        const startTime = performance.now();
+        const duration = 380;
+        function stepResize(now) {
             window.dispatchEvent(new Event('resize'));
-        }, 320);
+            if (now - startTime < duration) {
+                requestAnimationFrame(stepResize);
+            }
+        }
+        requestAnimationFrame(stepResize);
     }
 
     if (collapseToggle) {
