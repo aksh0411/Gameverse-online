@@ -737,17 +737,35 @@ const QUADRANT_ANGLES = [
     2.20  // 8: Lower-Left Front
 ];
 
-const MAX_DEFAULT_VISIBLE_LABELS = 6;
+const MAX_DEFAULT_VISIBLE_LABELS = 8;
 
-// Distinct Celestial Color Spectrum for Game Worlds
+// Distinct Celestial Color Spectrum for Game Worlds (mapped directly to game status categories)
 const WORLD_PALETTES = [
-    { name: 'cyan', planet: '#22d3ee', rim: '#a5f3fc', corona: '#06b6d4', dot: '#22d3ee', theme: 'theme-blue', rgb: [0.13, 0.83, 0.93] },
-    { name: 'amber', planet: '#fbbf24', rim: '#fef08a', corona: '#d97706', dot: '#fbbf24', theme: 'theme-amber', rgb: [0.98, 0.75, 0.14] },
-    { name: 'purple', planet: '#06b6d4', rim: '#67e8f9', corona: '#0369a1', dot: '#06b6d4', theme: 'theme-purple', rgb: [0.75, 0.52, 0.98] },
-    { name: 'rose', planet: '#2dd4bf', rim: '#ccfbf1', corona: '#0f766e', dot: '#2dd4bf', theme: 'theme-amber', rgb: [0.96, 0.45, 0.71] },
-    { name: 'blue', planet: '#38bdf8', rim: '#bae6fd', corona: '#0284c7', dot: '#38bdf8', theme: 'theme-blue', rgb: [0.22, 0.74, 0.97] },
-    { name: 'emerald', planet: '#10b981', rim: '#a7f3d0', corona: '#059669', dot: '#10b981', theme: 'theme-green', rgb: [0.06, 0.73, 0.51] }
+    { name: 'cyan', planet: '#22d3ee', rim: '#a5f3fc', corona: '#06b6d4', dot: '#22d3ee', theme: 'theme-cyan', rgb: [0.13, 0.83, 0.93] },     // Bookmarked
+    { name: 'amber', planet: '#fbbf24', rim: '#fef08a', corona: '#d97706', dot: '#fbbf24', theme: 'theme-amber', rgb: [0.98, 0.75, 0.14] },   // Favorited
+    { name: 'purple', planet: '#a855f7', rim: '#e9d5ff', corona: '#7e22ce', dot: '#a855f7', theme: 'theme-purple', rgb: [0.66, 0.33, 0.97] },
+    { name: 'rose', planet: '#f43f5e', rim: '#fecdd3', corona: '#e11d48', dot: '#f43f5e', theme: 'theme-rose', rgb: [0.96, 0.25, 0.37] },     // Backlog
+    { name: 'blue', planet: '#38bdf8', rim: '#bae6fd', corona: '#0284c7', dot: '#38bdf8', theme: 'theme-blue', rgb: [0.22, 0.74, 0.97] },     // Completed
+    { name: 'emerald', planet: '#10b981', rim: '#a7f3d0', corona: '#059669', dot: '#10b981', theme: 'theme-green', rgb: [0.06, 0.73, 0.51] }   // Currently Playing
 ];
+
+// Curated node selector: only projects games that have active user categories/statuses
+// (Favorites, Bookmarks, Currently Playing, Backlog, Completed), eliminating 200 raw filler nodes.
+function isCuratedGame(g) {
+    if (!g) return false;
+    const isFav = Boolean(g.is_favorited || g.favorited);
+    const isBm = Boolean(g.is_bookmarked || g.bookmarked);
+    const status = (g.play_status || '').toLowerCase();
+    const hasStatus = status === 'playing' || status === 'play_later' || status === 'completed';
+    return isFav || isBm || hasStatus;
+}
+
+function getCuratedRadarList(list) {
+    if (!Array.isArray(list)) return [];
+    const curated = list.filter(isCuratedGame);
+    // If user has categorized worlds, display those. If none are categorized yet, use a clean starter set of 16.
+    return curated.length > 0 ? curated : list.slice(0, 16);
+}
 
 
 // =========================================================================
@@ -1175,9 +1193,15 @@ function rebuildRadarNodes(filteredGames) {
 
         let palette = WORLD_PALETTES[i % WORLD_PALETTES.length];
         if (playStatus === 'playing') {
-            palette = WORLD_PALETTES[5];
+            palette = WORLD_PALETTES[5]; // Emerald
         } else if (game.is_favorited || game.favorited) {
-            palette = WORLD_PALETTES[2];
+            palette = WORLD_PALETTES[1]; // Amber
+        } else if (game.is_bookmarked || game.bookmarked) {
+            palette = WORLD_PALETTES[0]; // Cyan
+        } else if (playStatus === 'completed') {
+            palette = WORLD_PALETTES[4]; // Blue
+        } else if (playStatus === 'play_later') {
+            palette = WORLD_PALETTES[3]; // Rose
         }
 
         const orbitIdx = i % numOrbits;
@@ -1353,8 +1377,8 @@ function createRadarCoreScene(canvasContainer, pillsContainer, games) {
 
     // ── 3D Camera: Elevated 3/4 Perspective (~30 deg above horizontal) ──
     const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
-    camera.position.set(0, 4.25, 7.8);
-    camera.lookAt(0, 0.22, 0);
+    camera.position.set(0, 4.35, 7.8);
+    camera.lookAt(0, 0.40, 0);
 
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'high-performance' });
     renderer.setSize(width, height);
@@ -1369,15 +1393,15 @@ function createRadarCoreScene(canvasContainer, pillsContainer, games) {
     let baseRadarX;
     if (isRadarWidget) {
         baseRadarX = 0;
-        // Lifted + slightly smaller scale so the outer ring never clips at the card's bottom edge
-        rootGroup.position.set(0, 0.45, 0);
-        const ws = Math.min(1.05, Math.max(0.6, width / 1150));
+        // Lifted upward + comfortably scaled so the outer ring has generous breathing room at the bottom
+        rootGroup.position.set(0, 0.75, 0);
+        const ws = Math.min(0.85, Math.max(0.58, (width / 1300) * 0.82));
         rootGroup.scale.set(ws, ws, ws);
     } else {
         baseRadarX = width > 900 ? (width > 1300 ? 1.25 : 0.95) : 0;
         rootGroup.position.x = baseRadarX;
-        rootGroup.position.y = 0.38;
-        const baseScale = width > 1300 ? 0.82 : (width > 900 ? 0.76 : 0.68);
+        rootGroup.position.y = 0.48;
+        const baseScale = width > 1300 ? 0.80 : (width > 900 ? 0.74 : 0.66);
         rootGroup.scale.set(baseScale, baseScale, baseScale);
     }
     scene.add(rootGroup);
@@ -1761,8 +1785,8 @@ function createRadarCoreScene(canvasContainer, pillsContainer, games) {
     });
     _universeState.foregroundDebris = foregroundDebris;
 
-    // Initial node building with initial filtered list
-    rebuildRadarNodes(games);
+    // Initial node building with curated filtered list (eliminates 200 raw filler nodes)
+    rebuildRadarNodes(_currentRadarFilter === 'all' ? getCuratedRadarList(games) : games);
 
     // =========================================================================
     // 4. ANIMATION LOOP & SMOOTH INTERACTION PIPELINE
@@ -1833,13 +1857,14 @@ function createRadarCoreScene(canvasContainer, pillsContainer, games) {
             if (threads) threads.resize(w, h, renderer.getPixelRatio());
             if (isRadarWidget) {
                 rootGroup.position.x = 0;
-                rootGroup.position.y = 0.45;
-                const s = Math.min(1.05, Math.max(0.6, w / 1150));
+                rootGroup.position.y = 0.75;
+                const s = Math.min(0.85, Math.max(0.58, (w / 1300) * 0.82));
                 rootGroup.scale.set(s, s, s);
             } else {
                 baseRadarX = w > 900 ? (w > 1300 ? 1.25 : 0.95) : 0;
                 rootGroup.position.x = baseRadarX;
-                const s = w > 1300 ? 0.82 : (w > 900 ? 0.76 : 0.68);
+                rootGroup.position.y = 0.48;
+                const s = w > 1300 ? 0.80 : (w > 900 ? 0.74 : 0.66);
                 rootGroup.scale.set(s, s, s);
             }
         }
@@ -2011,7 +2036,8 @@ function createRadarCoreScene(canvasContainer, pillsContainer, games) {
             //  edges and keeps labels clear of the floating header text in its top-left corner)
             const pillLeftClearance = isRadarWidget ? 10 : 340;
             const pillTopClearance = isRadarWidget ? (screenX < 520 ? 145 : 38) : 50;
-            screenY = Math.max(pillTopClearance + pillH / 2, Math.min(containerH - 35 - pillH / 2, screenY));
+            const pillBottomClearance = isRadarWidget ? 48 : 35;
+            screenY = Math.max(pillTopClearance + pillH / 2, Math.min(containerH - pillBottomClearance - pillH / 2, screenY));
             screenX = Math.max(pillLeftClearance + pillW / 2, Math.min(containerW - 10 - pillW / 2, screenX));
 
             node.screenPos = {
@@ -2043,7 +2069,7 @@ function createRadarCoreScene(canvasContainer, pillsContainer, games) {
                     if (hDist < 135) {
                         const shift = (minVGap - vDist) * 0.5;
                         cur.screenPos.y = Math.max(50, cur.screenPos.y - shift);
-                        next.screenPos.y = Math.min(containerH - 35, next.screenPos.y + shift);
+                        next.screenPos.y = Math.min(containerH - (isRadarWidget ? 48 : 35), next.screenPos.y + shift);
                     }
                 }
             }
@@ -2119,7 +2145,7 @@ window.setRadarFilter = function (filterName) {
 
     let filtered = [];
     if (filterName === 'all') {
-        filtered = list;
+        filtered = getCuratedRadarList(list);
     } else if (filterName === 'favorited') {
         filtered = list.filter(g => Boolean(g.is_favorited || g.favorited));
     } else if (filterName === 'playing') {

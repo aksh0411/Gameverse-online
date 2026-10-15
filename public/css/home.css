@@ -698,11 +698,27 @@ section:not(#hero):not(#collection-core) {
 }
 
 .orbital-badge-pill.theme-purple .pill-status-dot {
-  background: #06b6d4;
-  box-shadow: 0 0 6px rgba(192, 132, 252, 0.8);
+  background: #a855f7;
+  box-shadow: 0 0 6px rgba(168, 85, 247, 0.8);
 }
 .orbital-badge-pill.theme-purple:hover {
-  border-color: rgba(192, 132, 252, 0.45) !important;
+  border-color: rgba(168, 85, 247, 0.45) !important;
+}
+
+.orbital-badge-pill.theme-rose .pill-status-dot {
+  background: #f43f5e;
+  box-shadow: 0 0 6px rgba(244, 63, 94, 0.8);
+}
+.orbital-badge-pill.theme-rose:hover {
+  border-color: rgba(244, 63, 94, 0.45) !important;
+}
+
+.orbital-badge-pill.theme-cyan .pill-status-dot {
+  background: #22d3ee;
+  box-shadow: 0 0 6px rgba(34, 211, 238, 0.8);
+}
+.orbital-badge-pill.theme-cyan:hover {
+  border-color: rgba(34, 211, 238, 0.45) !important;
 }
 
 /* ===== Section 3: My Collection (Poster Carousel) ===== */
