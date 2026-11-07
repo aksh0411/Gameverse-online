@@ -559,6 +559,10 @@ html:has(body.library-page) {
     padding: 30px 34px 70px;
 }
 
+.radar-mobile-toggle {
+    display: none;
+}
+
 /* ── 5. Dimensional Radar (full-width hero card) ── */
 .telemetry-row {
     display: grid;
@@ -718,6 +722,12 @@ body.library-page .orbital-badge-pill {
     background: rgba(8, 145, 178, 0.18);
     color: #ffffff;
     box-shadow: 0 0 16px rgba(6, 182, 212, 0.18);
+}
+.catalog-btn.has-filters {
+    border-color: rgba(0, 245, 212, 0.45);
+    background: rgba(0, 245, 212, 0.12);
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(0, 245, 212, 0.2);
 }
 
 /* Floating genre popover */
@@ -1216,6 +1226,73 @@ body.library-page .orbital-badge-pill {
 
     .dashboard-content {
         padding: 24px 22px 60px;
+    }
+}
+
+@media (max-width: 768px) {
+    .radar-mobile-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 12px 18px;
+        border-radius: 14px;
+        border: 1px solid rgba(45, 212, 191, 0.22);
+        background: linear-gradient(135deg, rgba(8, 30, 42, 0.7), rgba(4, 18, 26, 0.9));
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        color: #e0f8fc;
+        font-family: var(--font-heading);
+        font-size: 0.82rem;
+        cursor: pointer;
+        user-select: none;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+        transition: all 0.25s ease;
+    }
+    .radar-mobile-toggle:hover,
+    .radar-mobile-toggle:active {
+        border-color: rgba(0, 245, 212, 0.45);
+        background: linear-gradient(135deg, rgba(8, 38, 54, 0.85), rgba(4, 22, 32, 0.95));
+    }
+    .radar-mobile-toggle-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+    .radar-toggle-icon {
+        color: var(--accent-cyan);
+        font-size: 0.75rem;
+    }
+    .radar-toggle-action {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.74rem;
+        color: rgba(165, 243, 252, 0.7);
+    }
+    .radar-toggle-chevron {
+        transition: transform 0.25s ease;
+    }
+    .radar-mobile-toggle.expanded .radar-toggle-chevron {
+        transform: rotate(180deg);
+    }
+    .radar-mobile-toggle.expanded {
+        border-color: rgba(0, 245, 212, 0.4);
+        background: rgba(8, 38, 54, 0.92);
+        box-shadow: 0 0 16px rgba(0, 245, 212, 0.15);
+    }
+    .telemetry-row {
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    .telemetry-radar-card {
+        display: none;
+        height: 380px;
+    }
+    .telemetry-radar-card.expanded {
+        display: block;
     }
 }
 

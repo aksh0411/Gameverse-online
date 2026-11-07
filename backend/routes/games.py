@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
 from database import get_db
 from auth import get_current_admin
@@ -42,12 +42,26 @@ def process_cover_image(
         return f"/static/images/{file_name}"
     except (OSError, PermissionError) as fs_err:
         # Read-only filesystem (e.g. Vercel Serverless / AWS Lambda)
-        # Convert uploaded file bytes into a base64 Data URL and store in DB
+        # Resize with Pillow to a compact thumbnail, then base64-encode for DB storage
         try:
             cover_image.file.seek(0)
             file_bytes = cover_image.file.read()
             if file_bytes:
-                content_type = cover_image.content_type or "image/jpeg"
+                from io import BytesIO
+                try:
+                    from PIL import Image as PILImage
+                    buf_in = BytesIO(file_bytes)
+                    img = PILImage.open(buf_in)
+                    img = img.convert("RGB")
+                    # Resize to max 400x600 keeping aspect ratio (portrait game covers)
+                    img.thumbnail((360, 540), PILImage.LANCZOS)
+                    buf_out = BytesIO()
+                    img.save(buf_out, format="JPEG", quality=70, optimize=True)
+                    file_bytes = buf_out.getvalue()
+                except Exception as pil_err:
+                    # Pillow unavailable or corrupt image — fall through with raw bytes
+                    print(f"Pillow resize failed, using raw bytes: {pil_err}")
+                content_type = "image/jpeg"
                 b64_str = base64.b64encode(file_bytes).decode('utf-8')
                 return f"data:{content_type};base64,{b64_str}"
         except Exception as b64_err:

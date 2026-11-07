@@ -18,37 +18,6 @@
   
   .form-grid { grid-template-columns: 1fr; }
   .universe-shell { overflow: hidden; }
-  .dimensional-transition-zone { height: 28px; }
-  .collection-core-section { display: block; padding: 10px 0 40px !important; }
-  .core-grid-wrapper { min-height: auto; }
-  .core-left-panel {
-    position: relative;
-    top: auto;
-    left: auto;
-    width: 100%;
-    max-width: 100%;
-    padding: 0 20px;
-    pointer-events: auto;
-    margin-bottom: 16px;
-  }
-  .core-header-overlay { max-width: 100%; padding: 0; margin-bottom: 14px; }
-  .core-sidebar {
-    max-width: 100%;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 16px;
-    border-radius: 14px;
-  }
-  .sidebar-header { 
-    width: 100%; 
-    padding: 0 4px 8px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    margin-bottom: 0;
-  }
-  .core-filter-card { flex: 1; min-width: 140px; padding: 10px 12px; }
-  .sidebar-tagline { display: none; }
-  .core-container { height: 500px; }
 }
 
 @media (max-width: 768px) {
@@ -93,59 +62,6 @@
     margin-top: 18px;
   }
 
-  /* ── Collection core section ── */
-  .collection-core-section {
-    padding: 10px 0 30px !important;
-  }
-  .core-left-panel { padding: 0 12px; }
-  .core-header-overlay h2 {
-    font-size: clamp(1.6rem, 5vw, 2.1rem);
-  }
-
-  /* ── Sidebar: 2x2 grid ── */
-  .core-sidebar {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    max-width: 100%;
-    gap: 6px;
-    padding: 12px;
-    border-radius: 14px;
-  }
-  .sidebar-header {
-    grid-column: 1 / -1;
-    width: 100%;
-    padding: 0 4px 8px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    margin-bottom: 0;
-  }
-  .sidebar-tagline { display: none; }
-  .core-filter-card {
-    min-width: 0;
-    padding: 8px 10px;
-    gap: 8px;
-    font-size: 0.75rem;
-  }
-  .filter-card-icon { width: 28px; height: 28px; border-radius: 8px; }
-  .filter-card-icon svg { width: 14px; height: 14px; }
-  .filter-card-count { font-size: 0.72rem; padding: 1px 7px; }
-  .core-container {
-    height: 440px;
-  }
-  .scroll-indicator { display: none; }
-
-  /* ── Poster carousel: touch-friendly swipe ── */
-  .poster-carousel-track {
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-  }
-  .poster-card {
-    flex: 0 0 145px;
-    height: 220px;
-    border-radius: 12px;
-    scroll-snap-align: start;
-  }
-
-  .games-grid { grid-template-columns: 1fr; }
   .orbital-badge-pill { font-size: 0.68rem; padding: 2px 8px 2px 6px; }
   .pill-badge-icon { width: 22px; height: 22px; }
   .pill-badge-icon svg { width: 12px; height: 12px; }
@@ -157,7 +73,6 @@
   .modal { height: 100vh; max-height: 100vh; border-radius: 0; }
 
   /* ── Footer compact ── */
-  .site-footer { padding: 32px 16px; }
 }
 
 /* ── Extra-small screens ── */
@@ -167,22 +82,6 @@
   }
   .hero-desc {
     font-size: 0.88rem;
-  }
-  .core-sidebar {
-    gap: 5px;
-    padding: 10px;
-  }
-  .core-filter-card {
-    padding: 7px 8px;
-    gap: 6px;
-    font-size: 0.7rem;
-  }
-  .filter-card-label {
-    display: none;
-  }
-  .poster-card {
-    flex: 0 0 130px;
-    height: 200px;
   }
   .hero-grid {
     padding: 0 10px 16px;

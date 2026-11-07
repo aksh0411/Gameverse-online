@@ -10,58 +10,68 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (!addGameModal || !addGameFab || !gameForm) return; // Only execute if elements exist
 
-    // Populate Selects and Checkboxes
+    // ── Lazy-loaded form options (fetched once on first need) ──
+    let _formOptionsLoaded = false;
+    let _formOptionsPromise = null;
+
     async function loadFormOptions() {
-        try {
-            // In a real app we'd have /api/developers, /api/genres, etc.
-            // Using placeholder fetch calls, they may fail if endpoints don't exist yet, so we catch
-            const [devs, pubs, genres, platforms, modes] = await Promise.all([
-                apiGet('/developers').catch(() => []),
-                apiGet('/publishers').catch(() => []),
-                apiGet('/genres').catch(() => []),
-                apiGet('/platforms').catch(() => []),
-                apiGet('/modes').catch(() => [])
-            ]);
+        if (_formOptionsLoaded) return;
+        if (_formOptionsPromise) return _formOptionsPromise;
 
-            const devSelect = document.getElementById('developerSelect');
-            const pubSelect = document.getElementById('publisherSelect');
-            devs.forEach(d => devSelect.insertAdjacentHTML('beforeend', `<option value="${d.id}">${d.name}</option>`));
-            pubs.forEach(p => pubSelect.insertAdjacentHTML('beforeend', `<option value="${p.id}">${p.name}</option>`));
+        _formOptionsPromise = (async () => {
+            try {
+                const [devs, pubs, genres, platforms, modes] = await Promise.all([
+                    apiGet('/developers').catch(() => []),
+                    apiGet('/publishers').catch(() => []),
+                    apiGet('/genres').catch(() => []),
+                    apiGet('/platforms').catch(() => []),
+                    apiGet('/modes').catch(() => [])
+                ]);
 
-            const makeCheckboxes = (containerId, items, name) => {
-                const container = document.getElementById(containerId);
-                items.forEach(item => {
-                    const label = document.createElement('label');
-                    label.className = 'checkbox-pill';
-                    label.innerHTML = `<input type="checkbox" name="${name}" value="${item.id}"> ${escHtml(item.name)}`;
-                    label.addEventListener('change', (e) => {
-                        if(e.target.checked) label.classList.add('selected');
-                        else label.classList.remove('selected');
+                const devSelect = document.getElementById('developerSelect');
+                const pubSelect = document.getElementById('publisherSelect');
+                // escHtml on developer and publisher names to prevent stored XSS
+                devs.forEach(d => devSelect.insertAdjacentHTML('beforeend', `<option value="${d.id}">${escHtml(d.name)}</option>`));
+                pubs.forEach(p => pubSelect.insertAdjacentHTML('beforeend', `<option value="${p.id}">${escHtml(p.name)}</option>`));
+
+                const makeCheckboxes = (containerId, items, name) => {
+                    const container = document.getElementById(containerId);
+                    items.forEach(item => {
+                        const label = document.createElement('label');
+                        label.className = 'checkbox-pill';
+                        label.innerHTML = `<input type="checkbox" name="${name}" value="${item.id}"> ${escHtml(item.name)}`;
+                        label.addEventListener('change', (e) => {
+                            if(e.target.checked) label.classList.add('selected');
+                            else label.classList.remove('selected');
+                        });
+                        container.appendChild(label);
                     });
-                    container.appendChild(label);
-                });
-            };
+                };
 
-            makeCheckboxes('genreCheckboxes', genres, 'genre_ids');
-            makeCheckboxes('platformCheckboxes', platforms, 'platform_ids');
-            makeCheckboxes('modeCheckboxes', modes, 'mode_ids');
+                makeCheckboxes('genreCheckboxes', genres, 'genre_ids');
+                makeCheckboxes('platformCheckboxes', platforms, 'platform_ids');
+                makeCheckboxes('modeCheckboxes', modes, 'mode_ids');
 
-        } catch (e) {
-            console.error("Error loading form options", e);
-        }
+                _formOptionsLoaded = true;
+
+            } catch (e) {
+                console.error("Error loading form options", e);
+                _formOptionsPromise = null; // Allow retry on next attempt
+            }
+        })();
+
+        return _formOptionsPromise;
     }
-    
-    // Only load if admin
-    if (isAdmin()) {
-        loadFormOptions();
-    }
 
-    addGameFab.addEventListener('click', () => {
+    // ── FAB click: load options on first open, then show modal ──
+    addGameFab.addEventListener('click', async () => {
         gameForm.reset();
         document.getElementById('editGameId').value = '';
         document.getElementById('gameFormTitle').textContent = 'Add New Game';
         document.querySelectorAll('.checkbox-pill').forEach(l => l.classList.remove('selected'));
         imagePreview.innerHTML = 'No image selected';
+        // Fetch form options on first click (lazy-load)
+        await loadFormOptions();
         addGameModal.classList.remove('hidden');
     });
 
@@ -209,27 +219,27 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('f_is_bookmarked').checked = game.is_bookmarked;
             document.getElementById('f_is_favorited').checked = game.is_favorited;
 
-            // Wait for selects to populate
-            setTimeout(() => {
-                if(game.developer_id) document.getElementById('developerSelect').value = game.developer_id;
-                if(game.publisher_id) document.getElementById('publisherSelect').value = game.publisher_id;
-                
-                // Select checkboxes (genres, platforms, modes)
-                const selectPills = (items, name) => {
-                    if(!items) return;
-                    const ids = items.map(i => (typeof i === 'object' && i !== null ? (i.id || i.genre_id || i.platform_id || i.mode_id) : i).toString());
-                    const inputs = document.querySelectorAll(`input[name="${name}"]`);
-                    inputs.forEach(input => {
-                        if (ids.includes(input.value)) {
-                            input.checked = true;
-                            input.parentElement.classList.add('selected');
-                        }
-                    });
-                };
-                selectPills(game.genres, 'genre_ids');
-                selectPills(game.platforms, 'platform_ids');
-                selectPills(game.modes, 'mode_ids');
-            }, 500);
+            // Await form options (replaces blind 500ms setTimeout)
+            await loadFormOptions();
+
+            if(game.developer_id) document.getElementById('developerSelect').value = game.developer_id;
+            if(game.publisher_id) document.getElementById('publisherSelect').value = game.publisher_id;
+            
+            // Select checkboxes (genres, platforms, modes)
+            const selectPills = (items, name) => {
+                if(!items) return;
+                const ids = items.map(i => (typeof i === 'object' && i !== null ? (i.id || i.genre_id || i.platform_id || i.mode_id) : i).toString());
+                const inputs = document.querySelectorAll(`input[name="${name}"]`);
+                inputs.forEach(input => {
+                    if (ids.includes(input.value)) {
+                        input.checked = true;
+                        input.parentElement.classList.add('selected');
+                    }
+                });
+            };
+            selectPills(game.genres, 'genre_ids');
+            selectPills(game.platforms, 'platform_ids');
+            selectPills(game.modes, 'mode_ids');
 
             const coverUrlInp = document.getElementById('f_cover_image_url');
             if (coverUrlInp) coverUrlInp.value = game.cover_image || '';

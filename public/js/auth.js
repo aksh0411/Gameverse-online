@@ -56,8 +56,26 @@ function requireAdmin(actionDescription = 'modify collection data') {
 }
 window.requireAdmin = requireAdmin;
 
+// Dynamically inject admin assets on demand (saves ~18 kB for anonymous visitors)
+function ensureAdminAssets() {
+    if (!document.getElementById('adminCss')) {
+        const link = document.createElement('link');
+        link.id = 'adminCss';
+        link.rel = 'stylesheet';
+        link.href = 'css/admin.css?v=9.0';
+        document.head.appendChild(link);
+    }
+    if (!document.getElementById('adminScript')) {
+        const script = document.createElement('script');
+        script.id = 'adminScript';
+        script.src = 'js/admin.js?v=9.2';
+        document.body.appendChild(script);
+    }
+}
+
 // --- Admin UI visibility ---
 function showAdminControls() {
+    ensureAdminAssets();
     document.querySelectorAll('.admin-login-btn, #adminLoginBtn').forEach(b => b.classList.add('hidden'));
     document.querySelectorAll('.admin-logout-btn, #adminLogoutBtn').forEach(b => b.classList.remove('hidden'));
     const addGameFab = document.getElementById('addGameFab');

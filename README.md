@@ -65,8 +65,7 @@ gameverse/
 │   └── requirements.txt     # Python dependencies
 │
 ├── api/                     # Vercel serverless adapter
-│   ├── index.py             # Root route handler
-│   └── [...path].py         # Catch-all route for FastAPI
+│   └── index.py             # Serverless ASGI bridge & path restore
 │
 ├── vercel.json              # Vercel deployment config
 ├── requirements.txt         # Root dependencies (for Vercel)

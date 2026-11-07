@@ -1,5 +1,4 @@
 import os
-from contextlib import contextmanager
 from dotenv import load_dotenv
 from psycopg_pool import ConnectionPool
 from psycopg.rows import dict_row

@@ -6,16 +6,14 @@
   <title>GAMEVERSE — Personal Game Archive</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300f5d4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2' y='6' width='20' height='12' rx='4'/%3E%3Cpath d='M6 12h4M8 10v4M15 11h.01M18 13h.01'/%3E%3C/svg%3E">
   
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- High-priority self-hosted variable font preloads (Zero external render-blocking roundtrips) -->
+  <link rel="preload" href="fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
   
   <link rel="stylesheet" href="css/style.css?v=9.0">
   <link rel="stylesheet" href="css/home.css?v=10.2">
-  <link rel="stylesheet" href="css/cards.css?v=8.0">
   <link rel="stylesheet" href="css/game-detail.css?v=8.0">
   <link rel="stylesheet" href="css/shared-transition.css?v=2.0">
-  <link rel="stylesheet" href="css/admin.css?v=8.0">
   <link rel="stylesheet" href="css/responsive.css?v=8.3">
 </head>
 <body class="hero-only">
@@ -25,6 +23,9 @@
       <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="4"></rect><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"></path></svg>
       <span>GAME<span class="logo-accent">VERSE</span></span>
     </a>
+
+    <!-- Nav Center Cluster: Cosmic Eye + Floating Mini Tesseract -->
+    <div class="nav-center-cluster" id="navCenterCluster"></div>
 
     <div class="top-icon-cluster">
       <!-- Avatar Button -->
@@ -601,14 +602,72 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="js/api.js?v=9.1"></script>
   <script src="js/auth.js?v=10.0"></script>
-  <script src="js/cards.js?v=9.1"></script>
-  <script src="js/shared-transition.js?v=2.5"></script>
+  <!-- Lazy-loaded Detail Modal & Shared Transition (Idle + Interaction Stub) -->
+  <script>
+    (function() {
+      let _loaded = false;
+      let _pendingCalls = [];
+
+      function loadSharedTransition(callback) {
+        if (_loaded) {
+          if (callback) callback();
+          return;
+        }
+        if (document.getElementById('sharedTransitionScript')) {
+          if (callback) _pendingCalls.push(callback);
+          return;
+        }
+        if (callback) _pendingCalls.push(callback);
+
+        const s = document.createElement('script');
+        s.id = 'sharedTransitionScript';
+        s.src = 'js/shared-transition.js?v=2.5';
+        s.onload = function() {
+          _loaded = true;
+          _pendingCalls.forEach(fn => { try { fn(); } catch(e){ console.error(e); } });
+          _pendingCalls = [];
+        };
+        document.body.appendChild(s);
+        cleanup();
+      }
+
+      function cleanup() {
+        window.removeEventListener('pointerdown', onInteraction);
+        window.removeEventListener('keydown', onInteraction);
+      }
+
+      function onInteraction() {
+        loadSharedTransition();
+      }
+
+      window.ensureSharedTransition = loadSharedTransition;
+
+      // Safe global stub: if search or satellites call openGameDetail before script loads
+      window.openGameDetail = function(cardEl, gameData) {
+        loadSharedTransition(() => {
+          if (typeof window.openGameDetail === 'function') {
+            window.openGameDetail(cardEl, gameData);
+          }
+        });
+      };
+
+      // Load on idle (after hero paints)
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => loadSharedTransition(), { timeout: 1600 });
+      } else {
+        setTimeout(loadSharedTransition, 1200);
+      }
+
+      window.addEventListener('pointerdown', onInteraction, { once: true, passive: true });
+      window.addEventListener('keydown', onInteraction, { once: true, passive: true });
+    })();
+  </script>
   <script src="js/search.js?v=9.2"></script>
-  <script src="js/admin.js?v=9.1"></script>
   <script src="js/threads-background.js?v=1.0"></script>
   <script src="js/collection-core.js?v=9.3"></script>
   <script src="js/particle-text.js?v=1.2"></script>
   <script src="js/warp-text.js?v=3.0"></script>
+  <script src="js/cosmic-eye.js?v=1.0"></script>
   <script src="js/home.js?v=10.5"></script>
 
 </body>

@@ -217,6 +217,8 @@ const badgeThemeMap = {
 function createHeroScene(container) {
     if (!window.THREE || !container) return null;
 
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
     const width = container.clientWidth || 450;
     const height = container.clientHeight || 500;
 
@@ -226,15 +228,23 @@ function createHeroScene(container) {
 
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'high-performance' });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     container.innerHTML = '';
     container.appendChild(renderer.domElement);
+
+
+    // Click-to-morph indicator badge on bottom-right
+    const morphHint = document.createElement('div');
+    morphHint.className = 'hero-morph-indicator';
+    morphHint.innerHTML = '<span class="morph-dot"></span><span id="heroMorphLabel">4D Tesseract Core</span>';
+    container.appendChild(morphHint);
 
     // ── WebThreads-style flowing-line backdrop (straight lines, no bending) ──
     let threads = null;
     if (window.createThreadsBackground) {
         threads = window.createThreadsBackground({ opacity: 0.85, threadCount: 6, speed: 0.2 });
-        threads.resize(width, height, renderer.getPixelRatio());
+        // Half resolution for threads shader (GPU savings)
+        threads.resize(width * 0.5, height * 0.5, renderer.getPixelRatio());
         renderer.autoClear = false;
     }
 
@@ -300,6 +310,85 @@ function createHeroScene(container) {
     }));
     tesseractGroup.add(tesseractLines);
 
+    // ── Invisible Hit Sphere for 100% Reliable Core Click Detection ──
+    const coreHitSphere = new THREE.Mesh(
+        new THREE.SphereGeometry(1.25, 12, 12),
+        new THREE.MeshBasicMaterial({ visible: false })
+    );
+    rootGroup.add(coreHitSphere);
+
+    // ── Elastic Plasma Spring Tether (Option B: Line Segments + Spring Physics) ──
+    const TETHER_SEGS = 20;
+    const tetherPositions = new Float32Array((TETHER_SEGS + 1) * 3);
+    const tetherColors = new Float32Array((TETHER_SEGS + 1) * 3);
+    for (let i = 0; i <= TETHER_SEGS; i++) {
+        const t = i / TETHER_SEGS;
+        tetherColors[i * 3] = 0.0 + 0.9 * t;      // Cyan -> Violet
+        tetherColors[i * 3 + 1] = 0.96 * (1 - t); // Green -> Magenta
+        tetherColors[i * 3 + 2] = 0.83 + 0.17 * t;
+    }
+    const tetherGeo = new THREE.BufferGeometry();
+    tetherGeo.setAttribute('position', new THREE.BufferAttribute(tetherPositions, 3));
+    tetherGeo.setAttribute('color', new THREE.BufferAttribute(tetherColors, 3));
+    const tetherMat = new THREE.LineBasicMaterial({
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.0,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+    });
+    const tetherLine = new THREE.Line(tetherGeo, tetherMat);
+    rootGroup.add(tetherLine);
+
+    // ── Precomputed Shape Edge Buffers for Click-to-Morph (Option C) ──
+    // Exactly 32 edges (64 vertex positions = 192 floats) per shape for zero-allocation in-place lerping
+    const SHAPE_EDGES_COUNT = 32;
+
+    // Shape 1: Double Icosahedron (12 vertices, 30 edges + 2 degenerate zero-length edges)
+    const phi = 1.61803398875;
+    const icoNorm = Math.sqrt(1 + phi * phi);
+    const a = (1.0 / icoNorm) * 0.62;
+    const b = (phi / icoNorm) * 0.62;
+    const icoVertices = [
+        [-a, b, 0], [a, b, 0], [-a, -b, 0], [a, -b, 0],
+        [0, -a, b], [0, a, b], [0, -a, -b], [0, a, -b],
+        [b, 0, -a], [b, 0, a], [-b, 0, -a], [-b, 0, a]
+    ];
+    const icoEdgeIndices = [
+        [0,1],[0,5],[0,7],[0,10],[0,11],
+        [1,5],[1,7],[1,8],[1,9],
+        [2,3],[2,4],[2,6],[2,10],[2,11],
+        [3,4],[3,6],[3,8],[3,9],
+        [4,5],[4,9],[4,11],
+        [5,9],[5,11],
+        [6,7],[6,8],[6,10],
+        [7,8],[7,10],
+        [8,9],
+        [10,11],
+        // 2 Degenerate edges padded at coincident center [0,0,0]
+        [0,0], [1,1]
+    ];
+
+    // Shape 2: Concentric Dual Octahedron (12 vertices, 24 edges + 8 degenerate edges)
+    const R_out = 0.65;
+    const R_in = 0.40;
+    const octVertices = [
+        [R_out, 0, 0], [-R_out, 0, 0], [0, R_out, 0], [0, -R_out, 0], [0, 0, R_out], [0, 0, -R_out],
+        [0, R_in, R_in], [0, -R_in, -R_in], [R_in, 0, R_in], [-R_in, 0, -R_in], [R_in, R_in, 0], [-R_in, -R_in, 0]
+    ];
+    const octEdgeIndices = [
+        // Outer Octahedron (12 edges)
+        [0,2],[0,3],[0,4],[0,5],
+        [1,2],[1,3],[1,4],[1,5],
+        [2,4],[2,5],[3,4],[3,5],
+        // Inner Octahedron (12 edges)
+        [6,8],[6,9],[6,10],[6,11],
+        [7,8],[7,9],[7,10],[7,11],
+        [8,10],[8,11],[9,10],[9,11],
+        // 8 Degenerate edges padded coincident
+        [0,0],[1,1],[2,2],[3,3],[4,4],[5,5],[6,6],[7,7]
+    ];
+
     // Subtle inner bridge lines
     const innerPositions = new Float32Array(innerEdges.length * 6);
     const innerColors = new Float32Array(innerEdges.length * 6);
@@ -356,6 +445,35 @@ function createHeroScene(container) {
         return { mesh: ring, photon, photon2, config: cfg, phase: idx * 0.9 };
     });
 
+
+    // ── Click-to-Morph State Machine ──
+    let morphState = 0; // 0: Tesseract, 1: Icosahedron, 2: Dual Octahedron
+    let targetMorphState = 0;
+    let morphProgress = 1.0; // 0 to 1
+    const morphLabels = ['4D Tesseract Core', 'Icosahedron Matrix', 'Stellar Octahedron'];
+
+    function triggerShapeMorph() {
+        targetMorphState = (morphState + 1) % 3;
+        morphProgress = 0.0;
+        const lbl = document.getElementById('heroMorphLabel');
+        if (lbl) lbl.textContent = morphLabels[targetMorphState];
+        // Visual core bloom flare on state change
+        coreGroup.scale.setScalar(1.35);
+    }
+
+    // ── Pointer Gestures: Tether Drag vs Core Click Disambiguation ──
+    let isPointerDown = false;
+    let isDraggingTether = false;
+    let pointerStartX = 0;
+    let pointerStartY = 0;
+    let pointerStartTime = 0;
+    const tetherTip = new THREE.Vector3(0, 0, 0);
+    const tetherVelocity = new THREE.Vector3(0, 0, 0);
+    const tetherTarget = new THREE.Vector3(0, 0, 0);
+    let tetherTension = 0.0;
+    const raycaster = new THREE.Raycaster();
+    const coreScrPos = new THREE.Vector3();
+
     // ── Cosmic Dust Particles ──
     const dustCount = 90;
     const dustPositions = new Float32Array(dustCount * 3);
@@ -405,6 +523,10 @@ function createHeroScene(container) {
     const angles = { xw: 0.35, yw: 0.25, zw: 0.15 };
     const scratch1 = [0, 0, 0, 0];
     const v3 = new THREE.Vector3();
+    const scratchV1 = new THREE.Vector3();
+    const scratchV2 = new THREE.Vector3();
+    const scratchV3 = new THREE.Vector3();
+    const scratchV4 = new THREE.Vector3();
     const projected = [];
     const vertexW = [];
     for (let i = 0; i < 16; i++) {
@@ -432,15 +554,103 @@ function createHeroScene(container) {
     }, { threshold: 0.01 });
     observer.observe(container);
 
-    window.addEventListener('mousemove', (e) => {
-        if (!isVisible) return;
-        mouse.targetX = (e.clientX / window.innerWidth) * 2 - 1;
-        mouse.targetY = -(e.clientY / window.innerHeight) * 2 + 1;
+    // Pause rendering when the browser tab is hidden (saves CPU + GPU)
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            if (animId) {
+                cancelAnimationFrame(animId);
+                animId = null;
+            }
+        } else if (isVisible && !animId) {
+            animId = requestAnimationFrame(animate);
+        }
     });
+
+    // Touch & Pointer Gesture Pipeline (with touch-action: pan-y support)
+    container.addEventListener('pointerdown', (e) => {
+        isPointerDown = true;
+        isDraggingTether = false;
+        pointerStartX = e.clientX;
+        pointerStartY = e.clientY;
+        pointerStartTime = performance.now();
+    });
+
+    window.addEventListener('pointermove', (e) => {
+        if (!isVisible) return;
+        const ndcX = (e.clientX / window.innerWidth) * 2 - 1;
+        const ndcY = -(e.clientY / window.innerHeight) * 2 + 1;
+        mouse.targetX = ndcX;
+        mouse.targetY = ndcY;
+
+        if (isPointerDown) {
+            const dx = e.clientX - pointerStartX;
+            const dy = e.clientY - pointerStartY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist > 8) {
+                isDraggingTether = true;
+                container.classList.add('is-tether-dragging');
+                const rect = container.getBoundingClientRect();
+                const relX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                const relY = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                tetherTarget.set(relX * 2.8, relY * 2.2, 0);
+            }
+        }
+    });
+
+    const endPointerGesture = (e) => {
+        if (!isPointerDown) return;
+        const wasDragging = isDraggingTether;
+        const dt = performance.now() - pointerStartTime;
+        const dx = e.clientX - pointerStartX;
+        const dy = e.clientY - pointerStartY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        isPointerDown = false;
+        isDraggingTether = false;
+        container.classList.remove('is-tether-dragging');
+
+        // If gesture was cancelled by browser (e.g. mobile vertical swipe with touch-action: pan-y),
+        // cleanly reset parallax target and tether velocity so nothing stays stuck
+        if (e && e.type === 'pointercancel') {
+            mouse.targetX = 0;
+            mouse.targetY = 0;
+            tetherVelocity.set(0, 0, 0);
+            return;
+        }
+
+        // Quick click (< 8px and < 350ms): Test hit on Core
+        if (!wasDragging && dist < 8 && dt < 350) {
+            coreScrPos.set(0, 0, 0);
+            coreScrPos.applyMatrix4(coreGroup.matrixWorld);
+            coreScrPos.project(camera);
+            const rect = container.getBoundingClientRect();
+            const corePx = (coreScrPos.x * 0.5 + 0.5) * rect.width + rect.left;
+            const corePy = (-coreScrPos.y * 0.5 + 0.5) * rect.height + rect.top;
+            const clickDist = Math.sqrt((e.clientX - corePx)**2 + (e.clientY - corePy)**2);
+
+            raycaster.setFromCamera({
+                x: ((e.clientX - rect.left) / rect.width) * 2 - 1,
+                y: -((e.clientY - rect.top) / rect.height) * 2 + 1
+            }, camera);
+            const hits = raycaster.intersectObject(coreHitSphere);
+
+            // Scale hit radius with container size (capped at 65px on mobile to protect headline & button touches)
+            const dynamicHitRadius = Math.min(rect.width * 0.12, 65);
+            if (clickDist < dynamicHitRadius || hits.length > 0) {
+                triggerShapeMorph();
+            }
+        }
+    };
+
+    window.addEventListener('pointerup', endPointerGesture);
+    window.addEventListener('pointercancel', endPointerGesture);
 
     window.addEventListener('mouseleave', () => {
         mouse.targetX = 0;
         mouse.targetY = 0;
+        isPointerDown = false;
+        isDraggingTether = false;
+        container.classList.remove('is-tether-dragging');
     });
 
     let time = 0;
@@ -464,18 +674,23 @@ function createHeroScene(container) {
         mouse.x += (mouse.targetX - mouse.x) * 0.12;
         mouse.y += (mouse.targetY - mouse.y) * 0.12;
 
-        // Strong 3D parallax translation — follows cursor
-        const targetPosX = basePosX + mouse.x * 0.28;
-        const targetPosY = basePosY + mouse.y * 0.22;
-        rootGroup.position.x += (targetPosX - rootGroup.position.x) * 0.08;
-        rootGroup.position.y += (targetPosY - rootGroup.position.y) * 0.08;
+        if (!prefersReducedMotion) {
+            // Strong 3D parallax translation — follows cursor
+            const targetPosX = basePosX + mouse.x * 0.28;
+            const targetPosY = basePosY + mouse.y * 0.22;
+            rootGroup.position.x += (targetPosX - rootGroup.position.x) * 0.08;
+            rootGroup.position.y += (targetPosY - rootGroup.position.y) * 0.08;
 
-        // Responsive tactile parallax tilt
-        const targetRotY = mouse.x * 0.22;
-        const targetRotX = -mouse.y * 0.18;
-        rootGroup.rotation.y += (targetRotY - rootGroup.rotation.y) * 0.08;
-        rootGroup.rotation.x += (targetRotX - rootGroup.rotation.x) * 0.08;
-        rootGroup.rotation.z = mouse.x * -0.04;
+            // Responsive tactile parallax tilt
+            const targetRotY = mouse.x * 0.22;
+            const targetRotX = -mouse.y * 0.18;
+            rootGroup.rotation.y += (targetRotY - rootGroup.rotation.y) * 0.08;
+            rootGroup.rotation.x += (targetRotX - rootGroup.rotation.x) * 0.08;
+            rootGroup.rotation.z = mouse.x * -0.04;
+        } else {
+            rootGroup.position.set(basePosX, basePosY, 0);
+            rootGroup.rotation.set(0, 0, 0);
+        }
 
         // Cosmic drift on rings — amplified by cursor position
         const swayPeriod = time * (Math.PI * 2 / 14.0);
@@ -516,25 +731,113 @@ function createHeroScene(container) {
         }
         vertexGeo.attributes.position.needsUpdate = true;
 
-        for (let i = 0; i < tesseractEdges.length; i++) {
-            const idx1 = tesseractEdges[i][0];
-            const idx2 = tesseractEdges[i][1];
-            const p1 = projected[idx1];
-            const p2 = projected[idx2];
-            const avgW = (vertexW[idx1] + vertexW[idx2]) * 0.5;
+        // ── Elastic Plasma Spring Tether Physics (Option B) ──
+        if (isDraggingTether) {
+            tetherTip.lerp(tetherTarget, 0.24);
+            tetherTension = Math.min(tetherTip.length() * 0.45, 1.0);
+            tetherMat.opacity += (0.92 - tetherMat.opacity) * 0.2;
+            // Parallax pull on rootGroup toward tether tip
+            rootGroup.position.x += (tetherTip.x * 0.15);
+            rootGroup.position.y += (tetherTip.y * 0.15);
+        } else {
+            // Elastic spring recoil when released
+            const springForce = tetherTip.clone().multiplyScalar(-0.22);
+            tetherVelocity.add(springForce);
+            tetherVelocity.multiplyScalar(0.78); // Damping
+            tetherTip.add(tetherVelocity);
+            tetherTension = Math.max(0, tetherTension - 0.05);
+            tetherMat.opacity *= 0.88;
+        }
 
-            const wNorm = Math.min(Math.max((avgW + 1.2) / 2.4, 0.2), 1.0);
-            const r = 0.95 * wNorm + 0.15;
-            const g = 0.50 * wNorm + 0.15;
-            const b = 1.0 * wNorm + 0.25;
+        if (tetherMat.opacity > 0.02) {
+            for (let i = 0; i <= TETHER_SEGS; i++) {
+                const segT = i / TETHER_SEGS;
+                // Sinusoidal plasma arc ripple along tether
+                const wave = Math.sin(segT * Math.PI) * Math.sin(time * 18.0 + segT * 8.0) * (0.04 + tetherTension * 0.12);
+                tetherPositions[i * 3] = tetherTip.x * segT - tetherTip.y * wave;
+                tetherPositions[i * 3 + 1] = tetherTip.y * segT + tetherTip.x * wave;
+                tetherPositions[i * 3 + 2] = tetherTip.z * segT + wave * 0.5;
+            }
+            tetherGeo.attributes.position.needsUpdate = true;
+        }
 
-            tesseractPositions[i * 6] = p1.x;
-            tesseractPositions[i * 6 + 1] = p1.y;
-            tesseractPositions[i * 6 + 2] = p1.z;
-            tesseractPositions[i * 6 + 3] = p2.x;
-            tesseractPositions[i * 6 + 4] = p2.y;
-            tesseractPositions[i * 6 + 5] = p2.z;
+        // ── Shape Morphing with Padded Degenerate Edges (Option C) ──
+        if (morphProgress < 1.0) {
+            morphProgress = Math.min(1.0, morphProgress + 0.038);
+            if (morphProgress >= 1.0) {
+                morphState = targetMorphState;
+            }
+        }
+        const morphEase = morphProgress * morphProgress * (3.0 - 2.0 * morphProgress); // Cubic smoothstep
 
+        // Calculate source and target edge endpoints for all 32 edges
+        const getEdgeEndpoint = (st, edgeIdx, isEnd, out) => {
+            if (st === 0) {
+                // Tesseract 4D
+                const vIdx = tesseractEdges[edgeIdx][isEnd ? 1 : 0];
+                out.copy(projected[vIdx]);
+            } else if (st === 1) {
+                // Icosahedron (with 2 degenerate edges at center)
+                const pair = icoEdgeIndices[edgeIdx];
+                const v = icoVertices[pair[isEnd ? 1 : 0]];
+                // 3D rotation of icosahedron
+                const cosY = Math.cos(time * 0.45), sinY = Math.sin(time * 0.45);
+                const cosX = Math.cos(time * 0.32), sinX = Math.sin(time * 0.32);
+                const rx = v[0] * cosY - v[2] * sinY;
+                const rz = v[0] * sinY + v[2] * cosY;
+                const ry = v[1] * cosX - rz * sinX;
+                const rz2 = v[1] * sinX + rz * cosX;
+                out.set(rx, ry, rz2);
+            } else {
+                // Concentric Octahedra (with 8 degenerate edges)
+                const pair = octEdgeIndices[edgeIdx];
+                const v = octVertices[pair[isEnd ? 1 : 0]];
+                const cosZ = Math.cos(time * 0.55), sinZ = Math.sin(time * 0.55);
+                const cosX = Math.cos(time * 0.28), sinX = Math.sin(time * 0.28);
+                const rx = v[0] * cosZ - v[1] * sinZ;
+                const ry = v[0] * sinZ + v[1] * cosZ;
+                const ry2 = ry * cosX - v[2] * sinX;
+                const rz = ry * sinX + v[2] * cosX;
+                out.set(rx, ry2, rz);
+            }
+        };
+
+        const ep1A = scratchV1;
+        const ep2A = scratchV2;
+        const ep1B = scratchV3;
+        const ep2B = scratchV4;
+
+        for (let i = 0; i < SHAPE_EDGES_COUNT; i++) {
+            getEdgeEndpoint(morphState, i, false, ep1A);
+            getEdgeEndpoint(morphState, i, true, ep2A);
+            getEdgeEndpoint(targetMorphState, i, false, ep1B);
+            getEdgeEndpoint(targetMorphState, i, true, ep2B);
+
+            // Interpolate per-edge segment endpoints
+            const p1x = ep1A.x + (ep1B.x - ep1A.x) * morphEase;
+            const p1y = ep1A.y + (ep1B.y - ep1A.y) * morphEase;
+            const p1z = ep1A.z + (ep1B.z - ep1A.z) * morphEase;
+            const p2x = ep2A.x + (ep2B.x - ep2A.x) * morphEase;
+            const p2y = ep2A.y + (ep2B.y - ep2A.y) * morphEase;
+            const p2z = ep2A.z + (ep2B.z - ep2A.z) * morphEase;
+
+            tesseractPositions[i * 6] = p1x;
+            tesseractPositions[i * 6 + 1] = p1y;
+            tesseractPositions[i * 6 + 2] = p1z;
+            tesseractPositions[i * 6 + 3] = p2x;
+            tesseractPositions[i * 6 + 4] = p2y;
+            tesseractPositions[i * 6 + 5] = p2z;
+
+            // Shimmering color palette based on active morph state
+            const cT = (i / SHAPE_EDGES_COUNT);
+            let r = 0.0, g = 0.96, b = 0.83;
+            if (targetMorphState === 1) {
+                r = 0.22 + 0.6 * cT; g = 0.74 * (1 - cT * 0.5); b = 0.97; // Cyan/Azure
+            } else if (targetMorphState === 2) {
+                r = 0.75 * cT + 0.2; g = 0.40 * (1 - cT); b = 0.98; // Purple/Violet
+            } else {
+                r = 0.15 + 0.8 * cT; g = 0.90; b = 0.85;
+            }
             tesseractColors[i * 6] = r; tesseractColors[i * 6 + 1] = g; tesseractColors[i * 6 + 2] = b;
             tesseractColors[i * 6 + 3] = r; tesseractColors[i * 6 + 4] = g; tesseractColors[i * 6 + 5] = b;
         }
@@ -565,6 +868,7 @@ function createHeroScene(container) {
         tesseractGroup.position.x = Math.sin(swayPeriod + 1.2) * 0.04 + mouse.x * 0.10;
         tesseractGroup.position.y = Math.cos(swayPeriod * 0.7) * 0.02 + mouse.y * 0.08;
         tesseractGroup.rotation.z = 0.24 + Math.sin(swayPeriod * 0.5) * 0.02 + mouse.x * 0.08;
+
 
         // Orbital ring rotation + traveling photon lights — cursor speeds them up
         const photonSpeedMult = 1.0 + mouseSpeed * 12;
@@ -629,7 +933,7 @@ function createHeroScene(container) {
             camera.aspect = w / h;
             camera.updateProjectionMatrix();
             renderer.setSize(w, h, false);
-            if (threads) threads.resize(w, h, renderer.getPixelRatio());
+            if (threads) threads.resize(w * 0.5, h * 0.5, renderer.getPixelRatio());
             basePosX = w > 900 ? (w > 1300 ? 1.40 : 1.10) : 0;
             basePosY = w <= 768 ? 1.20 : 0.42;
             const s = w <= 768 ? 0.85 : 1.0;
@@ -1382,7 +1686,7 @@ function createRadarCoreScene(canvasContainer, pillsContainer, games) {
 
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'high-performance' });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     canvasContainer.innerHTML = '';
     canvasContainer.appendChild(renderer.domElement);
 
@@ -2177,26 +2481,7 @@ window.setRadarFilter = function (filterName) {
         rebuildRadarNodes(filtered);
     }
 
-    document.querySelectorAll('.core-filter-card').forEach(btn => {
-        const isActive = btn.dataset.filter === filterName;
-        btn.classList.toggle('active', isActive);
-        btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-    });
 };
-
-function initRadarFilterButtons() {
-    const filterTabs = document.getElementById('radarFilterTabs');
-    if (!filterTabs || filterTabs.dataset.bound) return;
-    filterTabs.dataset.bound = 'true';
-
-    filterTabs.querySelectorAll('.core-filter-card').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const filter = btn.dataset.filter;
-            if (filter) window.setRadarFilter(filter);
-        });
-    });
-}
 
 window.updateCollectionCore = function (allGames) {
     const list = Array.isArray(allGames) ? allGames : (allGames?.games || window.__ALL_GAMES__ || []);
@@ -2220,7 +2505,6 @@ function initCollectionCore(gamesData) {
     window.__ALL_GAMES__ = rawList;
 
     updateRadarCounts(rawList);
-    initRadarFilterButtons();
 
     if (typeof window.initHeroScene === 'function') {
         window.initHeroScene();

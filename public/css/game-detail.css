@@ -390,6 +390,68 @@ body.standalone-game-page {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  position: relative;
+  transition: opacity 0.18s ease-out, transform 0.18s ease-out;
+}
+
+/* Subtle crossfade states during async detailed description hydration */
+.about-text-content.hydrating-active {
+  opacity: 0.25;
+  transform: translateY(2px);
+}
+
+.about-text-content.hydrated-done {
+  animation: descHydrateIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes descHydrateIn {
+  0% {
+    opacity: 0.25;
+    transform: translateY(3px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Cybernetic Intel Streaming Skeleton Indicator */
+.desc-skeleton-pulse {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-top: 6px;
+  padding: 4px 0 2px;
+}
+
+.skeleton-shimmer-line {
+  height: 11px;
+  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(0, 245, 212, 0.15) 50%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+  background-size: 250% 100%;
+  animation: descShimmerMove 2s infinite linear;
+}
+
+.skeleton-shimmer-line.line-1 {
+  width: 90%;
+}
+
+.skeleton-shimmer-line.line-2 {
+  width: 65%;
+}
+
+@keyframes descShimmerMove {
+  0% {
+    background-position: 250% 0;
+  }
+  100% {
+    background-position: -250% 0;
+  }
 }
 
 .about-subtitle {
@@ -515,6 +577,220 @@ body.standalone-game-page {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 20px;
+}
+
+/* --- Related Game Cards (Modal Grid) --- */
+/* ===== Game Card — Glass Panel with 3D Tilt ===== */
+.game-card {
+  background: rgba(14, 10, 22, 0.65);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(212, 204, 239, 0.10);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 16px 36px -12px rgba(0, 0, 0, 0.5);
+  border-radius: 1rem;
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  transform-style: preserve-3d;
+  will-change: transform;
+  cursor: pointer;
+}
+
+.game-card:hover {
+  border-color: rgba(45, 212, 191, 0.45);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.2), 0 20px 48px -10px rgba(0, 0, 0, 0.7), 0 0 24px -6px rgba(0, 245, 212, 0.4);
+}
+
+.game-card:hover .card-title {
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(0, 245, 212, 0.4);
+}
+
+/* Status Badge */
+.card-status {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: rgba(7, 5, 10, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(187, 174, 223, 0.10);
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-family: var(--font-heading);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 2;
+  color: var(--lavender-200);
+}
+.status-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* Card Image Container */
+.card-image {
+  height: 200px;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  background: linear-gradient(135deg, #130d1c, #0c0813);
+}
+
+/* Subtle cinematic gradient at bottom of image for seamless blend into card body */
+.card-image::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 48px;
+  background: linear-gradient(to bottom, transparent, rgba(12, 8, 19, 0.65));
+  z-index: 1;
+  pointer-events: none;
+}
+
+.card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.game-card:hover .card-image img { transform: scale(1.05); }
+
+/* Card Info */
+.card-info {
+  padding: 16px;
+  flex: 1;
+}
+.card-title {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #fff;
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card-desc {
+  color: rgba(212, 204, 239, 0.6);
+  font-size: 0.85rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+/* Card Actions Bar */
+.card-actions {
+  padding: 12px 16px;
+  border-top: 1px solid rgba(187, 174, 223, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(7, 5, 12, 0.35);
+}
+
+.btn-sm {
+  flex: 1;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: var(--font-heading);
+  letter-spacing: 0.3px;
+  color: #ffffff;
+  background: linear-gradient(135deg, rgba(8, 145, 178, 0.85), rgba(13, 148, 136, 0.85));
+  border: 1px solid rgba(45, 212, 191, 0.25);
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+.btn-sm .btn-arrow {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-sm:hover {
+  background: linear-gradient(135deg, #0891b2, #14b8a6);
+  border-color: rgba(0, 245, 212, 0.5);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4), 0 0 16px rgba(0, 245, 212, 0.25);
+}
+.btn-sm:hover .btn-arrow {
+  transform: translateX(3px);
+}
+.btn-sm:active {
+  transform: scale(0.97);
+}
+
+/* Redesigned Sleek 4D Core Bookmark Button */
+.bookmark-toggle {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(45, 212, 191, 0.14);
+  border-radius: 10px;
+  color: rgba(165, 243, 252, 0.55);
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+  flex-shrink: 0;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.bookmark-toggle .bookmark-icon {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.2s, fill 0.2s;
+}
+
+.bookmark-toggle:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(45, 212, 191, 0.4);
+  color: #ffffff;
+  transform: scale(1.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 14px rgba(0, 245, 212, 0.25);
+}
+
+.bookmark-toggle:active {
+  transform: scale(0.93);
+}
+
+/* Active State (Bookmarked in 4D Core) */
+.bookmark-toggle.active {
+  background: rgba(0, 245, 212, 0.18);
+  border-color: rgba(45, 212, 191, 0.6);
+  color: var(--accent-pink);
+  box-shadow: 0 0 18px rgba(0, 245, 212, 0.45), 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.bookmark-toggle.active .bookmark-icon {
+  fill: var(--accent-pink);
+  stroke: var(--accent-pink);
+  transform: scale(1.1);
+}
+
+.bookmark-toggle.active:hover {
+  background: rgba(198, 106, 147, 0.28);
+  border-color: rgba(217, 140, 175, 0.85);
+  box-shadow: 0 0 24px rgba(214, 140, 175, 0.65);
 }
 
 /* ===== Responsive Mobile Queries ===== */

@@ -34,3 +34,8 @@ SQL/
 
 # One-off batch data
 backend/batch_*.json
+
+# Temporary agent scratch & tool caches
+scratch/
+.archify/
+.zcode/

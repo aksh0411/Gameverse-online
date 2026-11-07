@@ -66,12 +66,14 @@
     /**
      * Resolves best image URL for a game, checking hero art or cover image
      */
-    function resolveGameImages(gameId, coverImage) {
-        const heroFile = `hero_${gameId}.jpg`;
+    function resolveGameImages(gameId, coverImage, heroImage) {
         const coverFile = (coverImage || `game_${gameId}.jpg`).split('/').pop();
+        const coverUrl = typeof getImageUrl === 'function' ? getImageUrl(coverImage) : (coverImage || `/static/images/${coverFile}`);
+        // If an explicit hero image exists, use it; otherwise use coverUrl directly to avoid 404 network errors
+        const heroUrl = heroImage ? (typeof getImageUrl === 'function' ? getImageUrl(heroImage) : heroImage) : coverUrl;
         return {
-            heroUrl: `/static/images/${heroFile}`,
-            coverUrl: typeof getImageUrl === 'function' ? getImageUrl(coverImage) : (coverImage || `/static/images/${coverFile}`)
+            heroUrl,
+            coverUrl
         };
     }
 
@@ -154,7 +156,7 @@
         // 2. Artwork image
         const heroImg = document.getElementById('modalHeroImg');
         const heroBg = document.getElementById('modalHeroBg');
-        const { heroUrl, coverUrl } = resolveGameImages(gameId, gameData.cover_image);
+        const { heroUrl, coverUrl } = resolveGameImages(gameId, gameData.cover_image, gameData.hero_image);
 
         if (heroImg) {
             heroImg.style.opacity = '0.4';
@@ -258,8 +260,20 @@
         // 5. About text
         const fullDesc = document.getElementById('modalFullDescription');
         if (fullDesc) {
+            fullDesc.classList.remove('hydrating-active', 'hydrated-done');
             const aboutText = gameData.detailed_description || gameData.description || 'No detailed description available.';
             fullDesc.innerHTML = formatAboutMarkdown(aboutText);
+            // If only preliminary summary is loaded, append cyber skeleton stream indicator
+            if (!gameData.detailed_description && gameData.description) {
+                fullDesc.classList.add('hydrating-pending');
+                const pulse = document.createElement('div');
+                pulse.className = 'desc-skeleton-pulse';
+                pulse.setAttribute('aria-hidden', 'true');
+                pulse.innerHTML = '<span class="skeleton-shimmer-line line-1"></span><span class="skeleton-shimmer-line line-2"></span>';
+                fullDesc.appendChild(pulse);
+            } else {
+                fullDesc.classList.remove('hydrating-pending');
+            }
         }
 
         // 6. Status selector buttons
@@ -306,7 +320,7 @@
             }
 
             // Update hero artwork
-            const { heroUrl: fHero, coverUrl: fCover } = resolveGameImages(gameId, fullData.cover_image);
+            const { heroUrl: fHero, coverUrl: fCover } = resolveGameImages(gameId, fullData.cover_image, fullData.hero_image);
             if (heroImg) {
                 heroImg.onerror = function() {
                     if (this.src !== fCover) {
@@ -398,9 +412,22 @@
                 favoriteBtn.classList.toggle('active', !!fullData.is_favorited);
             }
 
-            // Update detailed description if richer
+            // Update detailed description if richer (smooth hydration transition)
             if (fullData.detailed_description && fullDesc) {
-                fullDesc.innerHTML = formatAboutMarkdown(fullData.detailed_description);
+                const newMarkup = formatAboutMarkdown(fullData.detailed_description);
+                const isPending = fullDesc.classList.contains('hydrating-pending');
+                if (isPending || fullDesc.innerHTML !== newMarkup) {
+                    fullDesc.classList.remove('hydrating-pending');
+                    fullDesc.classList.add('hydrating-active');
+                    setTimeout(() => {
+                        fullDesc.innerHTML = newMarkup;
+                        fullDesc.classList.remove('hydrating-active');
+                        fullDesc.classList.add('hydrated-done');
+                        setTimeout(() => {
+                            fullDesc.classList.remove('hydrated-done');
+                        }, 400);
+                    }, 140);
+                }
             }
             // System requirements
             const sysReq = fullData.system_requirements || fullData;
@@ -428,6 +455,99 @@
                 }
             }
 
+    function renderRelatedCard(game, index) {
+        const card = document.createElement('div');
+        card.className = 'game-card';
+        const gameId = game.id || game.game_id;
+        card.dataset.gameId = gameId;
+
+        const imgUrl = game.cover_image ? (typeof getImageUrl === 'function' ? getImageUrl(game.cover_image) : game.cover_image) : '';
+        const gameName = game.name || game.game_name || 'Untitled Game';
+        const status = (game.play_status || 'not_started').toLowerCase();
+        const conf = statusConfig[status] || statusConfig.not_started;
+        const color = conf.dotColor || '#00f5d4';
+        const label = conf.label || 'Not Started';
+        const isBookmarked = (game.is_bookmarked || game.bookmarked) ? 'active' : '';
+
+        const imageContent = imgUrl
+            ? `<img src="${escHtml(imgUrl)}" alt="${escHtml(gameName)}" loading="lazy" decoding="async" onerror="if(!this.dataset.retry){this.dataset.retry='1';var s=this.src;if(s.endsWith('.webp')){this.src=s.replace(/\\.webp$/,'.jpg');}else{this.src='/static/images/'+(s.split('/').pop());}}else{this.parentElement.innerHTML='<div class=card-image-placeholder>🎮</div>';}">`
+            : `<div class="card-image-placeholder">🎮</div>`;
+
+        card.innerHTML = `
+            <div class="card-status"><span class="status-dot" style="background:${color}; box-shadow: 0 0 6px ${color}"></span>${label}</div>
+            <div class="card-image" style="background: radial-gradient(circle at 50% 50%, ${color}20, transparent 70%)">
+                ${imageContent}
+            </div>
+            <div class="card-info">
+                <h3 class="card-title">${escHtml(gameName)}</h3>
+                <p class="card-desc">${escHtml(game.description) || 'No description available.'}</p>
+            </div>
+            <div class="card-actions">
+                <button type="button" class="btn-sm related-open-btn">
+                    <span>Open</span>
+                    <svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+                <button class="bookmark-toggle ${isBookmarked}" data-game-id="${gameId}" title="${isBookmarked ? 'Bookmarked in 4D Core' : 'Bookmark to 4D Core'}" aria-label="Bookmark">
+                    <svg class="bookmark-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                </button>
+            </div>
+        `;
+
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('.bookmark-toggle')) return;
+            if (typeof window.openGameDetail === 'function') {
+                e.preventDefault();
+                window.openGameDetail(card, game);
+            }
+        });
+
+        const bookmarkBtn = card.querySelector('.bookmark-toggle');
+        if (bookmarkBtn) {
+            bookmarkBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const gid = game.id || game.game_id;
+                const nextState = !bookmarkBtn.classList.contains('active');
+                game.is_bookmarked = nextState;
+                game.bookmarked = nextState;
+                bookmarkBtn.classList.toggle('active', nextState);
+                if (typeof saveVisitorPreference === 'function') {
+                    saveVisitorPreference('bookmarks', gid, nextState);
+                }
+                if (typeof window.updateCollectionCore === 'function' && window.__ALL_GAMES__) {
+                    window.updateCollectionCore(window.__ALL_GAMES__);
+                }
+                if (typeof isAdmin === 'function' && isAdmin() && typeof apiPatch === 'function') {
+                    try {
+                        await apiPatch(`/games/${gid}/status`, { is_bookmarked: nextState });
+                    } catch (err) {
+                        console.error('Error toggling bookmark:', err);
+                    }
+                }
+            });
+        }
+
+        return card;
+    }
+
+    function renderGameGrid(games, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = '';
+        if (!games || games.length === 0) {
+            container.innerHTML = '<p style="color: rgba(212, 204, 239, 0.5); font-size: 0.95rem;">No games found in this category.</p>';
+            return;
+        }
+        const frag = document.createDocumentFragment();
+        games.forEach((game, index) => {
+            frag.appendChild(renderRelatedCard(game, index));
+        });
+        container.appendChild(frag);
+    }
+    window.renderGameGrid = renderGameGrid;
+
             // Related games
             if (window.__ALL_GAMES__ && document.getElementById('modalRelatedGamesGrid')) {
                 const currentGenres = (fullData.genres || []).map(g => (typeof g === 'object' ? g.genre_name : g));
@@ -450,6 +570,9 @@
         if (isTransitioning) return;
 
         const targetGid = (gameData && (gameData.id || gameData.game_id)) || (cardElement && cardElement.dataset.gameId);
+        if (typeof applyVisitorPreferences === 'function' && gameData) {
+            applyVisitorPreferences([gameData]);
+        }
 
         // If gameData is not provided or missing full details, look it up in __ALL_GAMES__
         if (targetGid && window.__ALL_GAMES__) {
@@ -799,7 +922,6 @@
         const modalBookmarkBtn = document.getElementById('modalBookmarkBtn');
         if (modalBookmarkBtn) {
             modalBookmarkBtn.addEventListener('click', async () => {
-                if (typeof requireAdmin === 'function' && !requireAdmin('bookmark games')) return;
                 if (!activeGameData) return;
                 const gid = activeGameData.id || activeGameData.game_id;
                 const current = modalBookmarkBtn.classList.contains('active');
@@ -818,17 +940,22 @@
                     if (cardBookmark) cardBookmark.classList.toggle('active', nextState);
                 }
 
+                if (typeof saveVisitorPreference === 'function') {
+                    saveVisitorPreference('bookmarks', gid, nextState);
+                }
+
                 if (typeof window.refreshStats === 'function') window.refreshStats();
                 if (typeof window.updateCollectionCore === 'function' && window.__ALL_GAMES__) {
                     window.updateCollectionCore(window.__ALL_GAMES__);
                 }
 
-                try {
-                    if (typeof apiPatch === 'function') {
+                // Persist to remote database if logged in as admin
+                if (typeof isAdmin === 'function' && isAdmin() && typeof apiPatch === 'function') {
+                    try {
                         await apiPatch(`/games/${gid}/status`, { is_bookmarked: nextState });
+                    } catch (err) {
+                        console.error('Failed to sync bookmark to server:', err);
                     }
-                } catch (err) {
-                    console.error('Failed to update bookmark:', err);
                 }
             });
         }
@@ -837,7 +964,6 @@
         const modalFavoriteBtn = document.getElementById('modalFavoriteBtn');
         if (modalFavoriteBtn) {
             modalFavoriteBtn.addEventListener('click', async () => {
-                if (typeof requireAdmin === 'function' && !requireAdmin('favorite games')) return;
                 if (!activeGameData) return;
                 const gid = activeGameData.id || activeGameData.game_id;
                 const current = modalFavoriteBtn.classList.contains('active');
@@ -850,17 +976,23 @@
                     if (match) { match.is_favorited = nextState; match.favorited = nextState; }
                 }
 
+                if (typeof saveVisitorPreference === 'function') {
+                    saveVisitorPreference('favorites', gid, nextState);
+                }
+
                 if (typeof window.refreshGrids === 'function') window.refreshGrids();
+                if (typeof window.refreshStats === 'function') window.refreshStats();
                 if (typeof window.updateCollectionCore === 'function' && window.__ALL_GAMES__) {
                     window.updateCollectionCore(window.__ALL_GAMES__);
                 }
 
-                try {
-                    if (typeof apiPatch === 'function') {
+                // Persist to remote database if logged in as admin
+                if (typeof isAdmin === 'function' && isAdmin() && typeof apiPatch === 'function') {
+                    try {
                         await apiPatch(`/games/${gid}/status`, { is_favorited: nextState });
+                    } catch (err) {
+                        console.error('Failed to sync favorite to server:', err);
                     }
-                } catch (err) {
-                    console.error('Failed to update favorite:', err);
                 }
             });
         }
@@ -871,7 +1003,6 @@
             const btns = modalStatusSelector.querySelectorAll('.status-choice-btn');
             btns.forEach(btn => {
                 btn.addEventListener('click', async () => {
-                    if (typeof requireAdmin === 'function' && !requireAdmin('change play status')) return;
                     if (!activeGameData) return;
                     const gid = activeGameData.id || activeGameData.game_id;
                     const btnVal = btn.getAttribute('data-val');
@@ -892,18 +1023,23 @@
                         statusTag.style.borderColor = conf.tagBorder;
                     }
 
+                    if (typeof saveVisitorPreference === 'function') {
+                        saveVisitorPreference('statuses', gid, btnVal);
+                    }
+
                     if (typeof window.refreshStats === 'function') window.refreshStats();
                     if (typeof window.refreshGrids === 'function') window.refreshGrids();
                     if (typeof window.updateCollectionCore === 'function' && window.__ALL_GAMES__) {
                         window.updateCollectionCore(window.__ALL_GAMES__);
                     }
 
-                    try {
-                        if (typeof apiPatch === 'function') {
+                    // Persist to remote database if logged in as admin
+                    if (typeof isAdmin === 'function' && isAdmin() && typeof apiPatch === 'function') {
+                        try {
                             await apiPatch(`/games/${gid}/status`, { play_status: btnVal });
+                        } catch (err) {
+                            console.error('Failed to sync status to server:', err);
                         }
-                    } catch (err) {
-                        console.error('Failed to update status:', err);
                     }
                 });
             });

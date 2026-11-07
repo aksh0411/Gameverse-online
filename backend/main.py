@@ -1,10 +1,14 @@
 import os
 import sys
+import time as _time
+import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
-from psycopg_pool import ConnectionPool
+
+_logger = logging.getLogger("gameverse.timing")
 
 # Ensure backend directory is in sys.path so imports like 'import database' work
 _backend_dir = os.path.dirname(os.path.abspath(__file__))
@@ -57,6 +61,29 @@ async def lifespan(app: FastAPI):
                     except Exception as seq_err:
                         pass
         print(" Synced PostgreSQL primary key sequences.")
+
+        # Create B-Tree indexes for fast relational lookups and catalog filtering
+        indexes = [
+            "CREATE INDEX IF NOT EXISTS idx_games_play_status ON games(play_status);",
+            "CREATE INDEX IF NOT EXISTS idx_games_is_favorited ON games(is_favorited);",
+            "CREATE INDEX IF NOT EXISTS idx_games_is_bookmarked ON games(is_bookmarked);",
+            "CREATE INDEX IF NOT EXISTS idx_gamegenres_game_id ON gamegenres(game_id);",
+            "CREATE INDEX IF NOT EXISTS idx_gamegenres_genre_id ON gamegenres(genre_id);",
+            "CREATE INDEX IF NOT EXISTS idx_gameplatforms_game_id ON gameplatforms(game_id);",
+            "CREATE INDEX IF NOT EXISTS idx_gameplatforms_platform_id ON gameplatforms(platform_id);",
+            "CREATE INDEX IF NOT EXISTS idx_gamemodes_game_id ON gamemodesrelation(game_id);",
+            "CREATE INDEX IF NOT EXISTS idx_gamestory_game_id ON gamestory(game_id);",
+            "CREATE INDEX IF NOT EXISTS idx_systemreqs_game_id ON systemrequirements(game_id);"
+        ]
+        with database.pool.connection() as conn:
+            conn.autocommit = True
+            with conn.cursor() as cur:
+                for idx_sql in indexes:
+                    try:
+                        cur.execute(idx_sql)
+                    except Exception:
+                        pass
+        print(" Verified PostgreSQL B-Tree indexes.")
     except Exception as e:
         print(f" Database connection failed on startup: {e}")
         print("Please check your DATABASE_URL in backend/.env or Vercel Environment Variables")
@@ -93,14 +120,60 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# HTTP response compression (gzip responses > 1 KB)
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
 @app.middleware("http")
-async def add_no_cache_headers(request, call_next):
+async def add_timing_headers(request: Request, call_next):
+    """Log request duration and pool stats in Server-Timing header (gated in production)."""
+    start = _time.perf_counter()
+    response = await call_next(request)
+    elapsed_ms = (_time.perf_counter() - start) * 1000
+
+    # Gate Server-Timing & pool internals behind development / non-prod to avoid public telemetry leaks
+    if not _is_prod:
+        path = request.url.path
+        if path.startswith("/api/") or path.startswith("/admin/"):
+            parts = [f'total;dur={elapsed_ms:.1f};desc="Total"']
+            try:
+                from database import pool as _pool
+                if _pool and not _pool.closed:
+                    stats = _pool.get_stats()
+                    parts.append(f'pool_size;dur={stats.get("pool_size", 0)};desc="Pool Size"')
+                    parts.append(f'pool_available;dur={stats.get("pool_available", 0)};desc="Pool Available"')
+                    parts.append(f'requests_waiting;dur={stats.get("requests_waiting", 0)};desc="Requests Waiting"')
+                    parts.append(f'requests_num;dur={stats.get("requests_num", 0)};desc="Total Requests"')
+            except Exception:
+                pass
+
+            response.headers["Server-Timing"] = ", ".join(parts)
+            _logger.info(
+                "%s %s  %.1f ms  (pool: %s)",
+                request.method,
+                path,
+                elapsed_ms,
+                parts[1:] if len(parts) > 1 else "n/a",
+            )
+
+    return response
+
+@app.middleware("http")
+async def add_cache_headers(request, call_next):
     response = await call_next(request)
     path = request.url.path.lower()
-    if path.endswith(('.html', '.js', '.css')) or path == '/':
-        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-        response.headers["Pragma"] = "no-cache"
-        response.headers["Expires"] = "0"
+    if _is_prod:
+        if path.endswith(('.js', '.css', '.woff2', '.png', '.jpg', '.jpeg', '.webp', '.svg')):
+            # Allow caching of static assets in production (1 day + 7 day stale-while-revalidate)
+            response.headers["Cache-Control"] = "public, max-age=86400, stale-while-revalidate=604800"
+        elif path.endswith('.html') or path == '/':
+            # Revalidate HTML so new deployments update immediately without redownloading static assets
+            response.headers["Cache-Control"] = "no-cache"
+    else:
+        # Development: disable cache for rapid local iteration
+        if path.endswith(('.html', '.js', '.css')) or path == '/':
+            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
     return response
 
 # Include routes

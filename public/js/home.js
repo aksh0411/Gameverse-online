@@ -3,68 +3,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     // because bookmark/status handlers in shared code call window.refreshStats().
     window.refreshStats = async function() {};
 
-    window.refreshGrids = function() {
-        if (!window.__ALL_GAMES__) return;
-        const favorited = window.__ALL_GAMES__.filter(g => g.is_favorited);
-        renderGameGrid(favorited, 'favoritesGrid');
-        const playing = window.__ALL_GAMES__.filter(g => (g.play_status || '').toLowerCase() === 'playing');
-        renderGameGrid(playing, 'playingGrid');
-    };
-
-    // 1. Immediately initialize Hero 3D background without waiting for network
+    // 1. Defer Hero 3D init by one frame so headline + button paint first (FCP)
     if (typeof window.initHeroScene === 'function') {
-        window.initHeroScene();
+        requestAnimationFrame(() => {
+            window.initHeroScene();
+        });
     }
 
-    // 2. Fetch games (live total can be reflected in the warp statement)
+    // 2. Fetch lightweight stats — show cached value instantly, update in background
     try {
-        const gamesResult = await apiGet('/games?limit=500').catch(() => ({ games: [] }));
-
-        const games = Array.isArray(gamesResult) ? gamesResult : (gamesResult.games || []);
-        window.__ALL_GAMES__ = games;
-        if (window.__heroWarpText && games.length) {
-            window.__heroWarpText.setText(`Explore ${games.length}+ Games`);
+        // Show cached count immediately so the warp text doesn't wait for network
+        const cached = localStorage.getItem('gv_stats_cache');
+        let total = 200; // fallback default
+        if (cached) {
+            try {
+                const parsed = JSON.parse(cached);
+                total = parsed.total_games || total;
+            } catch (_) {}
+        }
+        if (window.__heroWarpText) {
+            window.__heroWarpText.setText(`Explore ${total}+ Games`);
         }
 
-        // Populate "My Collection" Full Library Poster Carousel using DocumentFragment
-        const carousel = document.getElementById('collectionCarousel');
-        if (carousel) {
-            carousel.innerHTML = '';
-            const frag = document.createDocumentFragment();
-            games.forEach((game, index) => {
-                if (typeof renderPosterCard === 'function') {
-                    frag.appendChild(renderPosterCard(game, index));
-                } else {
-                    frag.appendChild(renderGameCard(game, index));
-                }
-            });
-            carousel.appendChild(frag);
-        }
-
-        // Populate Favorites and Currently Playing Grids
-        window.refreshGrids();
-
-        // Initialize 3D Dimensional Radar Core with Bookmarked Games
-        if (typeof initCollectionCore === 'function') {
-            initCollectionCore(games);
+        // Fetch fresh stats in background and update
+        const stats = await apiGet('/stats').catch(() => null);
+        if (stats && stats.total_games) {
+            localStorage.setItem('gv_stats_cache', JSON.stringify(stats));
+            if (stats.total_games !== total && window.__heroWarpText) {
+                window.__heroWarpText.setText(`Explore ${stats.total_games}+ Games`);
+            }
         }
     } catch (err) {
-        console.error("Error loading home data:", err);
-    }
-
-    // 3. Carousel Navigation (< and > Buttons)
-    const carouselPrev = document.getElementById('carouselPrev');
-    const carouselNext = document.getElementById('carouselNext');
-    const carousel = document.getElementById('collectionCarousel');
-    
-    if (carouselPrev && carouselNext && carousel) {
-        const scrollAmount = 430; // 2 poster cards width + gap
-        carouselPrev.addEventListener('click', () => {
-            carousel.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-        });
-        carouselNext.addEventListener('click', () => {
-            carousel.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-        });
+        console.error("Error loading home stats:", err);
     }
 
     // 4. Avatar Navigation (Open About Me Modal)

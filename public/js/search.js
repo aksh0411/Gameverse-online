@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             const genres = (game.genres || []).map(g => typeof g === 'object' ? g.genre_name : g).slice(0, 2).join(', ') || 'Game';
 
                             const poster = imgUrl
-                                ? `<img class="spotlight-item-poster" src="${escHtml(imgUrl)}" alt="${escHtml(gameName)}" loading="lazy" decoding="async" onerror="if(!this.dataset.retry){this.dataset.retry='1';this.src='/static/images/'+(this.src.split('/').pop());}else if(this.dataset.retry==='1'){this.dataset.retry='2';this.src='/frontend/static/images/'+(this.src.split('/').pop());}else{this.outerHTML='<div class=spotlight-item-poster style=display:flex;align-items:center;justify-content:center;color:#666>🎮</div>';}">`
+                                ? `<img class="spotlight-item-poster" src="${escHtml(imgUrl)}" alt="${escHtml(gameName)}" loading="lazy" decoding="async" onerror="if(!this.dataset.retry){this.dataset.retry='1';var s=this.src;if(s.endsWith('.webp')){this.src=s.replace(/\\.webp$/,'.jpg');}else{this.src='/static/images/'+(s.split('/').pop());}}else if(this.dataset.retry==='1'){this.dataset.retry='2';var s2=this.src;if(s2.endsWith('.webp')){this.src=s2.replace(/\\.webp$/,'.jpg');}else{this.outerHTML='<div class=spotlight-item-poster style=display:flex;align-items:center;justify-content:center;color:#666>\u{1F3AE}</div>';}}else{this.outerHTML='<div class=spotlight-item-poster style=display:flex;align-items:center;justify-content:center;color:#666>\u{1F3AE}</div>';}">`
                                 : `<div class="spotlight-item-poster" style="display:flex;align-items:center;justify-content:center;color:#888;">🎮</div>`;
 
                             item.innerHTML = `

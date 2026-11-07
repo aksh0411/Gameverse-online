@@ -1,3 +1,31 @@
+/* ===== GAMEVERSE Self-Hosted Variable Fonts ===== */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../fonts/inter-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url('../fonts/space-grotesk-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Caveat';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('../fonts/caveat-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 /* ===== GAMEVERSE Design System ===== */
 /* Faithfully ported from prototype (React/Tailwind → Vanilla CSS) */
 
@@ -572,5 +600,235 @@ a {
   }
   .universe-ring, .status-dot, .hero-visual-canvas, .about-glow-orb {
     animation: none !important;
+  }
+}
+
+
+/* ===== COSMIC EYE — Interactive Cursor-Tracking Cyber Watcher ===== */
+.cosmic-eye-widget {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 50%;
+  outline: none;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.cosmic-eye-widget:focus-visible {
+  box-shadow: 0 0 0 2px #00f5d4;
+}
+
+.cosmic-eye-bezel {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  padding: 1.5px;
+  background: linear-gradient(135deg, rgba(0, 245, 212, 0.5) 0%, rgba(168, 85, 247, 0.35) 50%, rgba(236, 72, 153, 0.45) 100%);
+  box-shadow: 0 0 10px rgba(0, 245, 212, 0.22), inset 0 0 4px rgba(0, 0, 0, 0.8);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cosmic-eye-widget:hover .cosmic-eye-bezel {
+  transform: scale(1.08);
+  box-shadow: 0 0 16px rgba(0, 245, 212, 0.5), 0 0 22px rgba(236, 72, 153, 0.3);
+}
+
+.cosmic-eye-sclera {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #0d1a2d 0%, #060b14 70%, #020509 100%);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.9);
+}
+
+.cosmic-eye-iris {
+  position: relative;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #00f5d4 0%, #38bdf8 35%, #8b5cf6 75%, #ec4899 100%);
+  box-shadow: 0 0 8px rgba(0, 245, 212, 0.65), 0 0 14px rgba(168, 85, 247, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform;
+}
+
+.cosmic-eye-pupil {
+  position: relative;
+  width: 7.5px;
+  height: 7.5px;
+  border-radius: 50%;
+  background: #020408;
+  box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.95);
+  transition: width 0.15s ease, height 0.15s ease;
+}
+
+.cosmic-eye-pupil.dilated {
+  width: 10.5px;
+  height: 10.5px;
+}
+
+.cosmic-eye-glint {
+  position: absolute;
+  top: 1px;
+  right: 1.5px;
+  width: 2.2px;
+  height: 2.2px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 3px #ffffff;
+}
+
+.cosmic-eye-lid {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 52%;
+  background: #060a14;
+  border-color: rgba(0, 245, 212, 0.4);
+  transition: transform 0.1s ease-in-out;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.cosmic-eye-lid-upper {
+  top: 0;
+  transform-origin: top center;
+  transform: scaleY(0);
+  border-bottom: 1px solid rgba(0, 245, 212, 0.35);
+}
+
+.cosmic-eye-lid-lower {
+  bottom: 0;
+  transform-origin: bottom center;
+  transform: scaleY(0);
+  border-top: 1px solid rgba(0, 245, 212, 0.35);
+}
+
+.cosmic-eye-widget.is-blinking .cosmic-eye-lid-upper,
+.cosmic-eye-widget.is-winking .cosmic-eye-lid-upper,
+.cosmic-eye-widget.is-blinking .cosmic-eye-lid-lower,
+.cosmic-eye-widget.is-winking .cosmic-eye-lid-lower {
+  transform: scaleY(1);
+}
+
+.cosmic-eye-halo {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 245, 212, 0.22) 0%, transparent 70%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.cosmic-eye-widget:hover .cosmic-eye-halo {
+  opacity: 1;
+}
+
+.cosmic-eye-fixed-slot {
+  position: fixed;
+  top: 20px;
+  right: 80px;
+  z-index: 1000;
+}
+
+
+/* ===== Center Navigation Cluster: Cosmic Eye + Floating Mini Tesseract ===== */
+.nav-center-cluster {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  z-index: 100;
+  pointer-events: auto;
+}
+
+/* Floating Mini Tesseract 4D Widget */
+.mini-tesseract-widget {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 8px;
+  animation: tesseractFloat 4.5s ease-in-out infinite;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), filter 0.25s ease;
+  filter: drop-shadow(0 0 6px rgba(0, 245, 212, 0.35));
+}
+
+.mini-tesseract-widget:hover {
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 12px rgba(0, 245, 212, 0.7)) drop-shadow(0 0 16px rgba(236, 72, 153, 0.5));
+}
+
+.mini-tesseract-widget.is-spinning {
+  animation: tesseractHyperSpin 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.mini-tesseract-widget canvas {
+  width: 36px;
+  height: 36px;
+  display: block;
+}
+
+@keyframes tesseractFloat {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-4px) rotate(2deg);
+  }
+}
+
+@keyframes tesseractHyperSpin {
+  0% { transform: scale(1) rotate(0deg); }
+  40% { transform: scale(1.25) rotate(180deg); }
+  100% { transform: scale(1) rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+  .nav-center-cluster {
+    gap: 8px;
+  }
+  .cosmic-eye-widget {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    min-height: 30px;
+    margin-right: 0;
+  }
+  .mini-tesseract-widget {
+    width: 30px;
+    height: 30px;
+  }
+  .mini-tesseract-widget canvas {
+    width: 30px;
+    height: 30px;
   }
 }

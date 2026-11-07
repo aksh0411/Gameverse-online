@@ -55,6 +55,9 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const data = await apiGet('/games?limit=500');
             allGames = Array.isArray(data) ? data : (data.games || []);
+            if (typeof applyVisitorPreferences === 'function') {
+                applyVisitorPreferences(allGames);
+            }
             window.__ALL_GAMES__ = allGames;
 
             updateStatistics(allGames);
@@ -131,16 +134,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const filterParam = params.get('filter') || params.get('status') || 'all';
         const searchParam = params.get('q') || '';
         const genreParam = params.get('genre') || null;
+        const platformParam = params.get('platform') || null;
         const sortParam = params.get('sort') || 'recently_played';
 
         currentFilter.type = filterParam;
         currentFilter.searchQuery = searchParam;
         currentFilter.genre = genreParam;
+        currentFilter.platform = platformParam;
         currentFilter.sort = sortParam;
 
         if (searchInput) searchInput.value = searchParam;
         if (sortSelect) sortSelect.value = sortParam;
         markActiveGenreChip(genreParam);
+        markActivePlatformChip(platformParam);
 
         updateActiveSidebarVisual(filterParam);
     }
@@ -244,13 +250,14 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // 3. Platform Filter (reserved — no UI control yet)
+        // 3. Platform Filter (from Popover / URL)
         if (currentFilter.platform) {
+            const pTarget = currentFilter.platform.toLowerCase();
             results = results.filter(g => {
                 const platforms = Array.isArray(g.platforms)
                     ? g.platforms.map(x => (typeof x === 'object' ? x.platform_name || x.name : x).toLowerCase())
                     : [];
-                return platforms.includes(currentFilter.platform.toLowerCase());
+                return platforms.some(p => p === pTarget || p.includes(pTarget) || pTarget.includes(p));
             });
         }
 
@@ -357,7 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const isFav = Boolean(game.is_favorited);
 
         card.innerHTML = `
-            <img class="wide-card-bg" src="${escHtml(coverUrl)}" alt="${escHtml(game.name || game.game_name)}" loading="lazy" onerror="this.src='static/images/game_1.jpg';">
+            <img class="wide-card-bg" src="${escHtml(coverUrl)}" alt="${escHtml(game.name || game.game_name)}" loading="lazy" onerror="if(!this.dataset.retry){this.dataset.retry='1';var s=this.src;if(s.endsWith('.webp')){this.src=s.replace(/\\.webp$/,'.jpg');}else{this.src='static/images/game_1.jpg';}}else{this.src='static/images/game_1.jpg';}">
             <div class="wide-card-gradient"></div>
             <div class="wide-card-top">
                 <span class="wide-status-pill status-${rawStatus}">
@@ -388,7 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return card;
     }
 
-    // Favorite toggle: optimistic UI → Supabase PATCH → revert + login prompt on failure
+    // Favorite toggle: optimistic UI → visitor localStorage (and Supabase PATCH if admin)
     function wireFavoriteButton(favBtn, game) {
         if (!favBtn) return;
         favBtn.addEventListener('click', async (e) => {
@@ -398,13 +405,18 @@ document.addEventListener('DOMContentLoaded', () => {
             favBtn.classList.toggle('active', newFav);
             updateStatistics(allGames);
 
-            try {
-                await apiPatch(`/games/${game.id || game.game_id}/status`, { is_favorited: newFav });
-            } catch (err) {
-                console.error('Failed to toggle favorite:', err);
-                game.is_favorited = !newFav;
-                favBtn.classList.toggle('active', !newFav);
-                updateStatistics(allGames);
+            const gid = game.id || game.game_id;
+            if (typeof saveVisitorPreference === 'function') {
+                saveVisitorPreference('favorites', gid, newFav);
+            }
+
+            // Sync to remote database only if currently logged in as admin
+            if (typeof isAdmin === 'function' && isAdmin()) {
+                try {
+                    await apiPatch(`/games/${gid}/status`, { is_favorited: newFav });
+                } catch (err) {
+                    console.error('Failed to sync favorite to server:', err);
+                }
             }
         });
     }
@@ -544,7 +556,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const playStatus = (game.play_status || 'not_started').replace('_', ' ').toUpperCase();
 
                 const poster = coverUrl
-                    ? `<img class="spotlight-item-poster" src="${escHtml(coverUrl)}" alt="${escHtml(gameName)}" loading="lazy" decoding="async" onerror="this.outerHTML='<div class=spotlight-item-poster style=display:flex;align-items:center;justify-content:center;color:#888>🎮</div>';">`
+                    ? `<img class="spotlight-item-poster" src="${escHtml(coverUrl)}" alt="${escHtml(gameName)}" loading="lazy" decoding="async" onerror="if(!this.dataset.retry&&this.src.endsWith('.webp')){this.dataset.retry='1';this.src=this.src.replace(/\\.webp$/,'.jpg');}else{this.outerHTML='<div class=spotlight-item-poster style=display:flex;align-items:center;justify-content:center;color:#888>\u{1F3AE}</div>';}">`
                     : `<div class="spotlight-item-poster" style="display:flex;align-items:center;justify-content:center;color:#888;">🎮</div>`;
 
                 item.innerHTML = `
@@ -620,50 +632,103 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ── 11. Filter Popover (Genres) ──
+    // ── 11. Filter Popover (Genres & Platforms) ──
     function populateFilterOptions(games) {
         const genreContainer = document.getElementById('filterPopoverGenres');
-        if (!genreContainer) return;
+        const platformContainer = document.getElementById('filterPopoverPlatforms');
 
-        const genreSet = new Set();
-        games.forEach(g => {
-            if (Array.isArray(g.genres)) {
-                g.genres.forEach(x => genreSet.add(typeof x === 'object' ? x.genre_name || x.name : x));
-            }
-        });
-
-        genreContainer.innerHTML = '';
-        Array.from(genreSet).sort().forEach(genre => {
-            const chip = document.createElement('span');
-            chip.className = 'filter-chip';
-            chip.dataset.genre = genre;
-            chip.textContent = genre;
-            chip.addEventListener('click', () => {
-                const isActive = currentFilter.genre === genre;
-                currentFilter.genre = isActive ? null : genre;
-                document.querySelectorAll('#filterPopoverGenres .filter-chip').forEach(c => c.classList.remove('active'));
-                if (!isActive) chip.classList.add('active');
-
-                const url = new URL(window.location.href);
-                if (currentFilter.genre) {
-                    url.searchParams.set('genre', currentFilter.genre);
-                } else {
-                    url.searchParams.delete('genre');
+        // A. Populate Genres
+        if (genreContainer) {
+            const genreSet = new Set();
+            games.forEach(g => {
+                if (Array.isArray(g.genres)) {
+                    g.genres.forEach(x => genreSet.add(typeof x === 'object' ? x.genre_name || x.name : x));
                 }
-                window.history.replaceState({}, '', url);
-                applyFilters();
             });
-            genreContainer.appendChild(chip);
-        });
 
-        // Re-highlight after async population (URL may carry ?genre=)
-        markActiveGenreChip(currentFilter.genre);
+            genreContainer.innerHTML = '';
+            Array.from(genreSet).sort().forEach(genre => {
+                const chip = document.createElement('span');
+                chip.className = 'filter-chip';
+                chip.dataset.genre = genre;
+                chip.textContent = genre;
+                chip.addEventListener('click', () => {
+                    const isActive = currentFilter.genre === genre;
+                    currentFilter.genre = isActive ? null : genre;
+                    markActiveGenreChip(currentFilter.genre);
+
+                    const url = new URL(window.location.href);
+                    if (currentFilter.genre) {
+                        url.searchParams.set('genre', currentFilter.genre);
+                    } else {
+                        url.searchParams.delete('genre');
+                    }
+                    window.history.replaceState({}, '', url);
+                    applyFilters();
+                });
+                genreContainer.appendChild(chip);
+            });
+            markActiveGenreChip(currentFilter.genre);
+        }
+
+        // B. Populate Platforms (7.2 B: Platform Filter Pill Group)
+        if (platformContainer) {
+            const platformSet = new Set();
+            games.forEach(g => {
+                if (Array.isArray(g.platforms)) {
+                    g.platforms.forEach(x => {
+                        const name = typeof x === 'object' ? x.platform_name || x.name : x;
+                        if (name) platformSet.add(name);
+                    });
+                }
+            });
+
+            platformContainer.innerHTML = '';
+            Array.from(platformSet).sort().forEach(platform => {
+                const chip = document.createElement('span');
+                chip.className = 'filter-chip';
+                chip.dataset.platform = platform;
+                chip.textContent = platform;
+                chip.addEventListener('click', () => {
+                    const isActive = currentFilter.platform === platform;
+                    currentFilter.platform = isActive ? null : platform;
+                    markActivePlatformChip(currentFilter.platform);
+
+                    const url = new URL(window.location.href);
+                    if (currentFilter.platform) {
+                        url.searchParams.set('platform', currentFilter.platform);
+                    } else {
+                        url.searchParams.delete('platform');
+                    }
+                    window.history.replaceState({}, '', url);
+                    applyFilters();
+                });
+                platformContainer.appendChild(chip);
+            });
+            markActivePlatformChip(currentFilter.platform);
+        }
+
+        updateFilterButtonIndicator();
     }
 
     function markActiveGenreChip(genre) {
         document.querySelectorAll('#filterPopoverGenres .filter-chip').forEach(c => {
             c.classList.toggle('active', !!genre && c.dataset.genre === genre);
         });
+        updateFilterButtonIndicator();
+    }
+
+    function markActivePlatformChip(platform) {
+        document.querySelectorAll('#filterPopoverPlatforms .filter-chip').forEach(c => {
+            c.classList.toggle('active', !!platform && c.dataset.platform === platform);
+        });
+        updateFilterButtonIndicator();
+    }
+
+    function updateFilterButtonIndicator() {
+        if (!filterBtn) return;
+        const hasActive = Boolean(currentFilter.genre || currentFilter.platform);
+        filterBtn.classList.toggle('has-filters', hasActive);
     }
 
     if (filterBtn && filterPopover) {
@@ -688,10 +753,32 @@ document.addEventListener('DOMContentLoaded', () => {
             currentFilter.genre = null;
             currentFilter.platform = null;
             markActiveGenreChip(null);
+            markActivePlatformChip(null);
             const url = new URL(window.location.href);
             url.searchParams.delete('genre');
+            url.searchParams.delete('platform');
             window.history.replaceState({}, '', url);
             applyFilters();
+        });
+    }
+
+    // ── Mobile 3D Radar Accordion Toggle (<768px, 7.2 C) ──
+    const radarMobileToggle = document.getElementById('radarMobileToggle');
+    const radarCard = document.getElementById('radarCard');
+    if (radarMobileToggle && radarCard) {
+        radarMobileToggle.addEventListener('click', () => {
+            const isExpanded = radarCard.classList.toggle('expanded');
+            radarMobileToggle.classList.toggle('expanded', isExpanded);
+            radarMobileToggle.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+            const toggleText = radarMobileToggle.querySelector('.radar-toggle-text');
+            if (toggleText) {
+                toggleText.textContent = isExpanded ? 'Tap to collapse' : 'Tap to view';
+            }
+            if (isExpanded) {
+                setTimeout(() => {
+                    window.dispatchEvent(new Event('resize'));
+                }, 60);
+            }
         });
     }
 
