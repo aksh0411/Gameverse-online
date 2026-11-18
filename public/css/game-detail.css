@@ -893,9 +893,9 @@ body.standalone-game-page {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 1px solid rgba(45, 212, 191, 0.35);
-  background: #00f5d4;
-  color: #020b10;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.9);
   font-family: var(--font-heading, 'Space Grotesk', sans-serif);
   font-weight: 700;
   font-size: 0.84rem;
@@ -903,10 +903,18 @@ body.standalone-game-page {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  overflow: hidden;
+  padding: 0;
+}
+.modal-nav-profile svg {
+  width: 18px;
+  height: 18px;
+  display: block;
 }
 .modal-nav-profile:hover {
   transform: translateY(-1px);
+  border-color: rgba(0, 245, 212, 0.6);
   box-shadow: 0 0 14px rgba(0, 245, 212, 0.4);
 }
 

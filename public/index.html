@@ -1,20 +1,20 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GAMEVERSE — Personal Game Archive</title>
+  <title>GAMEVERSE â€” Personal Game Archive</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300f5d4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2' y='6' width='20' height='12' rx='4'/%3E%3Cpath d='M6 12h4M8 10v4M15 11h.01M18 13h.01'/%3E%3C/svg%3E">
   
   <!-- High-priority self-hosted variable font preloads (Zero external render-blocking roundtrips) -->
   <link rel="preload" href="fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
   
-  <link rel="stylesheet" href="css/style.css?v=17.0">
-  <link rel="stylesheet" href="css/home.css?v=17.0">
-  <link rel="stylesheet" href="css/game-detail.css?v=17.0">
-  <link rel="stylesheet" href="css/shared-transition.css?v=17.0">
-  <link rel="stylesheet" href="css/responsive.css?v=17.0">
+  <link rel="stylesheet" href="css/style.css?v=18.0">
+  <link rel="stylesheet" href="css/home.css?v=18.0">
+  <link rel="stylesheet" href="css/game-detail.css?v=18.0">
+  <link rel="stylesheet" href="css/shared-transition.css?v=18.0">
+  <link rel="stylesheet" href="css/responsive.css?v=18.0">
 </head>
 <body class="hero-only">
   <!-- Global Shared Top Navigation Bar (Persists Across All Pages & Modals) -->
@@ -29,7 +29,7 @@
 
     <div class="top-icon-cluster">
       <!-- Avatar Button -->
-      <div class="avatar-circle-btn" id="avatarBtn" title="Admin / Profile" aria-label="Admin profile">V</div>
+      <div class="avatar-circle-btn" id="avatarBtn" title="Admin / Profile" aria-label="Admin profile"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
     </div>
   </header>
 
@@ -41,7 +41,7 @@
           <circle cx="11" cy="11" r="7"></circle>
           <line x1="21" y1="21" x2="16.5" y2="16.5"></line>
         </svg>
-        <input type="text" id="searchInput" placeholder="Search any game in universe (title, genre, platform)…" aria-label="Search games by title, genre, or platform" autocomplete="off">
+        <input type="text" id="searchInput" placeholder="Search any game in universe (title, genre, platform)â€¦" aria-label="Search games by title, genre, or platform" autocomplete="off">
         <button class="spotlight-close" id="searchClose" aria-label="Close search">&times;</button>
       </div>
       <div class="spotlight-results hidden" id="searchResults"></div>
@@ -64,9 +64,9 @@
     <div class="universe-ring universe-ring-2"></div>
     <div class="universe-ring universe-ring-3"></div>
 
-    <!-- ===== Section 1: Hero (the entire home experience — the collection lives in library.html) ===== -->
+    <!-- ===== Section 1: Hero (the entire home experience â€” the collection lives in library.html) ===== -->
     <section id="hero">
-      <!-- 4D HyperVisual — pure full-bleed 3D canvas positioned on right (integrated seamlessly, no cutoff) -->
+      <!-- 4D HyperVisual â€” pure full-bleed 3D canvas positioned on right (integrated seamlessly, no cutoff) -->
       <div class="hero-visual animate-fade-in">
         <div id="hero3d" class="hero-visual-canvas"></div>
       </div>
@@ -76,10 +76,10 @@
         <div class="hero-content animate-fade-up">
           <h1 class="sr-only">Welcome to GameVerse</h1>
           <div id="particleTextHero" class="particle-text-container" aria-hidden="true"></div>
-          <p class="hero-desc">A living collection of worlds, stories and experiments — projected through a dimensional lens.</p>
+          <p class="hero-desc">A living collection of worlds, stories and experiments â€” projected through a dimensional lens.</p>
 
           <div class="hero-buttons">
-            <a href="library.html" class="btn-primary" id="exploreCollectionBtn">Explore Collection <span class="arrow">→</span></a>
+            <a href="library.html" class="btn-primary" id="exploreCollectionBtn">Explore Collection <span class="arrow">â†’</span></a>
           </div>
 
           <div id="warpTextHero" class="warp-text-container" aria-hidden="true"></div>
@@ -205,19 +205,19 @@
       </div>
 
       <!-- Heading & Roles -->
-      <h2 class="about-heading">Hey, I’m <span class="text-gradient">Akshay</span> 👋</h2>
-      <p class="about-subtitle">2nd year CS student &nbsp;·&nbsp; Builder &nbsp;·&nbsp; Gamer</p>
+      <h2 class="about-heading">Hey, Iâ€™m <span class="text-gradient">Akshay</span> ðŸ‘‹</h2>
+      <p class="about-subtitle">2nd year CS student &nbsp;Â·&nbsp; Builder &nbsp;Â·&nbsp; Gamer</p>
 
       <!-- Story paragraphs -->
       <div class="about-story-flow">
         <p class="about-paragraph">
-          I’m a 20-year-old 2nd year CS student who got tired of having 50+ games scattered across platforms with zero way to track what I’ve actually played.
+          Iâ€™m a 20-year-old 2nd year CS student who got tired of having 50+ games scattered across platforms with zero way to track what Iâ€™ve actually played.
         </p>
         <p class="about-paragraph about-highlight-line">
           So I built <span class="text-gradient">Gameverse</span>.
         </p>
         <p class="about-paragraph">
-          No fancy reason — I just wanted one place where I could see everything, rate stuff honestly, and stop forgetting about games I paid actual money for.
+          No fancy reason â€” I just wanted one place where I could see everything, rate stuff honestly, and stop forgetting about games I paid actual money for.
         </p>
       </div>
 
@@ -315,10 +315,10 @@
           <div id="profileAvatarCircle" style="width: 76px; height: 76px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700; color: #fff; background: linear-gradient(135deg, #00b4d8, #00f5d4); box-shadow: 0 8px 24px rgba(0,245,212,0.35); transition: transform 0.2s, box-shadow 0.2s; overflow: hidden;">
             U
           </div>
-          <div class="avatar-edit-badge" title="Change avatar">✏️</div>
+          <div class="avatar-edit-badge" title="Change avatar">âœï¸</div>
         </div>
         <div>
-          <span class="avatar-change-hint" id="avatarChangeHint">Click avatar to change ▾</span>
+          <span class="avatar-change-hint" id="avatarChangeHint">Click avatar to change â–¾</span>
         </div>
       </div>
 
@@ -350,10 +350,10 @@
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
         <a href="library.html?filter=favorites" class="btn-primary" style="padding: 10px; font-size: 0.85rem; text-decoration: none; text-align: center; border-radius: 8px;">
-          ★ Favorites
+          â˜… Favorites
         </a>
         <a href="library.html" class="btn-primary" style="padding: 10px; font-size: 0.85rem; text-decoration: none; text-align: center; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;">
-          ⚡ Library
+          âš¡ Library
         </a>
       </div>
 
@@ -386,7 +386,7 @@
               <label for="loginPassword" style="margin:0;">Password</label>
               <a href="#" id="forgotPasswordLink" class="auth-link-subtle">Forgot?</a>
             </div>
-            <input type="password" id="loginPassword" name="password" placeholder="••••••••" autocomplete="current-password" required>
+            <input type="password" id="loginPassword" name="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" autocomplete="current-password" required>
           </div>
           <div class="form-group remember-me-row">
             <label for="loginRememberMe">
@@ -606,7 +606,7 @@
   <div id="gameDetailModalView" class="game-detail-modal-view">
     <div class="game-detail-app-frame" id="modalDetailFrame">
 
-      <!-- Modal Navbar (GameVerse logo · search · profile) -->
+      <!-- Modal Navbar (GameVerse logo Â· search Â· profile) -->
       <nav class="modal-navbar" aria-label="GameVerse navigation">
         <a href="index.html" class="modal-nav-logo" id="modalNavLogo">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="4"></rect><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"></path></svg>
@@ -616,7 +616,7 @@
           <button class="icon-circle-btn" id="modalNavSearch" title="Search (Ctrl+K)" aria-label="Search collection">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
           </button>
-          <button class="modal-nav-profile" id="modalNavProfile" title="Profile" aria-label="Profile">V</button>
+          <button class="modal-nav-profile" id="modalNavProfile" title="Profile" aria-label="Profile"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></button>
         </div>
       </nav>
       
@@ -648,8 +648,8 @@
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
               </button>
               <div class="more-dropdown glass-panel hidden" id="modalAdminMenuDropdown">
-                <button id="modalEditGameBtn">✏️ Edit Game</button>
-                <button id="modalDeleteGameBtn" class="delete-opt">🗑️ Delete Game</button>
+                <button id="modalEditGameBtn">âœï¸ Edit Game</button>
+                <button id="modalDeleteGameBtn" class="delete-opt">ðŸ—‘ï¸ Delete Game</button>
               </div>
             </div>
           </div>
@@ -658,7 +658,7 @@
         <!-- Hero Details Info (Status Badge, Huge Title, Tagline) -->
         <div class="hero-text-content" id="modalHeroText">
           <div class="hero-status-tag" id="modalStatusTag">PLAYING</div>
-          <h1 class="hero-game-title" id="modalGameName">Loading Game…</h1>
+          <h1 class="hero-game-title" id="modalGameName">Loading Gameâ€¦</h1>
           <p class="hero-game-tagline" id="modalGameDescription"></p>
         </div>
       </div>
@@ -692,19 +692,19 @@
               <h2 class="box-title">My Status</h2>
               <div class="status-buttons-row" id="modalStatusSelector">
                 <button class="status-choice-btn" data-val="not_started">
-                  <span class="status-btn-icon">◇</span> Not Started
+                  <span class="status-btn-icon">â—‡</span> Not Started
                 </button>
                 <button class="status-choice-btn" data-val="playing">
-                  <span class="status-btn-icon">▷</span> Playing
+                  <span class="status-btn-icon">â–·</span> Playing
                 </button>
                 <button class="status-choice-btn" data-val="completed">
-                  <span class="status-btn-icon">✔</span> Completed
+                  <span class="status-btn-icon">âœ”</span> Completed
                 </button>
                 <button class="status-choice-btn" data-val="play_later">
-                  <span class="status-btn-icon">⏱</span> Play Later
+                  <span class="status-btn-icon">â±</span> Play Later
                 </button>
                 <button class="status-choice-btn" data-val="wont_play">
-                  <span class="status-btn-icon">⏸</span> Won't Play
+                  <span class="status-btn-icon">â¸</span> Won't Play
                 </button>
               </div>
             </div>
@@ -739,8 +739,8 @@
   <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/api.js?v=17.0"></script>
-  <script src="js/auth.js?v=17.0"></script>
+  <script src="js/api.js?v=18.0"></script>
+  <script src="js/auth.js?v=18.0"></script>
   <!-- Lazy-loaded Detail Modal & Shared Transition (Idle + Interaction Stub) -->
   <script>
     (function() {
@@ -760,7 +760,7 @@
 
         const s = document.createElement('script');
         s.id = 'sharedTransitionScript';
-        s.src = 'js/shared-transition.js?v=17.0';
+        s.src = 'js/shared-transition.js?v=18.0';
         s.onload = function() {
           _loaded = true;
           _pendingCalls.forEach(fn => { try { fn(); } catch(e){ console.error(e); } });
