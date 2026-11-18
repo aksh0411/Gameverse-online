@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await apiGet('/games?limit=500');
             allGames = Array.isArray(data) ? data : (data.games || []);
             if (typeof applyVisitorPreferences === 'function') {
-                applyVisitorPreferences(allGames);
+                await applyVisitorPreferences(allGames);
             }
             window.__ALL_GAMES__ = allGames;
 
@@ -405,9 +405,20 @@ document.addEventListener('DOMContentLoaded', () => {
             favBtn.classList.toggle('active', newFav);
             updateStatistics(allGames);
 
+            if (typeof window.showToast === 'function') {
+                window.showToast(newFav ? 'Added to your favorites ⭐' : 'Removed from favorites', newFav ? 'favorite' : 'info');
+            }
+
             const gid = game.id || game.game_id;
             if (typeof saveVisitorPreference === 'function') {
                 saveVisitorPreference('favorites', gid, newFav);
+            }
+
+            // Sync to personal library if logged in
+            if (typeof isLoggedIn === 'function' && isLoggedIn() && typeof apiPut === 'function') {
+                apiPut(`/me/games/${gid}`, { is_favorite: newFav }).catch(err => {
+                    console.warn('Personal library sync:', err);
+                });
             }
 
             // Sync to remote database only if currently logged in as admin
@@ -783,16 +794,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ── 12. About / Avatar / Profile Buttons ──
-    function openProfileUI() {
-        // Logged-in admins get the About/profile window (with Logout); visitors get the login modal
-        if (typeof isAdmin === 'function' && isAdmin()) {
-            const aboutModal = document.getElementById('aboutModal');
-            if (aboutModal) {
-                aboutModal.classList.remove('hidden');
-                const inner = aboutModal.querySelector('.about-modal-inner');
-                if (inner) inner.scrollTop = 0;
+    function openProfileUI(e) {
+        if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+        if (typeof isLoggedIn === 'function' && isLoggedIn()) {
+            if (typeof openUserProfileModal === 'function') {
+                openUserProfileModal();
+                return;
             }
-        } else if (typeof openLoginModal === 'function') {
+        }
+        if (typeof openLoginModal === 'function') {
             openLoginModal();
         }
     }

@@ -449,6 +449,13 @@ html:has(body.library-page) {
     font-weight: 600;
 }
 
+/* Hide Center Navigation Cluster (Cosmic Eye + Mini Tesseract) inside dashboard topbar to prevent search bar overlap */
+.dashboard-topbar .nav-center-cluster,
+.library-page .nav-center-cluster,
+.library-page #navCenterCluster {
+    display: none !important;
+}
+
 .topbar-right-cluster {
     margin-left: auto;
     display: flex;

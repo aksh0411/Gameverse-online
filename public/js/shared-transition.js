@@ -299,8 +299,11 @@
         }
 
         // 8. Fetch detailed data asynchronously to ensure complete information
-        apiGet(`/games/${gameId}`).then(fullData => {
+        apiGet(`/games/${gameId}`).then(async fullData => {
             if (!fullData) return;
+            if (typeof applyVisitorPreferences === 'function') {
+                await applyVisitorPreferences([fullData]);
+            }
             activeGameData = { ...(activeGameData || {}), ...fullData };
 
             // Update title and description if previously placeholder or incomplete
@@ -513,6 +516,9 @@
                 game.is_bookmarked = nextState;
                 game.bookmarked = nextState;
                 bookmarkBtn.classList.toggle('active', nextState);
+                if (typeof window.showToast === 'function') {
+                    window.showToast(nextState ? 'Saved to bookmarks 🔖' : 'Removed from bookmarks', nextState ? 'success' : 'info');
+                }
                 if (typeof saveVisitorPreference === 'function') {
                     saveVisitorPreference('bookmarks', gid, nextState);
                 }
@@ -568,17 +574,32 @@
      */
     window.openGameDetail = function(cardElement, gameData) {
         if (isTransitioning) return;
+        if (document.body.classList.contains('modal-open')) return;
 
         const targetGid = (gameData && (gameData.id || gameData.game_id)) || (cardElement && cardElement.dataset.gameId);
-        if (typeof applyVisitorPreferences === 'function' && gameData) {
-            applyVisitorPreferences([gameData]);
-        }
 
         // If gameData is not provided or missing full details, look it up in __ALL_GAMES__
         if (targetGid && window.__ALL_GAMES__) {
             const found = window.__ALL_GAMES__.find(g => String(g.id || g.game_id) === String(targetGid));
             if (found) {
                 gameData = { ...found, ...(gameData || {}) };
+            }
+        }
+
+        // Apply any cached visitor/user preferences to ensure up-to-date favorite/bookmark state
+        if (typeof getVisitorPreferences === 'function' && gameData) {
+            const prefs = getVisitorPreferences();
+            const gid = String(gameData.id || gameData.game_id);
+            if (prefs.favorites && prefs.favorites[gid] !== undefined) {
+                gameData.is_favorited = Boolean(prefs.favorites[gid]);
+                gameData.favorited = gameData.is_favorited;
+            }
+            if (prefs.bookmarks && prefs.bookmarks[gid] !== undefined) {
+                gameData.is_bookmarked = Boolean(prefs.bookmarks[gid]);
+                gameData.bookmarked = gameData.is_bookmarked;
+            }
+            if (prefs.statuses && prefs.statuses[gid] !== undefined) {
+                gameData.play_status = prefs.statuses[gid];
             }
         }
         if (!gameData && cardElement) {
@@ -944,9 +965,20 @@
                     saveVisitorPreference('bookmarks', gid, nextState);
                 }
 
+                if (typeof window.showToast === 'function') {
+                    window.showToast(nextState ? 'Saved to bookmarks 🔖' : 'Removed from bookmarks', nextState ? 'success' : 'info');
+                }
+
                 if (typeof window.refreshStats === 'function') window.refreshStats();
                 if (typeof window.updateCollectionCore === 'function' && window.__ALL_GAMES__) {
                     window.updateCollectionCore(window.__ALL_GAMES__);
+                }
+
+                // Persist to user's personal database library
+                if (typeof isLoggedIn === 'function' && isLoggedIn() && typeof apiPut === 'function') {
+                    apiPut(`/me/games/${gid}`, { is_bookmarked: nextState }).catch(err => {
+                        console.warn('Personal library bookmark sync:', err);
+                    });
                 }
 
                 // Persist to remote database if logged in as admin
@@ -980,13 +1012,22 @@
                     saveVisitorPreference('favorites', gid, nextState);
                 }
 
+                if (typeof window.showToast === 'function') {
+                    window.showToast(nextState ? 'Added to your favorites ⭐' : 'Removed from favorites', nextState ? 'favorite' : 'info');
+                }
+
                 if (typeof window.refreshGrids === 'function') window.refreshGrids();
                 if (typeof window.refreshStats === 'function') window.refreshStats();
                 if (typeof window.updateCollectionCore === 'function' && window.__ALL_GAMES__) {
                     window.updateCollectionCore(window.__ALL_GAMES__);
                 }
 
-                // Persist to remote database if logged in as admin
+                // Persist to remote database (personal library if logged in, global if admin)
+                if (typeof isLoggedIn === 'function' && isLoggedIn() && typeof apiPut === 'function') {
+                    apiPut(`/me/games/${gid}`, { is_favorite: nextState }).catch(err => {
+                        console.warn('Personal library sync:', err);
+                    });
+                }
                 if (typeof isAdmin === 'function' && isAdmin() && typeof apiPatch === 'function') {
                     try {
                         await apiPatch(`/games/${gid}/status`, { is_favorited: nextState });
@@ -1033,7 +1074,12 @@
                         window.updateCollectionCore(window.__ALL_GAMES__);
                     }
 
-                    // Persist to remote database if logged in as admin
+                    // Persist to remote database (personal library if logged in, global if admin)
+                    if (typeof isLoggedIn === 'function' && isLoggedIn() && typeof apiPut === 'function') {
+                        apiPut(`/me/games/${gid}`, { status: btnVal }).catch(err => {
+                            console.warn('Personal library sync:', err);
+                        });
+                    }
                     if (typeof isAdmin === 'function' && isAdmin() && typeof apiPatch === 'function') {
                         try {
                             await apiPatch(`/games/${gid}/status`, { play_status: btnVal });

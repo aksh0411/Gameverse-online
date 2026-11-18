@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>03: User Signup, OTP, Login &amp; Recovery Sequence</title>
+  <style>
+    :root {
+      --bg: #090614;
+      --panel: #110d24;
+      --panel-border: rgba(255, 255, 255, 0.12);
+      --text: #f0f4fc;
+      --text-muted: #8e8aa8;
+      --cyan: #00f5d4;
+      --magenta: #f72585;
+      --purple: #7209b7;
+      --yellow: #ffd166;
+      --green: #06d6a0;
+      --blue: #4cc9f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .header {
+      max-width: 1060px;
+      width: 100%;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--panel-border);
+      padding-bottom: 16px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      background: rgba(0, 245, 212, 0.12);
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    h1 { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+    p.sub { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+    .canvas-card {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 1060px;
+      width: 100%;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
+    }
+    svg { width: 100%; height: auto; display: block; }
+    .status-tags {
+      display: flex;
+      gap: 12px;
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid var(--panel-border);
+    }
+    .tag {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .tag-impl { background: rgba(6, 214, 160, 0.15); border: 1px solid var(--green); color: var(--green); }
+    .tag-part { background: rgba(255, 209, 102, 0.15); border: 1px solid var(--yellow); color: var(--yellow); }
+    .tag-plan { background: rgba(247, 37, 133, 0.15); border: 1px solid var(--magenta); color: var(--magenta); }
+    .flows-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .flow-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 11px;
+    }
+    .flow-card strong { display: block; color: #fff; font-size: 12px; margin-bottom: 4px; }
+    .flow-card span { color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="badge">Sequence Diagram 3 of 5</div>
+    <h1>User Signup, Email OTP, Universal Sign-in &amp; Password Recovery</h1>
+    <p class="sub">Life-cycle of public gamers: registration with live username check, Supabase email verification, reverse-proxy login supporting email OR username, and silent password recovery.</p>
+  </div>
+
+  <div class="canvas-card">
+    <svg viewBox="0 0 1000 700" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="ac" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 8 5 L 0 9 z" fill="#00f5d4"/>
+        </marker>
+        <marker id="am" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 8 5 L 0 9 z" fill="#f72585"/>
+        </marker>
+        <marker id="ay" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 8 5 L 0 9 z" fill="#ffd166"/>
+        </marker>
+        <marker id="ag" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 8 5 L 0 9 z" fill="#06d6a0"/>
+        </marker>
+      </defs>
+
+      <!-- ACTORS (Columns) -->
+      <!-- A1: Browser User -->
+      <g transform="translate(30, 20)">
+        <rect width="130" height="42" rx="8" fill="#141126" stroke="#4cc9f0" stroke-width="1.5"/>
+        <text x="65" y="22" fill="#fff" font-size="12" font-weight="700" text-anchor="middle">1. User Browser</text>
+        <text x="65" y="34" fill="#8e8aa8" font-size="9" text-anchor="middle">Auth Modal Dialog</text>
+        <line x1="65" y1="42" x2="65" y2="670" stroke="#4cc9f0" stroke-opacity="0.25" stroke-dasharray="3 3"/>
+      </g>
+
+      <!-- A2: Frontend Client (auth.js) -->
+      <g transform="translate(190, 20)">
+        <rect width="150" height="42" rx="8" fill="#141126" stroke="#00f5d4" stroke-width="1.5"/>
+        <text x="75" y="22" fill="#fff" font-size="12" font-weight="700" text-anchor="middle">2. Client auth.js</text>
+        <text x="75" y="34" fill="#8e8aa8" font-size="9" text-anchor="middle">Supabase JS &amp; Session</text>
+        <line x1="75" y1="42" x2="75" y2="670" stroke="#00f5d4" stroke-opacity="0.25" stroke-dasharray="3 3"/>
+      </g>
+
+      <!-- A3: FastAPI /api/auth Router -->
+      <g transform="translate(370, 20)">
+        <rect width="160" height="42" rx="8" fill="#141126" stroke="#f72585" stroke-width="1.5"/>
+        <text x="80" y="22" fill="#fff" font-size="12" font-weight="700" text-anchor="middle">3. FastAPI /api/auth</text>
+        <text x="80" y="34" fill="#8e8aa8" font-size="9" text-anchor="middle">user_auth.py:24</text>
+        <line x1="80" y1="42" x2="80" y2="670" stroke="#f72585" stroke-opacity="0.25" stroke-dasharray="3 3"/>
+      </g>
+
+      <!-- A4: PostgreSQL (profiles, login_attempts) -->
+      <g transform="translate(560, 20)">
+        <rect width="170" height="42" rx="8" fill="#141126" stroke="#ffd166" stroke-width="1.5"/>
+        <text x="85" y="22" fill="#fff" font-size="12" font-weight="700" text-anchor="middle">4. Postgres (public)</text>
+        <text x="85" y="34" fill="#8e8aa8" font-size="9" text-anchor="middle">profiles &amp; rate limit</text>
+        <line x1="85" y1="42" x2="85" y2="670" stroke="#ffd166" stroke-opacity="0.25" stroke-dasharray="3 3"/>
+      </g>
+
+      <!-- A5: Supabase Cloud Auth (GoTrue) -->
+      <g transform="translate(760, 20)">
+        <rect width="210" height="42" rx="8" fill="#141126" stroke="#06d6a0" stroke-width="1.5"/>
+        <text x="105" y="22" fill="#fff" font-size="12" font-weight="700" text-anchor="middle">5. Supabase GoTrue Auth</text>
+        <text x="105" y="34" fill="#8e8aa8" font-size="9" text-anchor="middle">auth.users &amp; Email Delivery</text>
+        <line x1="105" y1="42" x2="105" y2="670" stroke="#06d6a0" stroke-opacity="0.25" stroke-dasharray="3 3"/>
+      </g>
+
+      <!-- FLOW A: SIGNUP & LIVE VALIDATION -->
+      <text x="35" y="80" fill="#ffd166" font-size="11" font-weight="700">FLOW A: USER SIGNUP &amp; OTP VERIFICATION [IMPLEMENTED]</text>
+
+      <!-- Live username check -->
+      <path d="M 95 100 L 445 100" stroke="#4cc9f0" stroke-width="1.5" marker-end="url(#ac)"/>
+      <text x="270" y="93" fill="#4cc9f0" font-size="10" text-anchor="middle">1. Types username: GET /api/auth/username-available?u=MasterChief</text>
+
+      <path d="M 450 115 L 640 115" stroke="#ffd166" stroke-width="1.5" marker-end="url(#ay)"/>
+      <text x="545" y="110" fill="#ffd166" font-size="9" text-anchor="middle">SELECT 1 FROM public.profiles WHERE username</text>
+
+      <path d="M 445 130 L 95 130" stroke="#06d6a0" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#ag)"/>
+      <text x="270" y="125" fill="#06d6a0" font-size="10" text-anchor="middle">Returns {available: true}</text>
+
+      <!-- Submit Signup -->
+      <path d="M 95 155 L 260 155" stroke="#00f5d4" stroke-width="1.5" marker-end="url(#ac)"/>
+      <text x="175" y="150" fill="#00f5d4" font-size="10" text-anchor="middle">2. Submit (email, password, avatar)</text>
+
+      <!-- Client calls Supabase SDK signUp directly -->
+      <path d="M 270 175 L 860 175" stroke="#06d6a0" stroke-width="2" marker-end="url(#ag)"/>
+      <text x="565" y="170" fill="#06d6a0" font-size="10" text-anchor="middle">3. supabase.auth.signUp({email, password, data:{username, avatar_url}})</text>
+
+      <!-- Supabase sends OTP email & DB trigger fires -->
+      <rect x="760" y="195" width="210" height="36" rx="6" fill="#1c2522" stroke="#06d6a0" stroke-width="1"/>
+      <text x="770" y="210" fill="#06d6a0" font-size="10" font-weight="700">Sends 6-digit OTP email</text>
+      <text x="770" y="223" fill="#ffd166" font-size="9">Trigger: on_auth_user_created [PARTIAL]</text>
+
+      <!-- User enters OTP -->
+      <path d="M 95 245 L 260 245" stroke="#4cc9f0" stroke-width="1.5" marker-end="url(#ac)"/>
+      <text x="175" y="238" fill="#4cc9f0" font-size="10" text-anchor="middle">4. Enters 6-digit OTP</text>
+
+      <path d="M 270 265 L 860 265" stroke="#06d6a0" stroke-width="1.5" marker-end="url(#ag)"/>
+      <text x="565" y="258" fill="#06d6a0" font-size="10" text-anchor="middle">5. supabase.auth.verifyOtp({email, token, type: 'signup'})</text>
+
+      <!-- FLOW B: SIGN-IN BY EMAIL OR USERNAME -->
+      <text x="35" y="315" fill="#00f5d4" font-size="11" font-weight="700">FLOW B: SIGN-IN BY USERNAME OR EMAIL [IMPLEMENTED]</text>
+
+      <path d="M 95 335 L 445 335" stroke="#00f5d4" stroke-width="2" marker-end="url(#ac)"/>
+      <text x="270" y="328" fill="#00f5d4" font-size="10" text-anchor="middle">1. POST /api/auth/login {identifier: "@MasterChief", password}</text>
+
+      <!-- Rate check -->
+      <path d="M 450 355 L 640 355" stroke="#ffd166" stroke-width="1.5" marker-end="url(#ay)"/>
+      <text x="545" y="348" fill="#ffd166" font-size="9" text-anchor="middle">check_login_rate_limit(ip, identifier)</text>
+
+      <!-- Resolve username to email -->
+      <path d="M 450 375 L 640 375" stroke="#ffd166" stroke-width="1.5" marker-end="url(#ay)"/>
+      <text x="545" y="370" fill="#ffd166" font-size="9" text-anchor="middle">SELECT email FROM auth.users JOIN profiles WHERE username</text>
+
+      <!-- Proxy to Supabase Token endpoint -->
+      <path d="M 455 405 L 860 405" stroke="#f72585" stroke-width="2" marker-end="url(#am)"/>
+      <text x="655" y="398" fill="#f72585" font-size="10" text-anchor="middle">2. HTTPX POST /auth/v1/token (Sb-Forwarded-For: ip)</text>
+
+      <path d="M 860 430 L 455 430" stroke="#06d6a0" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#ag)"/>
+      <text x="655" y="424" fill="#06d6a0" font-size="9" text-anchor="middle">200 OK: {access_token, refresh_token, user}</text>
+
+      <!-- Return enriched session -->
+      <path d="M 445 455 L 270 455" stroke="#00f5d4" stroke-width="2" marker-end="url(#ac)"/>
+      <text x="355" y="448" fill="#00f5d4" font-size="10" text-anchor="middle">3. Return tokens + user profile (role, avatar_url)</text>
+
+      <!-- Save session with 30-day or 3-hour logic -->
+      <rect x="180" y="470" width="180" height="34" rx="6" fill="#12252c" stroke="#00f5d4" stroke-width="1"/>
+      <text x="190" y="485" fill="#00f5d4" font-size="9" font-weight="700">Remember Me: 30d vs 3h</text>
+      <text x="190" y="497" fill="#8e8aa8" font-size="8">gv_access_token in storage</text>
+
+      <!-- FLOW C: PASSWORD RECOVERY -->
+      <text x="35" y="535" fill="#f72585" font-size="11" font-weight="700">FLOW C: PASSWORD RECOVERY [IMPLEMENTED]</text>
+
+      <path d="M 95 555 L 445 555" stroke="#f72585" stroke-width="1.5" marker-end="url(#am)"/>
+      <text x="270" y="548" fill="#f72585" font-size="10" text-anchor="middle">1. POST /api/auth/forgot {identifier: "user@example.com"}</text>
+
+      <path d="M 450 575 L 640 575" stroke="#ffd166" stroke-width="1.5" marker-end="url(#ay)"/>
+      <text x="545" y="568" fill="#ffd166" font-size="9" text-anchor="middle">Rate check &amp; resolve username to email</text>
+
+      <path d="M 455 600 L 860 600" stroke="#f72585" stroke-width="1.5" marker-end="url(#am)"/>
+      <text x="655" y="593" fill="#f72585" font-size="9" text-anchor="middle">HTTPX POST /auth/v1/recover (redirect: reset-password.html)</text>
+
+      <!-- Uniform message -->
+      <path d="M 445 625 L 95 625" stroke="#06d6a0" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#ag)"/>
+      <text x="270" y="618" fill="#06d6a0" font-size="10" text-anchor="middle">Always returns generic success message (Anti-Enumeration)</text>
+    </svg>
+
+    <div class="status-tags">
+      <div class="tag tag-impl">✓ IMPLEMENTED: Supabase SignUp, OTP verify, Universal Login, Forgot, Reset Page, Rate Limit</div>
+      <div class="tag tag-part">⚠ PARTIAL: on_auth_user_created trigger (lives in cloud DB, SQL not in repo)</div>
+      <div class="tag tag-plan">⚙ PLANNED: Persistent login_attempts cron prune, custom SMTP branded templates</div>
+    </div>
+
+    <div class="flows-grid">
+      <div class="flow-card">
+        <strong>Universal Identifier Resolution</strong>
+        <span>user_auth.py:110 checks for <code>@</code>. If absent, performs a database query on <code>auth.users JOIN public.profiles</code> to resolve the username into an email before forwarding to Supabase.</span>
+      </div>
+      <div class="flow-card">
+        <strong>Anti-Account-Enumeration</strong>
+        <span>user_auth.py:222 returns uniform <code>Invalid credentials</code> for all bad logins. The recovery endpoint (line 285) returns a generic success message regardless of whether the account exists.</span>
+      </div>
+      <div class="flow-card">
+        <strong>30-Day vs 3-Hour Session</strong>
+        <span>auth.js:15-18 &amp; api.js:48: When "Remember Me" is checked, tokens persist for 30 days. On public PCs (unchecked), the token is purged after 3 hours of inactivity.</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

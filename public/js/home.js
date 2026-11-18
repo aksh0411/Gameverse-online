@@ -37,29 +37,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error("Error loading home stats:", err);
     }
 
-    // 4. Avatar Navigation (Open About Me Modal)
+    // 4. Avatar Navigation (Open Profile Modal or Login Modal)
     const avatarBtn = document.getElementById('avatarBtn');
     if (avatarBtn) {
         avatarBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            const aboutModal = document.getElementById('aboutModal');
-            if (aboutModal) {
-                aboutModal.classList.remove('hidden');
-                const inner = aboutModal.querySelector('.about-modal-inner');
-                if (inner) inner.scrollTop = 0;
+            e.stopPropagation();
+            if (typeof isLoggedIn === 'function' && isLoggedIn()) {
+                if (typeof openUserProfileModal === 'function') openUserProfileModal();
+            } else if (typeof openLoginModal === 'function') {
+                openLoginModal();
             }
         });
     }
 
-    // Profile icon inside the game detail modal navbar — opens the About window (same as header avatar)
+    // Profile icon inside the game detail modal navbar — opens Profile or Login
     const modalNavProfile = document.getElementById('modalNavProfile');
     if (modalNavProfile) {
-        modalNavProfile.addEventListener('click', () => {
-            const aboutModal = document.getElementById('aboutModal');
-            if (aboutModal) {
-                aboutModal.classList.remove('hidden');
-                const inner = aboutModal.querySelector('.about-modal-inner');
-                if (inner) inner.scrollTop = 0;
+        modalNavProfile.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (typeof isLoggedIn === 'function' && isLoggedIn()) {
+                if (typeof openUserProfileModal === 'function') openUserProfileModal();
+            } else if (typeof openLoginModal === 'function') {
+                openLoginModal();
             }
         });
     }

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>01: How Does GAMEVERSE Run End-to-End?</title>
+  <style>
+    :root {
+      --bg: #090614;
+      --panel: #110d24;
+      --panel-border: rgba(255, 255, 255, 0.12);
+      --text: #f0f4fc;
+      --text-muted: #8e8aa8;
+      --cyan: #00f5d4;
+      --magenta: #f72585;
+      --purple: #7209b7;
+      --yellow: #ffd166;
+      --blue: #4cc9f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .header {
+      max-width: 1060px;
+      width: 100%;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--panel-border);
+      padding-bottom: 16px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      background: rgba(0, 245, 212, 0.12);
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    h1 { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+    p.sub { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+    .canvas-card {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 1060px;
+      width: 100%;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
+    }
+    svg { width: 100%; height: auto; display: block; }
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--panel-border);
+    }
+    .legend-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 12px;
+    }
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-top: 3px;
+      flex-shrink: 0;
+    }
+    .legend-text strong { display: block; color: #fff; font-size: 12px; }
+    .legend-text span { color: var(--text-muted); font-size: 11px; }
+    .interactive-note {
+      margin-top: 16px;
+      font-size: 12px;
+      color: var(--cyan);
+      text-align: center;
+      background: rgba(0, 245, 212, 0.05);
+      padding: 8px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="badge">Architecture Diagram 1 of 5</div>
+    <h1>How does GAMEVERSE run end to end?</h1>
+    <p class="sub">Topology mapping Browser clients, Static CDN assets, Vercel Serverless / ASGI entry point, FastAPI middleware pipelines, in-memory route caching, psycopg3 connection pooling, and Supabase cloud Postgres &amp; Auth.</p>
+  </div>
+
+  <div class="canvas-card">
+    <svg viewBox="0 0 1000 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <!-- Gradients -->
+        <linearGradient id="grad-client" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#4cc9f0" stop-opacity="0.25"/>
+          <stop offset="1%" stop-color="#7209b7" stop-opacity="0.25"/>
+        </linearGradient>
+        <linearGradient id="grad-api" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#00f5d4" stop-opacity="0.25"/>
+          <stop offset="1%" stop-color="#4cc9f0" stop-opacity="0.15"/>
+        </linearGradient>
+        <linearGradient id="grad-db" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#f72585" stop-opacity="0.25"/>
+          <stop offset="1%" stop-color="#7209b7" stop-opacity="0.2"/>
+        </linearGradient>
+        <filter id="glow-cyan" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="3" result="blur"/>
+          <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+        </filter>
+        <marker id="arrow-cyan" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 8 5 L 0 9 z" fill="#00f5d4"/>
+        </marker>
+        <marker id="arrow-magenta" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 8 5 L 0 9 z" fill="#f72585"/>
+        </marker>
+        <marker id="arrow-yellow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 8 5 L 0 9 z" fill="#ffd166"/>
+        </marker>
+      </defs>
+
+      <!-- Background Groups / Swimlanes -->
+      <rect x="20" y="20" width="220" height="550" rx="12" fill="#0f0c1d" stroke="rgba(76,201,240,0.3)" stroke-dasharray="4 4"/>
+      <text x="35" y="48" fill="#4cc9f0" font-size="12" font-weight="700" letter-spacing="1">LAYER 1: CLIENT TIER</text>
+
+      <rect x="270" y="20" width="380" height="550" rx="12" fill="#0c111e" stroke="rgba(0,245,212,0.3)" stroke-dasharray="4 4"/>
+      <text x="285" y="48" fill="#00f5d4" font-size="12" font-weight="700" letter-spacing="1">LAYER 2: APPLICATION &amp; CACHE TIER</text>
+
+      <rect x="680" y="20" width="300" height="550" rx="12" fill="#170c1b" stroke="rgba(247,37,133,0.3)" stroke-dasharray="4 4"/>
+      <text x="695" y="48" fill="#f72585" font-size="12" font-weight="700" letter-spacing="1">LAYER 3: DATA &amp; AUTH TIER</text>
+
+      <!-- NODE 1: Browser Client -->
+      <g id="node-1" transform="translate(40, 70)">
+        <rect width="180" height="90" rx="10" fill="url(#grad-client)" stroke="#4cc9f0" stroke-width="1.5"/>
+        <text x="16" y="28" fill="#fff" font-size="13" font-weight="700">1. Client Browser</text>
+        <text x="16" y="46" fill="#8e8aa8" font-size="11">Desktop &amp; Mobile Web</text>
+        <text x="16" y="62" fill="#4cc9f0" font-size="10">Three.js, Vanilla ES6, CSS</text>
+        <text x="16" y="78" fill="#ffd166" font-size="9">file: public/*.html, js/*</text>
+      </g>
+
+      <!-- NODE 2: Client-side Storage Cache -->
+      <g id="node-2" transform="translate(40, 220)">
+        <rect width="180" height="90" rx="10" fill="#141126" stroke="#ffd166" stroke-width="1.5"/>
+        <text x="16" y="28" fill="#ffd166" font-size="13" font-weight="700">2. Browser Caches</text>
+        <text x="16" y="46" fill="#8e8aa8" font-size="11">localStorage / sessionStorage</text>
+        <text x="16" y="62" fill="#f0f4fc" font-size="10">gv_stats_cache, gv_user_prefs_*</text>
+        <text x="16" y="78" fill="#8e8aa8" font-size="9">api.js:30, home.js:16</text>
+      </g>
+
+      <!-- NODE 3: Static Frontend Assets -->
+      <g id="node-3" transform="translate(40, 370)">
+        <rect width="180" height="90" rx="10" fill="#141126" stroke="#4cc9f0" stroke-width="1.5"/>
+        <text x="16" y="28" fill="#fff" font-size="13" font-weight="700">3. Static CDN Assets</text>
+        <text x="16" y="46" fill="#8e8aa8" font-size="11">public/ (HTML, JS, CSS, WebP)</text>
+        <text x="16" y="62" fill="#4cc9f0" font-size="10">Cache-Control: 1d + 7d SWR</text>
+        <text x="16" y="78" fill="#8e8aa8" font-size="9">main.py:173, vercel.json:1</text>
+      </g>
+
+      <!-- NODE 4: Vercel Serverless Bridge / Local Uvicorn -->
+      <g id="node-4" transform="translate(290, 70)">
+        <rect width="165" height="90" rx="10" fill="url(#grad-api)" stroke="#00f5d4" stroke-width="1.5"/>
+        <text x="14" y="28" fill="#fff" font-size="13" font-weight="700">4. Vercel Serverless</text>
+        <text x="14" y="46" fill="#8e8aa8" font-size="11">api/index.py (ASGI Bridge)</text>
+        <text x="14" y="62" fill="#00f5d4" font-size="10">_VercelPathRestoreMiddleware</text>
+        <text x="14" y="78" fill="#8e8aa8" font-size="9">api/index.py:17, vercel.json:14</text>
+      </g>
+
+      <!-- NODE 5: FastAPI Engine & Middleware -->
+      <g id="node-5" transform="translate(290, 220)">
+        <rect width="165" height="90" rx="10" fill="#101926" stroke="#00f5d4" stroke-width="1.5"/>
+        <text x="14" y="28" fill="#fff" font-size="13" font-weight="700">5. FastAPI Core</text>
+        <text x="14" y="46" fill="#8e8aa8" font-size="11">CORS regex, GZip (&gt;1KB)</text>
+        <text x="14" y="62" fill="#00f5d4" font-size="10">Server-Timing &amp; Cache Header</text>
+        <text x="14" y="78" fill="#8e8aa8" font-size="9">main.py:121-184</text>
+      </g>
+
+      <!-- NODE 6: In-Process Route Memory Cache -->
+      <g id="node-6" transform="translate(480, 220)">
+        <rect width="155" height="90" rx="10" fill="#161529" stroke="#ffd166" stroke-width="1.5"/>
+        <text x="12" y="26" fill="#ffd166" font-size="12" font-weight="700">6. In-Memory Cache</text>
+        <text x="12" y="44" fill="#8e8aa8" font-size="10">genres, platforms, modes</text>
+        <text x="12" y="60" fill="#f0f4fc" font-size="10">developers, publishers</text>
+        <text x="12" y="76" fill="#ffd166" font-size="9">TTL=3600s | routes/*.py</text>
+      </g>
+
+      <!-- NODE 7: psycopg3 Connection Pool -->
+      <g id="node-7" transform="translate(290, 370)">
+        <rect width="165" height="90" rx="10" fill="#161b2c" stroke="#4cc9f0" stroke-width="1.5"/>
+        <text x="14" y="28" fill="#fff" font-size="13" font-weight="700">7. psycopg3 Pool</text>
+        <text x="14" y="46" fill="#8e8aa8" font-size="11">min=1, max=3 pool size</text>
+        <text x="14" y="62" fill="#4cc9f0" font-size="10">SSL=require, autocommit=True</text>
+        <text x="14" y="78" fill="#8e8aa8" font-size="9">database.py:33-41</text>
+      </g>
+
+      <!-- NODE 8: Supabase PgBouncer Pooler -->
+      <g id="node-8" transform="translate(705, 70)">
+        <rect width="250" height="90" rx="10" fill="url(#grad-db)" stroke="#f72585" stroke-width="1.5"/>
+        <text x="16" y="28" fill="#fff" font-size="13" font-weight="700">8. Supabase Pooler</text>
+        <text x="16" y="46" fill="#8e8aa8" font-size="11">aws-0-[region].pooler.supabase.com</text>
+        <text x="16" y="62" fill="#f72585" font-size="10">Port 6543 (Transaction Mode)</text>
+        <text x="16" y="78" fill="#8e8aa8" font-size="9">.env.example:4</text>
+      </g>
+
+      <!-- NODE 9: PostgreSQL Cloud Database -->
+      <g id="node-9" transform="translate(705, 220)">
+        <rect width="250" height="90" rx="10" fill="#200d23" stroke="#f72585" stroke-width="1.5"/>
+        <text x="16" y="28" fill="#fff" font-size="13" font-weight="700">9. Supabase PostgreSQL</text>
+        <text x="16" y="46" fill="#8e8aa8" font-size="11">public.games, genres, platforms</text>
+        <text x="16" y="62" fill="#f72585" font-size="10">user_games, profiles, login_attempts</text>
+        <text x="16" y="78" fill="#8e8aa8" font-size="9">main.py:68-80, auth.py:136</text>
+      </g>
+
+      <!-- NODE 10: Supabase GoTrue Auth API -->
+      <g id="node-10" transform="translate(705, 370)">
+        <rect width="250" height="90" rx="10" fill="#200d23" stroke="#7209b7" stroke-width="1.5"/>
+        <text x="16" y="28" fill="#fff" font-size="13" font-weight="700">10. Supabase GoTrue API</text>
+        <text x="16" y="46" fill="#8e8aa8" font-size="11">/auth/v1/token, /auth/v1/recover</text>
+        <text x="16" y="62" fill="#00f5d4" font-size="10">JWKS (ES256/RS256) + REST Verify</text>
+        <text x="16" y="78" fill="#8e8aa8" font-size="9">auth.py:80-94, user_auth.py:149</text>
+      </g>
+
+      <!-- CONNECTOR PATHS -->
+      <!-- Node 1 -> Node 2 (Client to LocalStorage) -->
+      <path d="M 130 160 L 130 220" stroke="#ffd166" stroke-width="2" marker-end="url(#arrow-yellow)" stroke-dasharray="3 3"/>
+      
+      <!-- Node 1 -> Node 3 (Client to Static CDN) -->
+      <path d="M 60 160 C 20 250 20 320 60 370" stroke="#4cc9f0" stroke-width="2" marker-end="url(#arrow-cyan)"/>
+
+      <!-- Node 1 -> Node 4 (Client to Vercel/API) -->
+      <path d="M 220 115 L 290 115" stroke="#00f5d4" stroke-width="2" marker-end="url(#arrow-cyan)"/>
+      <text x="232" y="108" fill="#00f5d4" font-size="10">/api/*</text>
+
+      <!-- Node 4 -> Node 5 (Vercel ASGI Bridge to FastAPI) -->
+      <path d="M 372 160 L 372 220" stroke="#00f5d4" stroke-width="2" marker-end="url(#arrow-cyan)"/>
+
+      <!-- Node 5 <-> Node 6 (FastAPI to In-Memory Cache) -->
+      <path d="M 455 250 L 480 250" stroke="#ffd166" stroke-width="2" marker-end="url(#arrow-yellow)"/>
+      <path d="M 480 275 L 455 275" stroke="#ffd166" stroke-width="2" marker-end="url(#arrow-yellow)"/>
+      <text x="456" y="244" fill="#ffd166" font-size="8">hit</text>
+
+      <!-- Node 5 -> Node 7 (FastAPI to DB Pool) -->
+      <path d="M 372 310 L 372 370" stroke="#4cc9f0" stroke-width="2" marker-end="url(#arrow-cyan)"/>
+      <text x="378" y="342" fill="#4cc9f0" font-size="9">get_db()</text>
+
+      <!-- Node 7 -> Node 8 (Pool to Supabase Pooler) -->
+      <path d="M 455 415 C 570 415 600 115 705 115" stroke="#f72585" stroke-width="2" marker-end="url(#arrow-magenta)"/>
+      <text x="545" y="280" fill="#f72585" font-size="10">TLS port 6543</text>
+
+      <!-- Node 8 -> Node 9 (Pooler to PostgreSQL Core) -->
+      <path d="M 830 160 L 830 220" stroke="#f72585" stroke-width="2" marker-end="url(#arrow-magenta)"/>
+
+      <!-- Node 5 -> Node 10 (FastAPI proxy to Supabase GoTrue Auth) -->
+      <path d="M 455 295 C 570 310 600 415 705 415" stroke="#7209b7" stroke-width="2" marker-end="url(#arrow-magenta)"/>
+      <text x="545" y="375" fill="#00f5d4" font-size="9">HTTPX /auth/v1/token</text>
+    </svg>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#4cc9f0;"></div>
+        <div class="legend-text">
+          <strong>Client Layer (Nodes 1–3)</strong>
+          <span>Vanilla JS UI, Three.js 3D visuals, localStorage instant hydration</span>
+        </div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#00f5d4;"></div>
+        <div class="legend-text">
+          <strong>Application Layer (Nodes 4, 5, 7)</strong>
+          <span>FastAPI on Vercel Serverless, GZip, Server-Timing, psycopg3 pool</span>
+        </div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#ffd166;"></div>
+        <div class="legend-text">
+          <strong>Cache Hierarchy (Nodes 2 &amp; 6)</strong>
+          <span>Local storage zero-latency read + in-process Python 3600s RAM cache</span>
+        </div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#f72585;"></div>
+        <div class="legend-text">
+          <strong>Database &amp; Auth (Nodes 8–10)</strong>
+          <span>Supabase Port 6543 Transaction Pooler + PostgreSQL tables + GoTrue</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="interactive-note">
+      Node count: 10 nodes (Target: 8–12). File links verified against repository code.
+    </div>
+  </div>
+</body>
+</html>

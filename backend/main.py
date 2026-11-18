@@ -18,7 +18,9 @@ if _backend_dir not in sys.path:
 import database
 
 # Import routes
-from auth import router as auth_router
+from auth import router as auth_router, init_login_attempts_table
+from routes.user_auth import router as user_auth_router
+from routes.user_library import router as user_library_router
 from routes.games import router as games_router
 from routes.genres import router as genres_router
 from routes.platforms import router as platforms_router
@@ -73,11 +75,16 @@ async def lifespan(app: FastAPI):
             "CREATE INDEX IF NOT EXISTS idx_gameplatforms_platform_id ON gameplatforms(platform_id);",
             "CREATE INDEX IF NOT EXISTS idx_gamemodes_game_id ON gamemodesrelation(game_id);",
             "CREATE INDEX IF NOT EXISTS idx_gamestory_game_id ON gamestory(game_id);",
-            "CREATE INDEX IF NOT EXISTS idx_systemreqs_game_id ON systemrequirements(game_id);"
+            "CREATE INDEX IF NOT EXISTS idx_systemreqs_game_id ON systemrequirements(game_id);",
+            "CREATE INDEX IF NOT EXISTS idx_user_games_game ON user_games(game_id);"
         ]
         with database.pool.connection() as conn:
             conn.autocommit = True
             with conn.cursor() as cur:
+                try:
+                    init_login_attempts_table(cur)
+                except Exception:
+                    pass
                 for idx_sql in indexes:
                     try:
                         cur.execute(idx_sql)
@@ -178,6 +185,8 @@ async def add_cache_headers(request, call_next):
 
 # Include routes
 app.include_router(auth_router)
+app.include_router(user_auth_router)
+app.include_router(user_library_router)
 app.include_router(games_router)
 app.include_router(genres_router)
 app.include_router(platforms_router)

@@ -17,15 +17,51 @@ function escHtml(value) {
 window.escHtml = escHtml;
 
 async function apiGet(endpoint) {
-    const res = await fetch(`${API_BASE}${endpoint}`);
+    const token = getAuthToken();
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const res = await fetch(`${API_BASE}${endpoint}`, { headers });
     if (!res.ok) throw new Error(`API Error: ${res.status}`);
     return res.json();
 }
 
 function getAuthToken() {
-    const token = sessionStorage.getItem('admin_token');
+    // 1. Supabase User Token (check sessionStorage, then localStorage, then Supabase SDK key)
+    let userToken = sessionStorage.getItem('gv_access_token') || localStorage.getItem('gv_access_token');
+    if (!userToken) {
+        try {
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (k && k.startsWith('sb-') && k.endsWith('-auth-token')) {
+                    const parsed = JSON.parse(localStorage.getItem(k));
+                    if (parsed && parsed.access_token) {
+                        userToken = parsed.access_token;
+                        sessionStorage.setItem('gv_access_token', userToken);
+                        break;
+                    }
+                }
+            }
+        } catch (e) {}
+    }
+
+    if (userToken) {
+        const loginTime = parseInt(sessionStorage.getItem('gv_login_time') || localStorage.getItem('gv_login_time'), 10);
+        if (loginTime && (Date.now() - loginTime) >= (3 * 3600 * 1000)) {
+            sessionStorage.removeItem('gv_access_token');
+            sessionStorage.removeItem('gv_token_expiry');
+            sessionStorage.removeItem('gv_login_time');
+            localStorage.removeItem('gv_access_token');
+            localStorage.removeItem('gv_token_expiry');
+            localStorage.removeItem('gv_login_time');
+            return null;
+        }
+        return userToken;
+    }
+
+    // 2. Legacy Admin Token fallback
+    const token = sessionStorage.getItem('admin_token') || localStorage.getItem('admin_token');
     if (!token) return null;
-    const expiry = parseInt(sessionStorage.getItem('admin_token_expiry'), 10);
+    const expiry = parseInt(sessionStorage.getItem('admin_token_expiry') || localStorage.getItem('admin_token_expiry'), 10);
     if (expiry && Date.now() > expiry) {
         sessionStorage.removeItem('admin_token');
         sessionStorage.removeItem('admin_token_expiry');
@@ -156,15 +192,19 @@ function getImageUrl(imgUrl) {
 }
 
 // =========================================================================
-// VISITOR-SCOPED PREFERENCE HELPERS
-// Allows public visitors to favorite, bookmark, and track status via localStorage
-// without hitting 401 Unauthorized errors on admin-only API routes.
+// USER & VISITOR PREFERENCE HELPERS
+// Saves favorites, bookmarks, and status with immediate user-scoped local persistence
+// backed by remote PostgreSQL user_games sync.
 // =========================================================================
-const VISITOR_PREFS_KEY = 'gv_visitor_preferences';
+function getUserPrefKey() {
+    const username = sessionStorage.getItem('gv_username') || localStorage.getItem('gv_username');
+    return username ? `gv_user_prefs_${username.toLowerCase()}` : 'gv_visitor_preferences';
+}
 
 function getVisitorPreferences() {
     try {
-        const stored = localStorage.getItem(VISITOR_PREFS_KEY);
+        const key = getUserPrefKey();
+        const stored = localStorage.getItem(key);
         return stored ? JSON.parse(stored) : { favorites: {}, bookmarks: {}, statuses: {} };
     } catch (e) {
         return { favorites: {}, bookmarks: {}, statuses: {} };
@@ -173,39 +213,108 @@ function getVisitorPreferences() {
 
 function saveVisitorPreference(type, gameId, value) {
     try {
+        const key = getUserPrefKey();
         const prefs = getVisitorPreferences();
         if (!prefs[type]) prefs[type] = {};
-        const key = String(gameId);
+        const gidStr = String(gameId);
         if (value === null || value === undefined || value === false) {
-            delete prefs[type][key];
+            delete prefs[type][gidStr];
         } else {
-            prefs[type][key] = value;
+            prefs[type][gidStr] = value;
         }
-        localStorage.setItem(VISITOR_PREFS_KEY, JSON.stringify(prefs));
+        localStorage.setItem(key, JSON.stringify(prefs));
     } catch (e) {
-        console.warn('Could not save visitor preference:', e);
+        console.warn('Could not save preference locally:', e);
+    }
+
+    // Persist to user's database library if logged in
+    if (typeof isLoggedIn === 'function' && isLoggedIn()) {
+        const gid = parseInt(gameId, 10);
+        if (!isNaN(gid)) {
+            if (type === 'favorites') {
+                apiPut(`/me/games/${gid}`, { is_favorite: Boolean(value) }).catch(err => {
+                    console.warn('Personal library favorite sync:', err);
+                });
+            } else if (type === 'bookmarks') {
+                apiPut(`/me/games/${gid}`, { is_bookmarked: Boolean(value) }).catch(err => {
+                    console.warn('Personal library bookmark sync:', err);
+                });
+            } else if (type === 'statuses') {
+                apiPut(`/me/games/${gid}`, { status: value || 'not_started' }).catch(err => {
+                    console.warn('Personal library status sync:', err);
+                });
+            }
+        }
     }
 }
 
-function applyVisitorPreferences(games) {
-    if (!Array.isArray(games)) return;
-    const prefs = getVisitorPreferences();
+async function applyVisitorPreferences(games) {
+    if (!Array.isArray(games) || games.length === 0) return;
+
+    // Step 1: Immediately apply user's cached preferences (zero-latency, never vanishes)
+    const localPrefs = getVisitorPreferences();
     games.forEach(g => {
         const gid = String(g.id || g.game_id);
-        if (prefs.favorites && prefs.favorites[gid] !== undefined) {
-            g.is_favorited = Boolean(prefs.favorites[gid]);
-            g.favorited = g.is_favorited;
-        }
-        if (prefs.bookmarks && prefs.bookmarks[gid] !== undefined) {
-            g.is_bookmarked = Boolean(prefs.bookmarks[gid]);
-            g.bookmarked = g.is_bookmarked;
-        }
-        if (prefs.statuses && prefs.statuses[gid] !== undefined) {
-            g.play_status = prefs.statuses[gid];
-        }
+        g.is_favorited = Boolean(localPrefs.favorites && localPrefs.favorites[gid]);
+        g.favorited = g.is_favorited;
+        g.is_bookmarked = Boolean(localPrefs.bookmarks && localPrefs.bookmarks[gid]);
+        g.bookmarked = g.is_bookmarked;
+        g.play_status = (localPrefs.statuses && localPrefs.statuses[gid]) || 'not_started';
     });
+
+    // Step 2: If authenticated, fetch authoritative remote database library
+    if (typeof isLoggedIn === 'function' && isLoggedIn()) {
+        try {
+            const res = await apiGet('/me/games');
+            const myGames = (res && Array.isArray(res.games)) ? res.games : [];
+            const myMap = new Map();
+            const freshPrefs = { favorites: {}, bookmarks: {}, statuses: {} };
+
+            myGames.forEach(mg => {
+                const mgid = String(mg.game_id || mg.id);
+                myMap.set(mgid, mg);
+                if (mg.is_favorite) freshPrefs.favorites[mgid] = true;
+                if (mg.is_bookmarked) freshPrefs.bookmarks[mgid] = true;
+                if (mg.status && mg.status !== 'not_started') freshPrefs.statuses[mgid] = mg.status;
+            });
+
+            // Update games array with authoritative DB values
+            games.forEach(g => {
+                const gid = String(g.id || g.game_id);
+                if (myMap.has(gid)) {
+                    const saved = myMap.get(gid);
+                    g.is_favorited = Boolean(saved.is_favorite);
+                    g.favorited = g.is_favorited;
+                    g.is_bookmarked = Boolean(saved.is_bookmarked);
+                    g.bookmarked = g.is_bookmarked;
+                    if (saved.status) g.play_status = saved.status;
+                } else {
+                    // Not in DB — if local prefs had it from recent click before sync, preserve or merge
+                    if (localPrefs.favorites && localPrefs.favorites[gid]) {
+                        g.is_favorited = true;
+                        g.favorited = true;
+                        freshPrefs.favorites[gid] = true;
+                    }
+                    if (localPrefs.bookmarks && localPrefs.bookmarks[gid]) {
+                        g.is_bookmarked = true;
+                        g.bookmarked = true;
+                        freshPrefs.bookmarks[gid] = true;
+                    }
+                }
+            });
+
+            // Update local cache with latest merged state
+            try {
+                localStorage.setItem(getUserPrefKey(), JSON.stringify(freshPrefs));
+            } catch (e) {}
+
+        } catch (e) {
+            console.warn('Could not load user library from server (using cached preferences):', e);
+        }
+    }
 }
 
+window.getUserPrefKey = getUserPrefKey;
 window.getVisitorPreferences = getVisitorPreferences;
 window.saveVisitorPreference = saveVisitorPreference;
 window.applyVisitorPreferences = applyVisitorPreferences;

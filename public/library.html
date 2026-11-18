@@ -11,12 +11,12 @@
   <link rel="preload" href="fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
 
   <!-- home.css supplies the About-modal + orbital-pill styles so everything matches the home page -->
-  <link rel="stylesheet" href="css/style.css?v=9.0">
-  <link rel="stylesheet" href="css/home.css?v=10.3">
-  <link rel="stylesheet" href="css/game-detail.css?v=8.0">
-  <link rel="stylesheet" href="css/shared-transition.css?v=2.2">
-  <link rel="stylesheet" href="css/library.css?v=2.1">
-  <link rel="stylesheet" href="css/responsive.css?v=8.2">
+  <link rel="stylesheet" href="css/style.css?v=16.0">
+  <link rel="stylesheet" href="css/home.css?v=16.0">
+  <link rel="stylesheet" href="css/game-detail.css?v=16.0">
+  <link rel="stylesheet" href="css/shared-transition.css?v=16.0">
+  <link rel="stylesheet" href="css/library.css?v=16.0">
+  <link rel="stylesheet" href="css/responsive.css?v=16.0">
 </head>
 <body class="library-page">
 
@@ -188,9 +188,6 @@
           <span>/</span>
           <span class="crumb-current" id="breadcrumbCurrent">All games</span>
         </div>
-
-        <!-- Nav Center Cluster: Cosmic Eye + Floating Mini Tesseract -->
-        <div class="nav-center-cluster" id="navCenterCluster"></div>
 
         <div class="topbar-right-cluster">
           <div class="topbar-search-box" id="topbarSearchBox">
@@ -667,21 +664,159 @@
     </div>
   </div>
 
-  <!-- Admin Login Modal -->
-  <div class="modal-overlay hidden" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
-    <div class="modal glass-panel">
-      <button class="modal-close" id="loginClose" aria-label="Close login modal">&times;</button>
-      <h3 id="loginModalTitle">Admin Login</h3>
-      <form id="loginForm">
-        <div class="form-group">
-          <input type="text" name="username" placeholder="Username" aria-label="Admin username" autocomplete="username" required>
+        <!-- User Profile Modal (Displays Username, Email & Logout) -->
+  <div class="modal-overlay hidden" id="userProfileModal" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle">
+    <div class="modal glass-panel profile-modal">
+      <button class="modal-close" id="userProfileClose" aria-label="Close profile modal">&times;</button>
+      
+      <!-- Clickable Avatar Picture with Edit Badge -->
+      <div style="text-align: center;">
+        <div class="profile-avatar-wrapper" id="profileAvatarTrigger" title="Click avatar to change">
+          <div id="profileAvatarCircle" style="width: 76px; height: 76px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700; color: #fff; background: linear-gradient(135deg, #00b4d8, #00f5d4); box-shadow: 0 8px 24px rgba(0,245,212,0.35); transition: transform 0.2s, box-shadow 0.2s; overflow: hidden;">
+            U
+          </div>
+          <div class="avatar-edit-badge" title="Change avatar">✏️</div>
         </div>
-        <div class="form-group">
-          <input type="password" name="password" placeholder="Password" aria-label="Admin password" autocomplete="current-password" required>
+        <div>
+          <span class="avatar-change-hint" id="avatarChangeHint">Click avatar to change ▾</span>
         </div>
-        <button type="submit" class="btn-primary" style="width:100%">Login</button>
-        <p class="error-msg hidden" id="loginError"></p>
-      </form>
+      </div>
+
+      <h3 id="profileModalTitle" style="margin-bottom: 12px; font-size: 1.25rem; color: #fff; font-weight: 700;">Gamer Profile</h3>
+
+      <!-- Avatar Picker Section (Hidden by default, only shows when clicking profile pic) -->
+      <div class="profile-avatar-section hidden" id="profileAvatarSection" style="margin: 0 0 14px; text-align: left; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(0, 245, 212, 0.25); border-radius: 12px; padding: 12px 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span style="font-size: 0.74rem; text-transform: uppercase; letter-spacing: 1.2px; color: #888; font-weight: 600;">Choose Gamer Avatar:</span>
+          <span id="profileAvatarCurrentLabel" style="font-size: 0.78rem; color: #00f5d4; font-weight: 600;">Cyber Neon</span>
+        </div>
+        <div id="profileAvatarGrid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;"></div>
+      </div>
+
+      <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; padding: 14px 18px; margin: 0 0 14px; text-align: left;">
+        <div style="margin-bottom: 10px;">
+          <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.2px; color: #888; font-weight: 600;">Username :</div>
+          <div id="profileModalUsername" style="font-size: 1.15rem; font-weight: 700; color: #00f5d4; margin-top: 2px; word-break: break-all;">@username</div>
+        </div>
+        <div style="margin-bottom: 10px;">
+          <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.2px; color: #888; font-weight: 600;">User's Mail :</div>
+          <div id="profileModalEmail" style="font-size: 0.92rem; font-weight: 500; color: #ffffff; word-break: break-all; margin-top: 2px;">user@example.com</div>
+        </div>
+        <div>
+          <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.2px; color: #888; font-weight: 600;">Status / Role :</div>
+          <div id="profileModalRole" style="font-size: 0.88rem; font-weight: 600; color: #f72585; margin-top: 2px;">Explorer</div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
+        <a href="library.html?filter=favorites" class="btn-primary" style="padding: 10px; font-size: 0.85rem; text-decoration: none; text-align: center; border-radius: 8px;">
+          ★ Favorites
+        </a>
+        <a href="library.html" class="btn-primary" style="padding: 10px; font-size: 0.85rem; text-decoration: none; text-align: center; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;">
+          ⚡ Library
+        </a>
+      </div>
+
+      <!-- Prominent Red Logout Button -->
+      <button type="button" class="btn-primary" id="profileModalLogoutBtn" style="width: 100%; background: linear-gradient(135deg, #e63946, #d90429); border: none; padding: 11px; font-size: 0.95rem; font-weight: 700; cursor: pointer; border-radius: 10px; letter-spacing: 0.5px;">
+        Log Out
+      </button>
+    </div>
+  </div>
+<!-- Universal Auth Modal (Sign In / Sign Up / OTP / Forgot Password) -->
+  <div class="modal-overlay hidden" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="authModalTitle">
+    <div class="modal glass-panel auth-modal">
+      <button class="modal-close" id="loginClose" aria-label="Close auth modal">&times;</button>
+      
+      <!-- Tab Header (Sign In / Sign Up) -->
+      <div class="auth-tabs" id="authTabs">
+        <button type="button" class="auth-tab-btn active" id="tabSignIn">Sign In</button>
+        <button type="button" class="auth-tab-btn" id="tabSignUp">Sign Up</button>
+      </div>
+
+      <!-- VIEW 1: Sign In -->
+      <div id="authViewSignIn" class="auth-view">
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="loginIdentifier">Email or Username</label>
+            <input type="text" id="loginIdentifier" name="identifier" placeholder="Username or email" autocomplete="username" required>
+          </div>
+          <div class="form-group">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <label for="loginPassword" style="margin:0;">Password</label>
+              <a href="#" id="forgotPasswordLink" class="auth-link-subtle">Forgot?</a>
+            </div>
+            <input type="password" id="loginPassword" name="password" placeholder="••••••••" autocomplete="current-password" required>
+          </div>
+          <div class="form-group remember-me-row">
+            <label for="loginRememberMe">
+              <input type="checkbox" id="loginRememberMe" name="remember_me">
+              <span>Remember me on this device (30 days)</span>
+            </label>
+          </div>
+          <button type="submit" class="btn-primary" id="loginSubmitBtn" style="width:100%">Sign In</button>
+        </form>
+      </div>
+
+      <!-- VIEW 2: Sign Up -->
+      <div id="authViewSignUp" class="auth-view hidden">
+        <form id="signUpForm">
+          <div class="form-group">
+            <label for="signUpUsername">Username (Letters only)</label>
+            <input type="text" id="signUpUsername" name="username" placeholder="e.g. MasterChief (4-20 letters)" autocomplete="off" required>
+            <div id="usernameStatus" class="username-feedback"></div>
+          </div>
+          <div class="form-group">
+            <label for="signUpEmail">Email</label>
+            <input type="email" id="signUpEmail" name="email" placeholder="you@example.com" autocomplete="email" required>
+          </div>
+          <div class="form-group">
+            <label for="signUpPassword">Password</label>
+            <input type="password" id="signUpPassword" name="password" placeholder="At least 6 characters" autocomplete="new-password" required>
+          </div>
+          <div class="form-group" style="margin-top: 14px;">
+            <label style="font-size: 0.82rem; color: #aaa; margin-bottom: 6px; display: block;">Choose Starter Avatar</label>
+            <div class="signup-avatar-grid" id="signUpAvatarGrid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;"></div>
+            <input type="hidden" id="signUpSelectedAvatar" value="avatar_cyber">
+          </div>
+          <button type="submit" class="btn-primary" id="signUpSubmitBtn" style="width:100%">Create Account</button>
+        </form>
+      </div>
+
+      <!-- VIEW 3: OTP Verification -->
+      <div id="authViewOtp" class="auth-view hidden">
+        <h4 style="margin-bottom:8px; color:var(--accent-cyan, #00f5d4);">Confirm Your Email</h4>
+        <p style="font-size:0.85rem; color:#aaa; margin-bottom:16px;">Click the link in the confirmation email, OR enter the 6-digit code sent to <span id="otpTargetEmail" style="color:#fff; font-weight:600;"></span>.</p>
+        <form id="otpForm">
+          <div class="form-group">
+            <input type="text" id="otpCode" name="otp" placeholder="6-digit code" maxlength="8" style="text-align:center; font-size:1.4rem; letter-spacing:4px;" required>
+          </div>
+          <button type="submit" class="btn-primary" style="width:100%">Verify Code</button>
+          <div style="display:flex; justify-content:space-between; margin-top:12px;">
+            <button type="button" class="auth-text-btn" id="resendOtpBtn">Resend code</button>
+            <button type="button" class="auth-text-btn" id="backToSignInFromOtp">Back to Sign In</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- VIEW 4: Forgot Password -->
+      <div id="authViewForgot" class="auth-view hidden">
+        <h4 style="margin-bottom:8px; color:var(--accent-pink, #f72585);">Reset Password</h4>
+        <p style="font-size:0.85rem; color:#aaa; margin-bottom:16px;">Enter your username or email to receive a reset link.</p>
+        <form id="forgotForm">
+          <div class="form-group">
+            <input type="text" id="forgotIdentifier" name="identifier" placeholder="Email or Username" required>
+          </div>
+          <button type="submit" class="btn-primary" style="width:100%">Send Reset Link</button>
+          <div style="margin-top:12px; text-align:center;">
+            <button type="button" class="auth-text-btn" id="backToSignInFromForgot">Back to Sign In</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Global Error / Info Banner -->
+      <p class="error-msg hidden" id="loginError" style="margin-top:15px; font-size:0.88rem;"></p>
+      <p class="info-msg hidden" id="loginInfo" style="margin-top:15px; font-size:0.88rem; color:var(--accent-cyan, #00f5d4);"></p>
     </div>
   </div>
 
@@ -823,13 +958,13 @@
 
   <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="js/api.js?v=9.1"></script>
-  <script src="js/auth.js?v=10.0"></script>
-  <script src="js/shared-transition.js?v=2.5"></script>
-  <script src="js/search.js?v=9.2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/api.js?v=16.0"></script>
+  <script src="js/auth.js?v=16.0"></script>
+  <script src="js/shared-transition.js?v=16.0"></script>
+  <script src="js/search.js?v=16.0"></script>
   <script src="js/threads-background.js?v=1.0"></script>
-  <script src="js/collection-core.js?v=9.5"></script>
-  <script src="js/cosmic-eye.js?v=1.0"></script>
-  <script src="js/library.js?v=2.1"></script>
+  <script src="js/collection-core.js?v=16.0"></script>
+  <script src="js/library.js?v=16.0"></script>
 </body>
 </html>

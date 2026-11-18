@@ -1,142 +1,641 @@
 import os
+
+import re
+
 import time
-from collections import defaultdict, deque
+
+import logging
+
 from datetime import datetime, timedelta, timezone
-from typing import Optional
+
+from typing import Optional, Dict, Any
+
 from dotenv import load_dotenv
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from jose import JWTError, jwt
+
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials, OAuth2PasswordRequestForm
+
+import jwt
+
+from jwt.exceptions import PyJWTError
+
 import bcrypt
 
+import psycopg
+import httpx
+
+from database import get_db
+
+
+
+_logger = logging.getLogger("gameverse.auth")
+
+
+
 _backend_dir = os.path.dirname(os.path.abspath(__file__))
+
 load_dotenv(os.path.join(_backend_dir, ".env"))
+
 load_dotenv()
 
-# Auth credentials come ONLY from environment variables — this repository is
-# public, so no secret may ever be hardcoded here. The server refuses to boot
-# without them (fail closed) rather than falling back to known defaults.
-#   Local:  backend/.env            (JWT_SECRET=, ADMIN_USERNAME=, ADMIN_PASSWORD_HASH=)
-#   Vercel: Project Settings → Environment Variables
-SECRET_KEY = os.getenv("JWT_SECRET")
+
+
+# --- Supabase Configuration ---
+
+SUPABASE_URL = os.getenv("SUPABASE_URL", "").rstrip("/")
+
+if not SUPABASE_URL:
+
+    db_url = os.getenv("DATABASE_URL", "")
+
+    match = re.search(r"postgres\.([a-z0-9]+)", db_url)
+
+    if match:
+
+        SUPABASE_URL = f"https://{match.group(1)}.supabase.co"
+
+
+
+SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY", "")
+
+SUPABASE_SECRET_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
+
+
+
+# --- Legacy Fallback Credentials ---
+
+LEGACY_SECRET_KEY = os.getenv("JWT_SECRET")
+
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
+
 ADMIN_PASSWORD_HASH = os.getenv("ADMIN_PASSWORD_HASH")
-if not SECRET_KEY or not ADMIN_USERNAME or not ADMIN_PASSWORD_HASH:
-    raise RuntimeError(
-        "JWT_SECRET, ADMIN_USERNAME and ADMIN_PASSWORD_HASH must all be set in "
-        "backend/.env (local) or the Vercel Environment Variables (production). "
-        "Generate a JWT_SECRET with: python -c \"import secrets; print(secrets.token_hex(32))\" "
-        "and a password hash with: python -c \"import bcrypt; print(bcrypt.hashpw(b'YOUR-PASSWORD', bcrypt.gensalt()).decode())\""
-    )
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 4 * 60  # 4 hours
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/admin/login")
-
-router = APIRouter(prefix="/api/admin", tags=["Auth"])
-
-# ---- Login rate limiting (per client IP) ----
-# In-memory sliding window: counts FAILED login attempts only. On Vercel each
-# warm instance has its own counter, which still multiplies an attacker's cost;
-# pair with Vercel Firewall rate rules for a hard global cap.
-_LOGIN_WINDOW_SECONDS = 15 * 60
-_LOGIN_MAX_FAILURES = 10
-_login_failures = defaultdict(deque)
 
 
-def _client_ip(request: Request) -> str:
+
+# Pinned asymmetric signing keys from Supabase JWKS (ES256 / RS256)
+
+PINNED_ALGORITHMS = ["ES256", "RS256"]
+
+_jwks_client: Optional[jwt.PyJWKClient] = None
+
+
+
+def get_jwks_client() -> Optional[jwt.PyJWKClient]:
+
+    global _jwks_client
+
+    if _jwks_client is None and SUPABASE_URL:
+
+        jwks_url = f"{SUPABASE_URL}/auth/v1/.well-known/jwks.json"
+
+        _jwks_client = jwt.PyJWKClient(jwks_url, cache_keys=True)
+
+    return _jwks_client
+
+
+
+# Bearer security scheme for Swagger UI & route protection
+
+bearer_scheme = HTTPBearer(auto_error=False)
+
+
+
+router = APIRouter(prefix="/api/admin", tags=["Admin Auth"])
+
+
+
+# ==============================================================================
+
+# Rate Limiting (PostgreSQL-backed for Vercel Serverless & Local persistence)
+
+# ==============================================================================
+
+
+
+def get_client_ip(request: Request) -> str:
+
+    """Extract true client IP from reverse proxy headers (e.g. Vercel) or client host."""
+
     forwarded = request.headers.get("x-forwarded-for", "")
+
     if forwarded:
+
         return forwarded.split(",")[0].strip()
-    return request.client.host if request.client else "unknown"
+
+    return request.client.host if request.client else "127.0.0.1"
 
 
-def _register_login_failure(ip: str) -> None:
-    now = time.time()
-    attempts = _login_failures[ip]
-    while attempts and now - attempts[0] > _LOGIN_WINDOW_SECONDS:
-        attempts.popleft()
-    attempts.append(now)
-    # Bound memory under distributed abuse
-    if len(_login_failures) > 50_000:
-        _login_failures.clear()
-        _login_failures[ip].append(now)
 
 
-def _login_is_rate_limited(ip: str) -> bool:
-    now = time.time()
-    attempts = _login_failures.get(ip)
-    if not attempts:
-        return False
-    while attempts and now - attempts[0] > _LOGIN_WINDOW_SECONDS:
-        attempts.popleft()
-    return len(attempts) >= _LOGIN_MAX_FAILURES
+
+def init_login_attempts_table(cur) -> None:
+
+    """Ensure the login_attempts table and indexes exist."""
+
+    cur.execute("""
+
+        CREATE TABLE IF NOT EXISTS public.login_attempts (
+
+            id bigserial PRIMARY KEY,
+
+            ip text NOT NULL,
+
+            identifier text NOT NULL,
+
+            attempted_at timestamptz NOT NULL DEFAULT now()
+
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_login_attempts_ip_time ON public.login_attempts (ip, attempted_at);
+
+        CREATE INDEX IF NOT EXISTS idx_login_attempts_ident_time ON public.login_attempts (identifier, attempted_at);
+
+    """)
+
+
+
+
+
+def check_login_rate_limit(ip: str, identifier: str, db) -> None:
+
+    """Check failed login attempts in the last 15 minutes by IP and by identifier."""
+
+    try:
+
+        # Prune records older than 1 day to prevent unbounded table growth
+
+        db.execute("DELETE FROM public.login_attempts WHERE attempted_at < now() - interval '1 day'")
+
+
+
+        # Check IP threshold (max 10 failed attempts)
+
+        db.execute(
+
+            "SELECT count(*) AS cnt FROM public.login_attempts WHERE ip = %s AND attempted_at > now() - interval '15 minutes'",
+
+            [ip]
+
+        )
+
+        row_ip = db.fetchone()
+
+        if row_ip and row_ip.get("cnt", 0) >= 10:
+
+            raise HTTPException(
+
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+
+                detail="Too many failed login attempts from this network. Try again in 15 minutes."
+
+            )
+
+
+
+        # Check Account/Identifier threshold (max 5 failed attempts)
+
+        if identifier:
+
+            db.execute(
+
+                "SELECT count(*) AS cnt FROM public.login_attempts WHERE lower(identifier) = lower(%s) AND attempted_at > now() - interval '15 minutes'",
+
+                [identifier]
+
+            )
+
+            row_acc = db.fetchone()
+
+            if row_acc and row_acc.get("cnt", 0) >= 5:
+
+                raise HTTPException(
+
+                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+
+                    detail="Too many failed login attempts for this account. Try again in 15 minutes."
+
+                )
+
+    except psycopg.errors.UndefinedTable:
+
+        init_login_attempts_table(db)
+
+
+
+
+
+def record_login_failure(ip: str, identifier: str, db) -> None:
+
+    """Record a failed login attempt in PostgreSQL and prune entries older than 24h."""
+
+    try:
+
+        db.execute(
+
+            "INSERT INTO public.login_attempts (ip, identifier) VALUES (%s, %s)",
+
+            [ip, identifier.strip().lower() if identifier else ""]
+
+        )
+
+        # Keep table lean
+
+        db.execute("DELETE FROM public.login_attempts WHERE attempted_at < now() - interval '1 day'")
+
+    except psycopg.errors.UndefinedTable:
+
+        init_login_attempts_table(db)
+
+        db.execute(
+
+            "INSERT INTO public.login_attempts (ip, identifier) VALUES (%s, %s)",
+
+            [ip, identifier.strip().lower() if identifier else ""]
+
+        )
+
+
+
+
+
+def clear_login_failures(ip: str, identifier: str, db) -> None:
+
+    """Clear failed attempts upon successful authentication."""
+
+    try:
+
+        db.execute(
+
+            "DELETE FROM public.login_attempts WHERE lower(identifier) = lower(%s) OR ip = %s",
+
+            [identifier.strip().lower() if identifier else "", ip]
+
+        )
+
+    except Exception:
+
+        pass
+
+
+
+
+
+# ==============================================================================
+
+# Token Verification (Supabase JWKS with Pinned Asymmetric Algorithms)
+
+# ==============================================================================
+
+
+
+def decode_supabase_token(token: str) -> Optional[Dict[str, Any]]:
+    """Decode and verify a Supabase JWT via JWKS, JWT secret, or Supabase REST verify."""
+    # 1. Asymmetric JWKS (ES256, RS256)
+    client = get_jwks_client()
+    if client:
+        try:
+            signing_key = client.get_signing_key_from_jwt(token)
+            payload = jwt.decode(
+                token,
+                signing_key.key,
+                algorithms=PINNED_ALGORITHMS,
+                audience="authenticated"
+            )
+            return payload
+        except Exception:
+            pass
+
+    # 2. HS256 secret fallback (if project issues HS256 tokens)
+    jwt_sec = os.getenv("SUPABASE_JWT_SECRET") or os.getenv("JWT_SECRET")
+    if jwt_sec:
+        try:
+            payload = jwt.decode(
+                token,
+                jwt_sec,
+                algorithms=["HS256"],
+                options={"verify_aud": False}
+            )
+            return payload
+        except Exception:
+            pass
+
+    # 3. Supabase Auth REST verification fallback
+    if SUPABASE_URL and SUPABASE_ANON_KEY:
+        try:
+            with httpx.Client(timeout=4.0) as http_client:
+                res = http_client.get(
+                    f"{SUPABASE_URL}/auth/v1/user",
+                    headers={
+                        "Authorization": f"Bearer {token}",
+                        "apikey": SUPABASE_ANON_KEY
+                    }
+                )
+                if res.status_code == 200:
+                    user_data = res.json()
+                    return {
+                        "sub": user_data.get("id"),
+                        "email": user_data.get("email"),
+                        "user_metadata": user_data.get("user_metadata", {})
+                    }
+        except Exception as e:
+            _logger.debug("Supabase REST auth fallback error: %s", e)
+
+    return None
+
+def decode_legacy_token(token: str) -> Optional[str]:
+
+    """Verify legacy admin tokens if LEGACY_SECRET_KEY is configured."""
+
+    if not LEGACY_SECRET_KEY:
+
+        return None
+
+    try:
+
+        payload = jwt.decode(token, LEGACY_SECRET_KEY, algorithms=["HS256"])
+
+        username = payload.get("sub")
+
+        if username and ADMIN_USERNAME and username == ADMIN_USERNAME:
+
+            return username
+
+    except Exception:
+
+        pass
+
+    return None
+
+
+
+
+
+async def get_current_user(
+
+    creds: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
+
+    db = Depends(get_db)
+
+) -> Dict[str, Any]:
+
+    """Dependency to extract & verify the authenticated user from Bearer token."""
+
+    if not creds or not creds.credentials:
+
+        raise HTTPException(
+
+            status_code=status.HTTP_401_UNAUTHORIZED,
+
+            detail="Authentication required",
+
+            headers={"WWW-Authenticate": "Bearer"}
+
+        )
+
+
+
+    token = creds.credentials
+
+
+
+    # 1. Check Supabase JWT
+
+    payload = decode_supabase_token(token)
+
+    if payload:
+
+        user_id = payload.get("sub")
+
+        if not user_id:
+
+            raise HTTPException(
+
+                status_code=status.HTTP_401_UNAUTHORIZED,
+
+                detail="Invalid token payload"
+
+            )
+
+
+
+        role = "user"
+
+        username = payload.get("user_metadata", {}).get("username") or "user"
+
+        avatar_url = None
+
+
+
+        try:
+
+            db.execute("SELECT id, username, role, avatar_url FROM public.profiles WHERE id = %s", [user_id])
+
+            profile = db.fetchone()
+
+            if profile:
+
+                role = profile.get("role", "user")
+
+                username = profile.get("username", username)
+
+                avatar_url = profile.get("avatar_url")
+
+        except Exception:
+
+            # In case profiles table is not migrated yet
+
+            pass
+
+
+
+        return {
+
+            "id": user_id,
+
+            "username": username,
+
+            "email": payload.get("email"),
+
+            "role": role,
+
+            "avatar_url": avatar_url,
+
+            "is_admin": role == "admin"
+
+        }
+
+
+
+    # 2. Check Legacy Admin Token (fallback for migration safety)
+
+    legacy_user = decode_legacy_token(token)
+
+    if legacy_user:
+
+        return {
+
+            "id": "legacy_admin",
+
+            "username": legacy_user,
+
+            "email": None,
+
+            "role": "admin",
+
+            "avatar_url": None,
+
+            "is_admin": True
+
+        }
+
+
+
+    raise HTTPException(
+
+        status_code=status.HTTP_401_UNAUTHORIZED,
+
+        detail="Invalid or expired authentication credentials",
+
+        headers={"WWW-Authenticate": "Bearer"}
+
+    )
+
+
+
+
+
+async def get_current_admin(
+
+    user: Dict[str, Any] = Depends(get_current_user)
+
+) -> str:
+
+    """Dependency that enforces admin privileges (database profile role or legacy fallback)."""
+
+    if not user.get("is_admin") and user.get("role") != "admin":
+
+        raise HTTPException(
+
+            status_code=status.HTTP_403_FORBIDDEN,
+
+            detail="Admin privileges required"
+
+        )
+
+    return user["username"]
+
+
+
+
+
+# ==============================================================================
+
+# Legacy Admin Endpoints (Preserved for safe transition)
+
+# ==============================================================================
+
+
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
+
     try:
+
         return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+
     except Exception:
+
         return False
 
+
+
+
+
 def get_password_hash(password: str) -> str:
+
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
+
+
+
+
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+
     to_encode = data.copy()
+
     now_utc = datetime.now(timezone.utc)
-    if expires_delta:
-        expire = now_utc + expires_delta
-    else:
-        expire = now_utc + timedelta(minutes=15)
+
+    expire = now_utc + (expires_delta or timedelta(minutes=4 * 60))
+
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+
+    return jwt.encode(to_encode, LEGACY_SECRET_KEY, algorithm="HS256")
+
+
+
+
 
 @router.post("/login")
-async def login_for_access_token(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
-    ip = _client_ip(request)
-    if _login_is_rate_limited(ip):
-        raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail="Too many failed login attempts. Try again in a few minutes.",
-            headers={"Retry-After": "300"},
-        )
-    if form_data.username != ADMIN_USERNAME or not verify_password(form_data.password, ADMIN_PASSWORD_HASH):
-        _register_login_failure(ip)
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    _login_failures.pop(ip, None)
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": ADMIN_USERNAME}, expires_delta=access_token_expires
-    )
-    return {"access_token": access_token, "token_type": "bearer"}
 
-async def get_current_admin(token: str = Depends(oauth2_scheme)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None or username != ADMIN_USERNAME:
-            raise credentials_exception
-    except JWTError:
-        raise credentials_exception
-    return username
+async def legacy_admin_login(
+
+    request: Request,
+
+    form_data: OAuth2PasswordRequestForm = Depends(),
+
+    db = Depends(get_db)
+
+):
+
+    ip = get_client_ip(request)
+
+    check_login_rate_limit(ip, form_data.username, db)
+
+
+
+    if not LEGACY_SECRET_KEY or not ADMIN_USERNAME or not ADMIN_PASSWORD_HASH:
+
+        record_login_failure(ip, form_data.username, db)
+
+        raise HTTPException(status_code=401, detail="Incorrect username or password")
+
+
+
+    if form_data.username != ADMIN_USERNAME or not verify_password(form_data.password, ADMIN_PASSWORD_HASH):
+
+        record_login_failure(ip, form_data.username, db)
+
+        raise HTTPException(status_code=401, detail="Incorrect username or password")
+
+
+
+    clear_login_failures(ip, form_data.username, db)
+
+    token = create_access_token({"sub": ADMIN_USERNAME})
+
+    return {"access_token": token, "token_type": "bearer"}
+
+
+
+
 
 @router.get("/verify")
-async def verify_admin_token(admin: str = Depends(get_current_admin)):
-    """Lightweight endpoint for the frontend to verify a stored JWT is still valid."""
-    return {"authenticated": True, "user": admin}
 
-if __name__ == "__main__":
-    import sys
-    if len(sys.argv) > 1 and sys.argv[1] == "hash":
-        password = sys.argv[2]
-        print(f"Hash for '{password}': {get_password_hash(password)}")
+async def verify_admin_status(user: Dict[str, Any] = Depends(get_current_user)):
+
+    """Frontend check to verify if the active session has admin capabilities."""
+
+    return {
+
+        "authenticated": True,
+
+        "is_admin": user.get("is_admin", False),
+
+        "username": user.get("username"),
+
+        "role": user.get("role", "user"),
+
+        "avatar_url": user.get("avatar_url")
+
+    }
+

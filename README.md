@@ -1,10 +1,11 @@
 # 🎮 Gameverse — Personal Game Collection Universe
 
-A cinematic, immersive personal game library built as a full-stack web application. Track, organize, and explore your entire game collection through a dimensional, space-themed interface featuring 3D visualizations, orbital radar, and poster carousels.
+A cinematic, immersive personal game library built as a full-stack web application. Track, organize, and explore your entire game collection through a dimensional, space-themed interface featuring 3D visualizations, orbital radar, widescreen card grids, and personalized gamer profiles.
 
 ![Python](https://img.shields.io/badge/Python-3.12+-blue?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?logo=fastapi&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-336791?logo=postgresql&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-Auth%20%26%20Postgres-3ECF8E?logo=supabase&logoColor=white)
 ![Three.js](https://img.shields.io/badge/Three.js-r150+-black?logo=three.js&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Deploy-Vercel-black?logo=vercel&logoColor=white)
 
@@ -12,15 +13,17 @@ A cinematic, immersive personal game library built as a full-stack web applicati
 
 ## ✨ Features
 
-- **3D Hero Visualization** — Rotating wireframe icosahedron with orbital particle systems, bloom flares, and magnetic cursor interactions (Three.js)
-- **Dimensional Radar Core** — Interactive 4D orbital radar that maps your game collection across five concentric dimensional rings with genre/platform clustering
-- **Poster Carousels** — Smooth horizontal carousels for browsing your library, favorites, and currently-playing games
-- **Game Detail Pages** — Rich detail view with hero wallpapers, system requirements, genre tags, and gameplay info
-- **Admin Dashboard** — JWT-authenticated admin panel to add, edit, and delete games directly from the UI
-- **Smart Search** — Real-time fuzzy search with tag-based filtering across genres, platforms, and play status
-- **Bookmark & Favorites** — Mark games as bookmarked, favorited, playing, or completed
-- **Fully Responsive** — Optimized for desktop, tablet, and mobile with touch-friendly swipe carousels
-- **Supabase + Local PostgreSQL** — Dual database support with seamless switching via environment variables
+- **3D Hero Visualization** — Rotating wireframe icosahedron with orbital particle systems, bloom flares, and magnetic cursor interactions ([`public/js/collection-core.js`](file:///c:/Users/aksh7/OneDrive/Desktop/tester/public/js/collection-core.js)).
+- **Dimensional Radar Core** — Interactive 4D orbital radar that maps your game collection across five concentric dimensional rings with genre and platform clustering.
+- **Dedicated Library View** — 16:9 widescreen card grid, genre-bundle Collections view, and live category filtering ([`public/library.html`](file:///c:/Users/aksh7/OneDrive/Desktop/tester/public/library.html)).
+- **Shared-Element Morph Transitions** — Cinematic card-to-modal expansion transitions for game detail inspection ([`public/js/shared-transition.js`](file:///c:/Users/aksh7/OneDrive/Desktop/tester/public/js/shared-transition.js)).
+- **Universal User Authentication** — Supabase Auth integration supporting signup, email OTP verification, sign-in by email or username, and password recovery ([`backend/routes/user_auth.py`](file:///c:/Users/aksh7/OneDrive/Desktop/tester/backend/routes/user_auth.py)).
+- **Personalized Gamer Profiles** — 8 preset custom vector gamer avatars (Cyber Neon, Pixel Knight, Retro Arcade, Arcane Wizard, Neon Mech, Shadow Ninja, Dragon Crest, Space Marine) ([`public/js/auth.js:24-73`](file:///c:/Users/aksh7/OneDrive/Desktop/tester/public/js/auth.js#L24-L73)).
+- **Personal Game Library** — Authenticated users sync personal play status, bookmarks, favorites, and 1–10 star ratings to PostgreSQL ([`backend/routes/user_library.py`](file:///c:/Users/aksh7/OneDrive/Desktop/tester/backend/routes/user_library.py)).
+- **Flexible Session Windows** — 30-day persistence when "Remember Me" is enabled; 3-hour auto-logout window on public or shared computers ([`public/js/auth.js:15-18`](file:///c:/Users/aksh7/OneDrive/Desktop/tester/public/js/auth.js#L15-L18)).
+- **PostgreSQL Rate Limiting** — Serverless-persistent brute-force protection tracking failed login attempts by IP and account ([`backend/auth.py:160-224`](file:///c:/Users/aksh7/OneDrive/Desktop/tester/backend/auth.py#L160-L224)).
+- **Admin Management Panel** — Authenticated management modal to add, edit, and delete games directly from the UI ([`public/js/admin.js`](file:///c:/Users/aksh7/OneDrive/Desktop/tester/public/js/admin.js)).
+- **Zero-Latency Client Caching** — Instant home-page HUD paint powered by `localStorage` hydration combined with in-memory Python caching for catalog lookup tables.
 
 ---
 
@@ -28,111 +31,118 @@ A cinematic, immersive personal game library built as a full-stack web applicati
 
 ```
 gameverse/
-├── public/                  # Frontend (served as static files)
-│   ├── index.html           # Home page — hero, radar, carousels, about
-│   ├── game.html            # Game detail page
+├── public/                       # Frontend (static files)
+│   ├── index.html                # Home page (3D hero, radar, warp text, carousels)
+│   ├── library.html              # Dedicated library catalog (grid, bundles, list)
+│   ├── reset-password.html       # Supabase password reset page
 │   ├── css/
-│   │   ├── style.css        # Global styles, variables, glass panels
-│   │   ├── home.css         # Hero, collection core, about section
-│   │   ├── cards.css        # Poster cards & game grid cards
-│   │   ├── game-detail.css  # Game detail page styles
-│   │   ├── admin.css        # Admin panel styles
-│   │   └── responsive.css   # Mobile & tablet breakpoints
+│   │   ├── style.css             # Global styles, variables, modal overlay system
+│   │   ├── home.css              # Hero section, warp text, HUD
+│   │   ├── cards.css             # 16:9 widescreen cards & poster cards
+│   │   ├── admin.css             # Admin modal & form controls
+│   │   └── responsive.css        # Breakpoints for desktop, tablet, and mobile
 │   ├── js/
-│   │   ├── collection-core.js  # Three.js hero scene + orbital radar
-│   │   ├── home.js          # Homepage initialization & data loading
-│   │   ├── cards.js         # Poster card & game card rendering
-│   │   ├── game-detail.js   # Game detail page logic
-│   │   ├── api.js           # API client helper (fetch wrapper)
-│   │   ├── auth.js          # JWT auth & admin session handling
-│   │   ├── admin.js         # Admin CRUD panel logic
-│   │   └── search.js        # Search & filter functionality
-│   └── static/              # Game posters, wallpapers, icons
+│   │   ├── api.js                # Unified API client & visitor preference persistence
+│   │   ├── auth.js               # Supabase Auth, session lifecycle, modal controller
+│   │   ├── admin.js              # Admin game creation, editing, and form options
+│   │   ├── home.js               # Homepage initialization & instant stats paint
+│   │   ├── library.js            # Library filtering, sorting, and genre bundles
+│   │   ├── search.js             # Spotlight search (Ctrl+K) & quick filters
+│   │   ├── collection-core.js    # Three.js 3D scene & orbital dimensional radar
+│   │   ├── shared-transition.js  # Card morphing transitions to detail view
+│   │   ├── warp-text.js          # Kinetic warp text rendering engine
+│   │   ├── particle-text.js      # Interactive particle typography canvas
+│   │   ├── cosmic-eye.js         # Interactive background cursor visualizer
+│   │   └── threads-background.js # Smooth background canvas lines
+│   └── static/                   # Game covers, icons, and WebP media
 │
-├── backend/                 # FastAPI Python backend
-│   ├── main.py              # App entry point, lifespan, middleware
-│   ├── database.py          # PostgreSQL connection pool (psycopg3)
-│   ├── auth.py              # JWT authentication routes
+├── backend/                      # FastAPI Python backend
+│   ├── main.py                   # Entry point, lifespan, CORS, GZip, Server-Timing
+│   ├── database.py               # psycopg3 ConnectionPool (min=1, max=3, SSL required)
+│   ├── auth.py                   # Legacy admin auth, JWT minting, rate-limiting
 │   ├── routes/
-│   │   ├── games.py         # CRUD for games (GET/POST/PUT/DELETE)
-│   │   ├── genres.py        # Genre listing
-│   │   ├── platforms.py     # Platform listing
-│   │   ├── developers.py    # Developer listing
-│   │   ├── publishers.py    # Publisher listing
-│   │   ├── modes.py         # Game mode listing
-│   │   └── stats.py         # Dashboard stats (counts, totals)
-│   ├── .env.example         # Environment variable template
-│   └── requirements.txt     # Python dependencies
+│   │   ├── games.py              # Full CRUD for games (GET, POST, PUT, PATCH, DELETE)
+│   │   ├── user_auth.py          # User login, username check, password recovery
+│   │   ├── user_library.py       # Personal game library & profile updates
+│   │   ├── stats.py              # Aggregate collection statistics
+│   │   ├── genres.py             # Genre lookup (1-hour in-memory cache)
+│   │   ├── platforms.py          # Platform lookup (1-hour in-memory cache)
+│   │   ├── developers.py         # Developer lookup (1-hour in-memory cache)
+│   │   ├── publishers.py         # Publisher lookup (1-hour in-memory cache)
+│   │   └── modes.py              # Game mode lookup (1-hour in-memory cache)
+│   ├── .env.example              # Environment configuration template
+│   └── requirements.txt          # Python dependencies
 │
-├── api/                     # Vercel serverless adapter
-│   └── index.py             # Serverless ASGI bridge & path restore
+├── api/                          # Vercel serverless integration
+│   └── index.py                  # ASGI serverless adapter with path restoration
 │
-├── vercel.json              # Vercel deployment config
-├── requirements.txt         # Root dependencies (for Vercel)
-├── start_gameverse.bat      # One-click local server launcher (Windows)
-└── .gitignore
+├── docs/                         # Architecture documentation
+│   ├── BACKEND.md                # Full API reference, caching specs, and security review
+│   └── architecture/             # Interactive HTML architecture diagrams
+│       ├── 01-architecture-overview.html
+│       ├── 02-admin-auth-sequence.html
+│       ├── 03-user-auth-sequence.html
+│       ├── 04-homepage-dataflow.html
+│       └── 05-token-lifecycle.html
+│
+├── vercel.json                   # Vercel deployment rewrites & security headers
+├── requirements.txt              # Root dependency manifest for Vercel
+├── start_gameverse.bat           # Windows one-click local server launcher
+└── README.md
 ```
+
+---
+
+## 📐 Architecture Diagrams
+
+Interactive, self-contained architecture diagrams are available in [`docs/architecture/`](docs/architecture/):
+
+1. **[End-to-End System Architecture](docs/architecture/01-architecture-overview.html)** — End-to-end topology across browser, static CDN, Vercel ASGI bridge, FastAPI, psycopg3 connection pool, and Supabase cloud.
+2. **[Admin Authentication & Privileged Action](docs/architecture/02-admin-auth-sequence.html)** — Sequence trace of bcrypt validation, 4-hour HS256 JWT creation, token verification, and game creation.
+3. **[User Signup, OTP, Login & Recovery](docs/architecture/03-user-auth-sequence.html)** — Registration with live username availability, Supabase email OTP, identifier resolution (username or email), and recovery.
+4. **[Home-Page Load & Multi-Tier Cache Dataflow](docs/architecture/04-homepage-dataflow.html)** — Cache hit vs. miss pathways across localStorage (0ms), Vercel edge (5ms), Python RAM (<1ms), and PostgreSQL (100ms).
+5. **[Token Lifecycle & Lockout Engine](docs/architecture/05-token-lifecycle.html)** — Session states, 3-hour vs 30-day session windows, and database-persisted brute-force lockout rules.
+
+> 📖 For the authoritative, comprehensive API reference, schema definitions, and security review, refer to [**`docs/BACKEND.md`**](docs/BACKEND.md).
 
 ---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-
 - **Python 3.12+**
-- **PostgreSQL 15+** (local) or a **Supabase** project
+- A **Supabase** project (or PostgreSQL 15+ database)
 - **Node.js** is NOT required — the frontend is pure vanilla HTML/CSS/JS
 
 ### 1. Clone the repository
-
 ```bash
 git clone https://github.com/aksh0411/test-2.git
 cd test-2
 ```
 
-### 2. Set up the database
-
-Create a PostgreSQL database named `games_db`:
-
-```sql
-CREATE DATABASE games_db;
-```
-
-The app will auto-sync sequences on startup. Use your own SQL migrations or seed data to populate games.
-
-### 3. Configure environment variables
-
+### 2. Configure environment variables
+Copy the sample configuration file:
 ```bash
 cp backend/.env.example backend/.env
 ```
 
-Edit `backend/.env` with your credentials:
-
+Configure `backend/.env` with your credentials:
 ```env
-# Option A: Supabase (cloud)
-DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres
+# Supabase PostgreSQL Transaction Mode Pooler (port 6543)
+DATABASE_URL=postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres
 
-# Option B: Local PostgreSQL
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=games_db
-DB_USER=postgres
-DB_PASSWORD=your_password
+# Supabase Auth Configuration
+SUPABASE_URL=https://[PROJECT-REF].supabase.co
+SUPABASE_ANON_KEY=eyJhbGci...[ANON-PUBLIC-KEY]
+SUPABASE_SECRET_KEY=sb_secret_...[SECRET-KEY]
 
-# Authentication
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD_HASH=$2b$12$...your_bcrypt_hash...
-JWT_SECRET=your-random-secret-key-here
+# Legacy Admin Authentication Credentials
+ADMIN_USERNAME=pick-a-name-that-is-not-admin
+ADMIN_PASSWORD_HASH=$2b$12$...[GENERATED-BCRYPT-HASH]
+JWT_SECRET=[GENERATED-RANDOM-HEX]
 ```
 
-> **Tip:** Generate a password hash with:
-> ```python
-> from passlib.hash import bcrypt
-> print(bcrypt.hash("your_password"))
-> ```
-
-### 4. Install dependencies
-
+### 3. Install dependencies
 ```bash
 cd backend
 python -m venv venv
@@ -141,84 +151,91 @@ venv\Scripts\activate        # Windows
 pip install -r requirements.txt
 ```
 
-### 5. Start the server
+### 4. Start the application
 
-**Option A — Using the batch script (Windows):**
+**Option A — Using the batch launcher (Windows):**
 ```bash
 start_gameverse.bat
 ```
 
-**Option B — Manual:**
+**Option B — Manual command:**
 ```bash
 cd backend
 python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-### 6. Open in browser
-
+### 5. Access the application
+Navigate to:
 ```
 http://127.0.0.1:8000
 ```
+- **Home Page**: `http://127.0.0.1:8000/index.html`
+- **Library Catalog**: `http://127.0.0.1:8000/library.html`
+- **Interactive API Docs** (Local development only): `http://127.0.0.1:8000/docs`
+
+---
+
+## 🔌 API Summary
+
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :---: | :--- |
+| `GET` | `/api/games` | None | Paginated games catalog with filtering and search |
+| `GET` | `/api/games/{id}` | None | Detailed game view with relations and system requirements |
+| `POST` | `/api/games` | Admin | Create a new game with file upload or cover URL |
+| `PUT` | `/api/games/{id}` | Admin | Update an existing game and relational associations |
+| `PATCH` | `/api/games/{id}/status` | Admin | Quick status, bookmark, or favorite flag update |
+| `DELETE` | `/api/games/{id}` | Admin | Delete a game and cascade its junction records |
+| `GET` | `/api/stats` | None | Collection totals (total, playing, completed, favorited) |
+| `GET` | `/api/genres` | None | List of genres (1-hour in-memory cache) |
+| `GET` | `/api/platforms` | None | List of platforms (1-hour in-memory cache) |
+| `GET` | `/api/developers` | None | List of developers (1-hour in-memory cache) |
+| `POST` | `/api/developers` | Admin | Create a new developer entity |
+| `GET` | `/api/publishers` | None | List of publishers (1-hour in-memory cache) |
+| `POST` | `/api/publishers` | Admin | Create a new publisher entity |
+| `GET` | `/api/modes` | None | List of game modes (1-hour in-memory cache) |
+| `POST` | `/api/admin/login` | None | Admin authentication endpoint returning 4-hour HS256 JWT |
+| `GET` | `/api/admin/verify` | User | Verify active session role and capabilities |
+| `GET` | `/api/auth/config` | None | Public Supabase URL and anon key configuration |
+| `GET` | `/api/auth/username-available`| None | Real-time username availability validation |
+| `POST` | `/api/auth/login` | None | Authenticate via email OR username with rate limiting |
+| `POST` | `/api/auth/forgot` | None | Password recovery proxy to Supabase GoTrue |
+| `GET` | `/api/me/profile` | User | Fetch authenticated user's profile and avatar |
+| `PATCH` | `/api/me/profile` | User | Update user's avatar selection |
+| `GET` | `/api/me/games` | User | Retrieve personal game library with status & ratings |
+| `PUT` | `/api/me/games/{id}` | User | Upsert personal status, favorite, bookmark, or rating |
+| `DELETE` | `/api/me/games/{id}` | User | Remove game from personal library |
+| `GET` | `/health` | None | Service health status check |
+
+---
+
+## 🛠️ Technology Stack
+
+| Layer | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Frontend Framework** | Vanilla HTML5, CSS3, JavaScript (ES6 Modules) | Zero-build frontend runtime with glassmorphism styling |
+| **3D & Graphics** | Three.js (WebGL), Canvas 2D | Dimensional Radar Core, 3D Hero, and Warp Text engines |
+| **Backend Framework** | FastAPI (Python 3.12+), Uvicorn | Asynchronous REST API with automatic OpenAPI documentation |
+| **Database Driver** | `psycopg` (v3) + `psycopg_pool` | High-performance pooled PostgreSQL client with dictionary rows |
+| **Cloud Database** | Supabase (PostgreSQL 15+) | Managed cloud database accessed via transaction pooler (port 6543) |
+| **User Authentication** | Supabase Auth (GoTrue) | Managed identity, email OTP confirmation, and password recovery |
+| **Admin Authentication** | PyJWT (`HS256`) + `bcrypt` | Independent fallback admin access control |
+| **Hosting & Deployment**| Vercel Serverless Functions | Serverless ASGI hosting with static edge asset delivery |
 
 ---
 
 ## 🌐 Deploy to Vercel
 
-The project is pre-configured for Vercel deployment:
-
-1. Push your code to GitHub
-2. Import the repo on [vercel.com](https://vercel.com)
-3. Set the environment variables in Vercel's dashboard (same as `.env`)
-4. Deploy — Vercel will use the `api/` serverless functions and serve `public/` as static assets
-
----
-
-## 🔌 API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/games` | List all games (supports `?limit=`, `?genre=`, `?platform=`) |
-| `GET` | `/api/games/{id}` | Get game details by ID |
-| `POST` | `/api/games` | Add a new game (admin auth required) |
-| `PUT` | `/api/games/{id}` | Update a game (admin auth required) |
-| `DELETE` | `/api/games/{id}` | Delete a game (admin auth required) |
-| `GET` | `/api/stats` | Get collection stats (total, playing, completed, bookmarked) |
-| `GET` | `/api/genres` | List all genres |
-| `GET` | `/api/platforms` | List all platforms |
-| `GET` | `/api/developers` | List all developers |
-| `GET` | `/api/publishers` | List all publishers |
-| `GET` | `/api/modes` | List all game modes |
-| `POST` | `/api/login` | Admin login (returns JWT) |
-| `GET` | `/health` | Health check |
-
----
-
-## 🛠️ Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| **Frontend** | Vanilla HTML5, CSS3, JavaScript (ES6+) |
-| **3D Graphics** | Three.js (WebGL) |
-| **Backend** | Python, FastAPI, Uvicorn |
-| **Database** | PostgreSQL (psycopg3 + connection pooling) |
-| **Auth** | JWT (python-jose) + bcrypt password hashing |
-| **Hosting** | Vercel (serverless) / Local |
-| **Cloud DB** | Supabase (PostgreSQL) |
-
----
-
-## 📱 Responsive Design
-
-- **Desktop** (>992px) — Full 2-column hero grid, sidebar with vertical filter cards, large orbital radar
-- **Tablet** (768–992px) — Stacked layout, horizontal filter tabs, compact radar
-- **Mobile** (<768px) — Single-column, 4-column stats grid, 2×2 filter grid, touch-swipe carousels
-- **Small Mobile** (<480px) — Extra-compact typography, icon-only filter buttons
-
----
-
-## 📄 License
-
-This is a personal project. Feel free to explore and learn from the code.
+The project includes pre-configured Vercel integration:
+1. Connect repository on [vercel.com](https://vercel.com).
+2. Configure project Environment Variables:
+   - `DATABASE_URL`
+   - `SUPABASE_URL`
+   - `SUPABASE_ANON_KEY`
+   - `SUPABASE_SECRET_KEY`
+   - `ADMIN_USERNAME`
+   - `ADMIN_PASSWORD_HASH`
+   - `JWT_SECRET`
+3. Deploy — Vercel routes `/api/*` through [`api/index.py`](api/index.py) using [`vercel.json`](vercel.json) rewrites, while [`public/`](public/) is served directly from the Vercel Edge CDN.
 
 ---
 
