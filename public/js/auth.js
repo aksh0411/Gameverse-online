@@ -990,6 +990,8 @@ async function initAuthSystem() {
                 await syncUserSession(s.access_token, s.user);
                 return;
             }
+        } else {
+            console.warn('[GameVerse Auth] Supabase config incomplete from server:', config);
         }
     } catch (e) {
         console.warn('Supabase client config unavailable:', e);
@@ -1347,7 +1349,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (!window.supabaseClient) {
-                setModalError('Supabase client is still initializing. Please wait a moment.');
+                setModalError('Authentication service not connected. Please verify SUPABASE_URL and SUPABASE_ANON_KEY in Vercel settings.');
                 return;
             }
 
@@ -1427,7 +1429,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const token = document.getElementById('otpCode')?.value.trim();
 
             if (!window.supabaseClient) {
-                setModalError('Supabase client is still initializing. Please wait a moment.');
+                setModalError('Authentication service not connected. Please verify SUPABASE_URL and SUPABASE_ANON_KEY in Vercel settings.');
                 return;
             }
 

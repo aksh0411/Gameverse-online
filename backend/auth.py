@@ -43,33 +43,29 @@ load_dotenv()
 
 # --- Supabase Configuration ---
 
-SUPABASE_URL = os.getenv("SUPABASE_URL", "").rstrip("/")
+def _clean_env(val: Optional[str]) -> str:
+    if not val:
+        return ""
+    val = val.strip()
+    if (val.startswith('"') and val.endswith('"')) or (val.startswith("'") and val.endswith("'")):
+        val = val[1:-1].strip()
+    return val
+
+SUPABASE_URL = _clean_env(os.getenv("SUPABASE_URL")).rstrip("/")
 
 if not SUPABASE_URL:
-
-    db_url = os.getenv("DATABASE_URL", "")
-
-    match = re.search(r"postgres\.([a-z0-9]+)", db_url)
-
+    db_url = _clean_env(os.getenv("DATABASE_URL"))
+    match = re.search(r"(?:postgres|db)\.([a-z0-9]+)", db_url)
     if match:
-
         SUPABASE_URL = f"https://{match.group(1)}.supabase.co"
 
-
-
-SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY", "")
-
-SUPABASE_SECRET_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
-
-
+SUPABASE_ANON_KEY = _clean_env(os.getenv("SUPABASE_ANON_KEY"))
+SUPABASE_SECRET_KEY = _clean_env(os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_SERVICE_ROLE_KEY"))
 
 # --- Legacy Fallback Credentials ---
-
-LEGACY_SECRET_KEY = os.getenv("JWT_SECRET")
-
-ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
-
-ADMIN_PASSWORD_HASH = os.getenv("ADMIN_PASSWORD_HASH")
+LEGACY_SECRET_KEY = _clean_env(os.getenv("JWT_SECRET"))
+ADMIN_USERNAME = _clean_env(os.getenv("ADMIN_USERNAME"))
+ADMIN_PASSWORD_HASH = _clean_env(os.getenv("ADMIN_PASSWORD_HASH"))
 
 
 
@@ -449,6 +445,14 @@ async def get_current_user(
 
 
 
+        is_admin = (role == "admin")
+        user_email = (payload.get("email") or "").strip().lower()
+        if not is_admin and ADMIN_USERNAME:
+            admin_target = ADMIN_USERNAME.strip().lower()
+            if username.strip().lower() == admin_target or (user_email and user_email == admin_target):
+                is_admin = True
+                role = "admin"
+
         return {
 
             "id": user_id,
@@ -461,7 +465,7 @@ async def get_current_user(
 
             "avatar_url": avatar_url,
 
-            "is_admin": role == "admin"
+            "is_admin": is_admin
 
         }
 
@@ -601,7 +605,7 @@ async def legacy_admin_login(
 
 
 
-    if form_data.username != ADMIN_USERNAME or not verify_password(form_data.password, ADMIN_PASSWORD_HASH):
+    if form_data.username.strip().lower() != ADMIN_USERNAME.strip().lower() or not verify_password(form_data.password, ADMIN_PASSWORD_HASH):
 
         record_login_failure(ip, form_data.username, db)
 

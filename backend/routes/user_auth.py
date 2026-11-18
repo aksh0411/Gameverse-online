@@ -13,6 +13,7 @@ from auth import (
     SUPABASE_URL,
     SUPABASE_ANON_KEY,
     SUPABASE_SECRET_KEY,
+    ADMIN_USERNAME,
     get_client_ip,
     check_login_rate_limit,
     record_login_failure,
@@ -138,18 +139,25 @@ async def user_login(
         )
 
     # Use secret API key for IP forwarding when available, fallback to anon key
-    auth_key = SUPABASE_SECRET_KEY or SUPABASE_ANON_KEY
+    auth_key = (SUPABASE_SECRET_KEY or SUPABASE_ANON_KEY).strip()
+    if not auth_key:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Supabase API key is missing. Set SUPABASE_ANON_KEY or SUPABASE_SECRET_KEY in Vercel Environment Variables."
+        )
+
     headers = {
         "apikey": auth_key,
         "Authorization": f"Bearer {auth_key}",
-        "Sb-Forwarded-For": ip,
         "Content-Type": "application/json"
     }
+    if ip and ip != "127.0.0.1":
+        headers["Sb-Forwarded-For"] = ip
 
     auth_url = f"{SUPABASE_URL}/auth/v1/token?grant_type=password"
 
     try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
+        async with httpx.AsyncClient(timeout=12.0) as client:
             res = await client.post(
                 auth_url,
                 headers=headers,
@@ -157,9 +165,10 @@ async def user_login(
             )
     except Exception as exc:
         _logger.error("Supabase auth request error: %s", exc)
+        err_msg = str(exc)
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Authentication service unavailable"
+            detail=f"Authentication service unavailable: {err_msg}" if err_msg else "Authentication service unavailable"
         )
 
     # 4. Handle Authentication Result
@@ -183,6 +192,13 @@ async def user_login(
             except Exception:
                 pass
 
+        user_role = profile_data.get("role", "user")
+        uname = profile_data.get("username") or ident
+        if ADMIN_USERNAME:
+            admin_target = ADMIN_USERNAME.strip().lower()
+            if uname.strip().lower() == admin_target or (email and email.strip().lower() == admin_target):
+                user_role = "admin"
+
         return {
             "access_token": data.get("access_token"),
             "refresh_token": data.get("refresh_token"),
@@ -191,8 +207,8 @@ async def user_login(
             "user": {
                 "id": user_id,
                 "email": email,
-                "username": profile_data.get("username") or ident,
-                "role": profile_data.get("role", "user"),
+                "username": uname,
+                "role": user_role,
                 "avatar_url": profile_data.get("avatar_url")
             }
         }
@@ -264,13 +280,15 @@ async def forgot_password(
         origin = request.headers.get("origin") or str(request.base_url).rstrip("/")
         redirect_to = f"{origin}/reset-password.html"
 
-        auth_key = SUPABASE_SECRET_KEY or SUPABASE_ANON_KEY
-        headers = {
-            "apikey": auth_key,
-            "Authorization": f"Bearer {auth_key}",
-            "Sb-Forwarded-For": ip,
-            "Content-Type": "application/json"
-        }
+        auth_key = (SUPABASE_SECRET_KEY or SUPABASE_ANON_KEY).strip()
+        if auth_key:
+            headers = {
+                "apikey": auth_key,
+                "Authorization": f"Bearer {auth_key}",
+                "Content-Type": "application/json"
+            }
+            if ip and ip != "127.0.0.1":
+                headers["Sb-Forwarded-For"] = ip
 
         try:
             async with httpx.AsyncClient(timeout=8.0) as client:
