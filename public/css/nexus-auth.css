@@ -1,0 +1,824 @@
+/* ==========================================================================
+   NEXUS 3D POPUP AUTH MODAL STYLES (Futuristic Translucent Authentication UI)
+   ========================================================================== */
+
+:root {
+  --nx-accent: #8b5cf6;
+  --nx-accent-cyan: #00f5d4;
+  --nx-accent-blue: #3b82f6;
+  --nx-card-bg: rgba(14, 18, 30, 0.78);
+  --nx-border: rgba(255, 255, 255, 0.12);
+}
+
+/* Translucent modal overlay with deep frosted backdrop blur */
+#loginModal.modal-overlay {
+  background: rgba(2, 6, 14, 0.72) !important;
+  backdrop-filter: blur(28px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 24px 16px !important;
+  overflow-y: auto !important;
+  z-index: 25000 !important;
+}
+
+#loginModal.modal-overlay.hidden {
+  display: none !important;
+}
+
+/* Ambient glow orbs in the background behind the modal */
+.nexus-ambient-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.nexus-glow-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  opacity: 0.28;
+  animation: orbFloat 14s ease-in-out infinite alternate;
+}
+
+.nexus-orb-1 {
+  width: 460px;
+  height: 460px;
+  background: radial-gradient(circle, #8b5cf6 0%, transparent 70%);
+  top: 10%;
+  left: 20%;
+}
+
+.nexus-orb-2 {
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle, #00f5d4 0%, transparent 70%);
+  bottom: 10%;
+  right: 25%;
+  animation-delay: -5s;
+}
+
+.nexus-orb-3 {
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(circle, #3b82f6 0%, transparent 70%);
+  top: 45%;
+  right: 40%;
+  animation-delay: -9s;
+}
+
+@keyframes orbFloat {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(40px, -30px) scale(1.12); }
+  100% { transform: translate(-30px, 35px) scale(0.95); }
+}
+
+/* Dot grid overlay texture */
+.nexus-dot-grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, #000 30%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, #000 30%, transparent 100%);
+  opacity: 0.6;
+}
+
+/* ==========================================================================
+   Main Split-Screen Modal Container
+   ========================================================================== */
+.nexus-modal {
+  display: grid !important;
+  grid-template-columns: 1.05fr 1fr;
+  width: 100% !important;
+  max-width: 960px !important;
+  min-height: 590px;
+  padding: 0 !important;
+  border-radius: 26px !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  background: var(--nx-card-bg) !important;
+  backdrop-filter: blur(32px) !important;
+  -webkit-backdrop-filter: blur(32px) !important;
+  box-shadow: 0 35px 80px -15px rgba(0, 0, 0, 0.85), 0 0 50px rgba(139, 92, 246, 0.22) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  z-index: 10;
+  margin: auto !important;
+  animation: nexusModalPop 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes nexusModalPop {
+  0% { opacity: 0; transform: scale(0.92) translateY(18px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.nexus-modal-close {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-size: 1.3rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 50;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nexus-modal-close:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(0, 245, 212, 0.5);
+  transform: rotate(90deg) scale(1.08);
+}
+
+/* ==========================================================================
+   LEFT PANEL: Interactive 3D Showcase
+   ========================================================================== */
+.nexus-showcase-panel {
+  position: relative;
+  background: linear-gradient(145deg, rgba(16, 12, 28, 0.85) 0%, rgba(8, 14, 24, 0.85) 100%);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32px 24px;
+  overflow: hidden;
+  user-select: none;
+}
+
+.nexus-particle-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* 3D Stage Wrapper */
+.nexus-3d-stage-wrapper {
+  position: relative;
+  width: 380px;
+  height: 320px;
+  perspective: 1100px;
+  z-index: 2;
+  margin-top: 10px;
+}
+
+.nexus-3d-stage {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform: rotateX(68deg) rotateY(0deg) rotateZ(-12deg);
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Glowing floor disc */
+.nexus-stage-platform {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 320px;
+  height: 320px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.35) 0%, rgba(0, 245, 212, 0.12) 40%, transparent 70%);
+  filter: blur(8px);
+}
+
+/* Concentric Orbital Rings */
+.nexus-orbit-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.nexus-orbit-ring.ring-1 {
+  width: 200px;
+  height: 200px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 18px rgba(0, 245, 212, 0.15);
+}
+
+.nexus-orbit-ring.ring-2 {
+  width: 310px;
+  height: 310px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow: 0 0 25px rgba(139, 92, 246, 0.18);
+}
+
+.nexus-orbit-ring.ring-dashed {
+  width: 250px;
+  height: 250px;
+  border: 1px dashed rgba(255, 255, 255, 0.16);
+  transform: translate(-50%, -50%) rotateZ(35deg);
+}
+
+/* Glowing Travelling Light Arcs on Rings */
+.nexus-ring-light-arc {
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+}
+
+.nexus-ring-light-arc.arc-1 {
+  border-top-color: #00f5d4;
+  border-right-color: rgba(0, 245, 212, 0.35);
+  filter: drop-shadow(0 0 6px #00f5d4);
+  animation: arcSpin 8s linear infinite;
+}
+
+.nexus-ring-light-arc.arc-2 {
+  border-top-color: #8b5cf6;
+  border-left-color: rgba(139, 92, 246, 0.4);
+  filter: drop-shadow(0 0 7px #8b5cf6);
+  animation: arcSpinRev 14s linear infinite;
+}
+
+@keyframes arcSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes arcSpinRev {
+  0% { transform: rotate(360deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* Central Glowing Hex Core */
+.nexus-core-anchor {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 58px;
+  height: 58px;
+  transform-style: preserve-3d;
+}
+
+.nexus-core-pulse {
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 245, 212, 0.5) 0%, rgba(139, 92, 246, 0.25) 50%, transparent 75%);
+  filter: blur(8px);
+  animation: corePulse 3s ease-in-out infinite alternate;
+}
+
+@keyframes corePulse {
+  0% { transform: scale(0.85); opacity: 0.6; }
+  100% { transform: scale(1.2); opacity: 1; }
+}
+
+.nexus-core-hex {
+  position: relative;
+  width: 58px;
+  height: 58px;
+  background: linear-gradient(135deg, #8b5cf6, #3b82f6, #00f5d4);
+  clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: hexHover 4s ease-in-out infinite alternate;
+}
+
+@keyframes hexHover {
+  0% { transform: translateZ(10px) rotateZ(0deg); }
+  100% { transform: translateZ(24px) rotateZ(12deg); }
+}
+
+.nexus-core-inner {
+  width: 52px;
+  height: 52px;
+  background: #0d111c;
+  clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nexus-brand-logo-svg {
+  width: 24px;
+  height: 24px;
+  filter: drop-shadow(0 0 6px #00f5d4);
+}
+
+/* Orbiting 3D Game Cards */
+.nexus-orbit-container {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform-style: preserve-3d;
+}
+
+.nexus-orbit-container.orbit-inner {
+  animation: orbitSpinInner 36s linear infinite;
+}
+
+.nexus-orbit-container.orbit-outer {
+  animation: orbitSpinOuter 48s linear infinite reverse;
+}
+
+@keyframes orbitSpinInner {
+  0% { transform: translate(-50%, -50%) rotateZ(0deg); }
+  100% { transform: translate(-50%, -50%) rotateZ(360deg); }
+}
+
+@keyframes orbitSpinOuter {
+  0% { transform: translate(-50%, -50%) rotateZ(0deg); }
+  100% { transform: translate(-50%, -50%) rotateZ(360deg); }
+}
+
+/* Card Slot Positioning */
+.nexus-card-slot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform-style: preserve-3d;
+}
+
+/* Inner Ring Radius = 100px */
+.slot-1 { transform: rotateZ(0deg) translateX(100px) rotateZ(0deg); }
+.slot-2 { transform: rotateZ(90deg) translateX(100px) rotateZ(-90deg); }
+.slot-3 { transform: rotateZ(180deg) translateX(100px) rotateZ(-180deg); }
+.slot-4 { transform: rotateZ(270deg) translateX(100px) rotateZ(-270deg); }
+
+/* Outer Ring Radius = 155px */
+.slot-5 { transform: rotateZ(45deg) translateX(155px) rotateZ(-45deg); }
+.slot-6 { transform: rotateZ(135deg) translateX(155px) rotateZ(-135deg); }
+.slot-7 { transform: rotateZ(225deg) translateX(155px) rotateZ(-225deg); }
+.slot-8 { transform: rotateZ(315deg) translateX(155px) rotateZ(-315deg); }
+
+/* Counter-rotation to keep cards facing the camera */
+.orbit-inner .nexus-card-counter {
+  animation: counterRotateInner 36s linear infinite;
+  transform-style: preserve-3d;
+}
+
+.orbit-outer .nexus-card-counter {
+  animation: counterRotateOuter 48s linear infinite reverse;
+  transform-style: preserve-3d;
+}
+
+@keyframes counterRotateInner {
+  0% { transform: rotateZ(0deg) rotateX(-68deg); }
+  100% { transform: rotateZ(-360deg) rotateX(-68deg); }
+}
+
+@keyframes counterRotateOuter {
+  0% { transform: rotateZ(0deg) rotateX(-68deg); }
+  100% { transform: rotateZ(-360deg) rotateX(-68deg); }
+}
+
+/* Game Card Style in 3D */
+.nexus-3d-game-card {
+  width: 48px;
+  height: 48px;
+  margin-left: -24px;
+  margin-top: -24px;
+  border-radius: 12px;
+  background: rgba(18, 22, 38, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 16px rgba(0, 245, 212, 0.25);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+  cursor: pointer;
+}
+
+.nexus-3d-game-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.nexus-card-badge {
+  position: absolute;
+  bottom: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(4, 8, 16, 0.95);
+  border: 1px solid rgba(0, 245, 212, 0.4);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 10;
+}
+
+.nexus-3d-game-card:hover {
+  transform: scale(1.22) translateZ(30px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.8), 0 0 24px rgba(0, 245, 212, 0.65);
+  border-color: #00f5d4;
+}
+
+.nexus-3d-game-card:hover .nexus-card-badge {
+  opacity: 1;
+  transform: translateX(-50%) translateY(2px);
+}
+
+/* Showcase Copy Bottom */
+.nexus-showcase-copy {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  max-width: 340px;
+}
+
+.nexus-eyebrow-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #a5b4fc;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  margin-bottom: 12px;
+  backdrop-filter: blur(8px);
+}
+
+.nexus-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00f5d4;
+  box-shadow: 0 0 8px #00f5d4;
+  animation: dotPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+  0% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.4); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.7; }
+}
+
+.nexus-showcase-headline {
+  font-size: 1.7rem;
+  font-weight: 700;
+  line-height: 1.15;
+  color: #fff;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px 0;
+}
+
+.nexus-gradient-text {
+  background: linear-gradient(90deg, #8b5cf6, #3b82f6, #00f5d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.nexus-showcase-tagline {
+  font-size: 0.86rem;
+  color: rgba(212, 204, 239, 0.65);
+  margin: 0;
+  line-height: 1.45;
+}
+
+/* ==========================================================================
+   RIGHT PANEL: Glassmorphism Auth Card
+   ========================================================================== */
+.nexus-auth-card {
+  position: relative;
+  padding: 38px 34px 34px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: rgba(10, 14, 24, 0.88);
+  overflow-y: auto;
+  max-height: 85vh;
+}
+
+/* Top neon hairline */
+.nexus-card-hairline {
+  position: absolute;
+  top: 0;
+  left: 20px;
+  right: 20px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #8b5cf6 30%, #00f5d4 70%, transparent);
+}
+
+.nexus-card-header {
+  margin-bottom: 20px;
+}
+
+.nexus-brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.nexus-brand-badge svg {
+  width: 20px;
+  height: 20px;
+  color: #00f5d4;
+}
+
+.nexus-form-title {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.02em;
+}
+
+.nexus-form-subtitle {
+  font-size: 0.88rem;
+  color: rgba(212, 204, 239, 0.6);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Capsule Tabs */
+.nexus-tabs.auth-tabs {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  padding: 4px !important;
+  margin-bottom: 22px !important;
+  display: flex !important;
+  gap: 4px !important;
+}
+
+.nexus-tabs .auth-tab-btn {
+  flex: 1 !important;
+  border: none !important;
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.65) !important;
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  padding: 9px 16px !important;
+  border-radius: 9px !important;
+  cursor: pointer !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.nexus-tabs .auth-tab-btn.active {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.75), rgba(0, 245, 212, 0.65)) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 18px rgba(139, 92, 246, 0.35) !important;
+}
+
+.nexus-tabs .auth-tab-btn:hover:not(.active) {
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Form Fields */
+.nexus-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.nexus-input-group {
+  margin-bottom: 0 !important;
+  text-align: left !important;
+}
+
+.nexus-input-group label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 6px;
+  letter-spacing: 0.01em;
+}
+
+.nexus-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.nexus-label-row label {
+  margin-bottom: 0 !important;
+}
+
+.nexus-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.nexus-input-wrapper:hover {
+  border-color: rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.nexus-input-wrapper:focus-within {
+  border-color: #00f5d4;
+  box-shadow: 0 0 0 3px rgba(0, 245, 212, 0.15), 0 0 16px rgba(0, 245, 212, 0.25);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.nexus-input-icon {
+  position: absolute;
+  left: 12px;
+  color: rgba(255, 255, 255, 0.45);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  transition: color 0.2s;
+}
+
+.nexus-input-wrapper:focus-within .nexus-input-icon {
+  color: #00f5d4;
+}
+
+.nexus-input-wrapper input {
+  width: 100% !important;
+  height: 44px !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 42px 0 38px !important;
+  color: #fff !important;
+  font-size: 0.92rem !important;
+  outline: none !important;
+  box-shadow: none !important;
+  font-family: inherit;
+}
+
+.nexus-input-wrapper input::placeholder {
+  color: rgba(255, 255, 255, 0.32);
+}
+
+/* Password Eye Toggle */
+.nexus-password-toggle {
+  position: absolute;
+  right: 6px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s;
+}
+
+.nexus-password-toggle:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Remember Me row */
+.nexus-remember-row {
+  margin: 4px 0 8px !important;
+}
+
+.nexus-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.84rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.nexus-checkbox-label input {
+  accent-color: #00f5d4;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* Action Submit Button with Light Sweep Effect */
+.nexus-btn-primary {
+  position: relative !important;
+  width: 100% !important;
+  height: 46px !important;
+  border-radius: 12px !important;
+  background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 60%, #00f5d4 100%) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  box-shadow: 0 10px 28px -6px rgba(139, 92, 246, 0.65) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+  overflow: hidden !important;
+}
+
+.nexus-btn-primary:hover {
+  transform: translateY(-1px) scale(1.01) !important;
+  box-shadow: 0 14px 34px -4px rgba(0, 245, 212, 0.55) !important;
+}
+
+.nexus-btn-primary:active {
+  transform: translateY(1px) scale(0.99) !important;
+}
+
+.nexus-btn-sweep {
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+  transition: none;
+}
+
+.nexus-btn-primary:hover .nexus-btn-sweep {
+  left: 130%;
+  transition: left 0.75s ease-out;
+}
+
+/* Sub-views styling (OTP, Forgot, SignUp) */
+.nexus-auth-card .signup-avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.nexus-auth-card .avatar-option-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 8px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nexus-auth-card .avatar-option-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(0, 245, 212, 0.4);
+}
+
+.nexus-auth-card .avatar-option-btn.selected {
+  background: rgba(0, 245, 212, 0.15);
+  border-color: #00f5d4;
+  box-shadow: 0 0 14px rgba(0, 245, 212, 0.35);
+}
+
+/* ==========================================================================
+   Responsive Breakpoints
+   ========================================================================== */
+@media (max-width: 960px) {
+  .nexus-modal {
+    grid-template-columns: 1fr !important;
+    max-width: 460px !important;
+    min-height: auto;
+  }
+  .nexus-showcase-panel {
+    display: none !important;
+  }
+  .nexus-auth-card {
+    padding: 32px 24px 28px;
+    max-height: none;
+  }
+}

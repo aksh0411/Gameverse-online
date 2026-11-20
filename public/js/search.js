@@ -10,8 +10,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const quickFilterMenu = document.getElementById('quickFilterMenu');
 
     // 1. Open Spotlight Search
+    let currentSearchResults = [];
+    let selectedResultIndex = -1;
+
+    function updateResultHighlight() {
+        if (!searchResults) return;
+        const items = searchResults.querySelectorAll('.spotlight-result-item');
+        items.forEach((it, idx) => {
+            it.classList.toggle('selected', idx === selectedResultIndex);
+        });
+    }
+
+    function selectSpotlightGame(game) {
+        closeSearch();
+        const gameId = game.id || game.game_id;
+        if (typeof window.openGameDetail === 'function') {
+            window.openGameDetail(null, game);
+        } else {
+            window.location.href = `library.html?game=${gameId}`;
+        }
+    }
+
     function openSearch() {
         if (!searchOverlay || !searchInput) return;
+        currentSearchResults = [];
+        selectedResultIndex = -1;
         searchOverlay.classList.remove('hidden');
         searchInput.value = '';
         searchInput.focus();
@@ -98,11 +121,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     searchResults.innerHTML = '';
 
                     if (games.length === 0) {
+                        currentSearchResults = [];
+                        selectedResultIndex = -1;
                         searchResults.innerHTML = '<div style="padding:20px; color:rgba(212,204,239,0.5); text-align:center; font-size:0.9rem;">No matching worlds found.</div>';
                     } else {
-                        games.slice(0, 7).forEach(game => {
+                        currentSearchResults = games.slice(0, 7);
+                        selectedResultIndex = 0; // Pre-select first result for immediate Enter key opening
+
+                        currentSearchResults.forEach((game, idx) => {
                             const item = document.createElement('div');
-                            item.className = 'spotlight-result-item';
+                            item.className = 'spotlight-result-item' + (idx === selectedResultIndex ? ' selected' : '');
 
                             const gameId = game.id || game.game_id;
                             const gameName = game.name || game.game_name || 'Untitled';
@@ -121,26 +149,73 @@ document.addEventListener('DOMContentLoaded', () => {
                                     <span class="spotlight-item-title">${escHtml(gameName)}</span>
                                     <span class="spotlight-item-meta">${escHtml(genres)} · <span style="color:#2dd4bf">${playStatus}</span></span>
                                 </div>
-                                <span style="color:rgba(212,204,239,0.4); font-size:0.8rem;">↵</span>
+                                <span style="color:rgba(212,204,239,0.4); font-size:0.8rem;" title="Press Enter to open">↵</span>
                             `;
 
+                            item.addEventListener('mouseenter', () => {
+                                selectedResultIndex = idx;
+                                updateResultHighlight();
+                            });
+
                             item.addEventListener('click', () => {
-                                closeSearch();
-                                if (typeof window.openGameDetail === 'function') {
-                                    window.openGameDetail(null, game);
-                                } else {
-                                    window.location.href = `library.html?game=${gameId}`;
-                                }
+                                selectSpotlightGame(game);
                             });
 
                             searchResults.appendChild(item);
                         });
+
+                        // View all in Library row
+                        if (games.length > 1) {
+                            const allItem = document.createElement('div');
+                            allItem.className = 'spotlight-result-item';
+                            allItem.style.justifyContent = 'center';
+                            allItem.style.borderTop = '1px solid rgba(255,255,255,0.06)';
+                            allItem.style.marginTop = '4px';
+                            allItem.innerHTML = `<span style="color:#00f5d4; font-size:0.85rem; font-weight:600;">View all ${games.length} matching games in Library →</span>`;
+                            allItem.addEventListener('click', () => {
+                                closeSearch();
+                                window.location.href = `library.html?q=${encodeURIComponent(query)}`;
+                            });
+                            searchResults.appendChild(allItem);
+                        }
                     }
                     searchResults.classList.remove('hidden');
                 } catch (err) {
                     console.error("Search failed", err);
                 }
             }, 250);
+        });
+
+        // Keyboard navigation and Enter key selection for Spotlight Search
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown' && currentSearchResults.length > 0) {
+                e.preventDefault();
+                selectedResultIndex = (selectedResultIndex + 1) % currentSearchResults.length;
+                updateResultHighlight();
+            } else if (e.key === 'ArrowUp' && currentSearchResults.length > 0) {
+                e.preventDefault();
+                selectedResultIndex = (selectedResultIndex - 1 + currentSearchResults.length) % currentSearchResults.length;
+                updateResultHighlight();
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (currentSearchResults.length > 0) {
+                    const targetIdx = (selectedResultIndex >= 0 && selectedResultIndex < currentSearchResults.length)
+                        ? selectedResultIndex
+                        : 0;
+                    const chosenGame = currentSearchResults[targetIdx];
+                    if (chosenGame) {
+                        selectSpotlightGame(chosenGame);
+                        return;
+                    }
+                }
+                const q = searchInput.value.trim();
+                if (q) {
+                    closeSearch();
+                    window.location.href = `library.html?q=${encodeURIComponent(q)}`;
+                }
+            } else if (e.key === 'Escape') {
+                closeSearch();
+            }
         });
     }
 

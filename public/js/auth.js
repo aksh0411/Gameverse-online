@@ -721,7 +721,7 @@ function updateNavbarUserState(user) {
 
     if (user) {
         const initial = (user.username || 'U').charAt(0).toUpperCase();
-        const avData = user.avatar_url ? getAvatarData(user.avatar_url) : null;
+        const avData = getAvatarData(user.avatar_url || sessionStorage.getItem(USER_AVATAR_KEY) || localStorage.getItem(USER_AVATAR_KEY) || 'avatar_cyber');
 
         allAvatarBtns.forEach(btn => {
             const fallback = btn.querySelector('.avatar-fallback');
@@ -806,10 +806,12 @@ function updateNavbarUserState(user) {
                 fallback.innerHTML = userSvg;
                 fallback.style.background = '';
                 fallback.style.color = '';
+                fallback.style.boxShadow = '';
             } else {
                 btn.innerHTML = userSvg;
                 btn.style.background = '';
                 btn.style.color = '';
+                btn.style.boxShadow = '';
             }
             btn.title = 'Sign In / Register';
         });
@@ -894,10 +896,12 @@ async function syncUserSession(token, userFallback = null) {
                 username: userFallback.user_metadata?.username || sessionStorage.getItem(USER_NAME_KEY) || (userFallback.email ? userFallback.email.split('@')[0] : 'User'),
                 email: userFallback.email || sessionStorage.getItem(USER_EMAIL_KEY) || '',
                 role: 'user',
-                is_admin: false
+                is_admin: false,
+                avatar_url: userFallback.user_metadata?.avatar_url || sessionStorage.getItem(USER_AVATAR_KEY) || localStorage.getItem(USER_AVATAR_KEY) || 'avatar_cyber'
             };
             sessionStorage.setItem(USER_ROLE_KEY, 'user');
             sessionStorage.setItem(USER_NAME_KEY, fallbackUser.username);
+            sessionStorage.setItem(USER_AVATAR_KEY, fallbackUser.avatar_url);
             if (fallbackUser.email) sessionStorage.setItem(USER_EMAIL_KEY, fallbackUser.email);
             updateNavbarUserState(fallbackUser);
             return fallbackUser;
@@ -908,7 +912,8 @@ async function syncUserSession(token, userFallback = null) {
                 username: userFallback.user_metadata?.username || sessionStorage.getItem(USER_NAME_KEY) || 'User',
                 email: userFallback.email || sessionStorage.getItem(USER_EMAIL_KEY) || '',
                 role: 'user',
-                is_admin: false
+                is_admin: false,
+                avatar_url: userFallback.user_metadata?.avatar_url || sessionStorage.getItem(USER_AVATAR_KEY) || localStorage.getItem(USER_AVATAR_KEY) || 'avatar_cyber'
             };
             updateNavbarUserState(fallbackUser);
             return fallbackUser;

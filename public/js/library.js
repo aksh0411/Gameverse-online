@@ -261,13 +261,21 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // 4. Live Search Query
+        // 4. Live Search Query (matches title, description, genres, platforms, developer, publisher)
         if (currentFilter.searchQuery.trim()) {
             const q = currentFilter.searchQuery.toLowerCase().trim();
             results = results.filter(g => {
                 const name = (g.name || g.game_name || '').toLowerCase();
                 const desc = (g.description || '').toLowerCase();
-                return name.includes(q) || desc.includes(q);
+                const dev = (g.developer_name || g.developer || '').toLowerCase();
+                const pub = (g.publisher_name || g.publisher || '').toLowerCase();
+                const genres = (Array.isArray(g.genres) ? g.genres : [])
+                    .map(x => (typeof x === 'object' ? x.genre_name || x.name || '' : String(x)).toLowerCase())
+                    .join(' ');
+                const platforms = (Array.isArray(g.platforms) ? g.platforms : [])
+                    .map(x => (typeof x === 'object' ? x.platform_name || x.name || '' : String(x)).toLowerCase())
+                    .join(' ');
+                return name.includes(q) || genres.includes(q) || platforms.includes(q) || dev.includes(q) || pub.includes(q) || desc.includes(q);
             });
         }
 
@@ -531,9 +539,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── 8. Search Input Handling (+ live suggestions on name / genre / platform) ──
     const suggestionsBox = document.getElementById('topbarSuggestions');
     const topbarSearchBox = document.getElementById('topbarSearchBox');
+    let currentSuggestionMatches = [];
+    let selectedSuggestionIndex = -1;
 
     function hideSearchSuggestions() {
         if (suggestionsBox) suggestionsBox.classList.add('hidden');
+        selectedSuggestionIndex = -1;
+    }
+
+    function updateSuggestionHighlight() {
+        if (!suggestionsBox) return;
+        const items = suggestionsBox.querySelectorAll('.spotlight-result-item');
+        items.forEach((item, idx) => {
+            item.classList.toggle('selected', idx === selectedSuggestionIndex);
+        });
     }
 
     function renderSearchSuggestions(rawQuery) {
@@ -553,12 +572,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return name.includes(q) || genres.includes(q) || platforms.includes(q);
         }).slice(0, 6);
 
+        currentSuggestionMatches = matches;
+        selectedSuggestionIndex = -1;
         suggestionsBox.innerHTML = '';
 
         if (matches.length === 0) {
             suggestionsBox.innerHTML = '<div class="spotlight-result-item" style="justify-content:center; color:rgba(212,204,239,0.5); cursor:default;">No matching worlds found.</div>';
         } else {
-            matches.forEach(game => {
+            matches.forEach((game, idx) => {
                 const item = document.createElement('div');
                 item.className = 'spotlight-result-item';
                 const gameName = game.name || game.game_name || 'Untitled';
@@ -576,8 +597,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="spotlight-item-title">${escHtml(gameName)}</span>
                         <span class="spotlight-item-meta">${escHtml(gameGenres(game, 2, ', '))} · <span style="color:#2dd4bf">${playStatus}</span></span>
                     </div>
-                    <span style="color:rgba(212,204,239,0.4); font-size:0.8rem;">↵</span>
+                    <span style="color:rgba(212,204,239,0.4); font-size:0.8rem;" title="Press Enter to open">↵</span>
                 `;
+
+                item.addEventListener('mouseenter', () => {
+                    selectedSuggestionIndex = idx;
+                    updateSuggestionHighlight();
+                });
 
                 item.addEventListener('click', () => {
                     hideSearchSuggestions();
@@ -603,6 +629,40 @@ document.addEventListener('DOMContentLoaded', () => {
             renderSearchSuggestions(e.target.value);
         });
         searchInput.addEventListener('focus', () => renderSearchSuggestions(searchInput.value));
+
+        // Keyboard navigation and Enter key handling for search input
+        searchInput.addEventListener('keydown', (e) => {
+            const isSuggestionsVisible = suggestionsBox && !suggestionsBox.classList.contains('hidden') && currentSuggestionMatches.length > 0;
+
+            if (e.key === 'ArrowDown' && isSuggestionsVisible) {
+                e.preventDefault();
+                selectedSuggestionIndex = (selectedSuggestionIndex + 1) % currentSuggestionMatches.length;
+                updateSuggestionHighlight();
+            } else if (e.key === 'ArrowUp' && isSuggestionsVisible) {
+                e.preventDefault();
+                selectedSuggestionIndex = (selectedSuggestionIndex - 1 + currentSuggestionMatches.length) % currentSuggestionMatches.length;
+                updateSuggestionHighlight();
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                hideSearchSuggestions();
+
+                // If user navigated suggestions with arrows, open that specific game card
+                if (isSuggestionsVisible && selectedSuggestionIndex >= 0 && currentSuggestionMatches[selectedSuggestionIndex]) {
+                    const targetGame = currentSuggestionMatches[selectedSuggestionIndex];
+                    openDetail(null, targetGame);
+                } else {
+                    // Filter the cards down below and smoothly scroll to the game cards grid
+                    currentFilter.searchQuery = searchInput.value;
+                    applyFilters();
+                    searchInput.blur();
+                    if (gamesContainer) {
+                        gamesContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }
+            } else if (e.key === 'Escape') {
+                hideSearchSuggestions();
+            }
+        });
     }
 
     // Close suggestions when clicking anywhere outside the search box

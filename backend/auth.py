@@ -65,7 +65,8 @@ SUPABASE_SECRET_KEY = _clean_env(os.getenv("SUPABASE_SECRET_KEY") or os.getenv("
 # --- Legacy Fallback Credentials ---
 LEGACY_SECRET_KEY = _clean_env(os.getenv("JWT_SECRET")) or "gameverse_fallback_jwt_secret_key_2026_super_secure"
 ADMIN_USERNAME = _clean_env(os.getenv("ADMIN_USERNAME")) or "admin"
-ADMIN_PASSWORD_HASH = _clean_env(os.getenv("ADMIN_PASSWORD_HASH")) or "$2b$12$WvZYgsG1DEbWjlWZfGG1P.7hA2x5O0AhfuYCmgZEQQ0GPV83I9/NW"
+ADMIN_EMAIL = _clean_env(os.getenv("ADMIN_EMAIL"))
+ADMIN_PASSWORD_HASH = _clean_env(os.getenv("ADMIN_PASSWORD_HASH")) or "$2b$12$GtWR6jK3d/k1rct2ldyYT.INWa4p32/IO/libKXwYLt2zPbF90vUi"
 ADMIN_PASSWORD = _clean_env(os.getenv("ADMIN_PASSWORD"))
 
 
@@ -567,8 +568,13 @@ async def legacy_admin_login(
     uname = form_data.username.strip().lower()
     pwd = form_data.password.strip()
     admin_target = (ADMIN_USERNAME or "admin").strip().lower()
+    admin_email_target = (ADMIN_EMAIL or "").strip().lower()
 
-    is_admin_user = (uname == admin_target or uname in ("admin", "administrator", "root"))
+    is_admin_user = (
+        uname == admin_target 
+        or (admin_email_target and uname == admin_email_target)
+        or uname in ("admin", "administrator", "root")
+    )
     authenticated = False
     resolved_username = ADMIN_USERNAME or "admin"
 
