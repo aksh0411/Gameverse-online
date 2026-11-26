@@ -26,7 +26,7 @@
         not_started: {
             label: 'NOT STARTED',
             tagBg: 'rgba(125, 108, 168, 0.15)',
-            tagColor: '#67e8f9',
+            tagColor: '#fda4af',
             tagBorder: 'rgba(187, 174, 223, 0.3)'
         },
         play_later: {
@@ -47,18 +47,18 @@
      * Resolves game's accent color based on status or deterministic palette
      */
     function getGameAccentColor(game) {
-        if (!game) return '#00f5d4';
+        if (!game) return '#ffb074';
         if (game.accentColor || game.accent_color) return game.accentColor || game.accent_color;
         const status = (game.play_status || '').toLowerCase();
         const statusColors = {
-            playing: '#00f5d4',
-            completed: '#38bdf8',
-            play_later: '#06b6d4',
+            playing: '#ffb074',
+            completed: '#fb7185',
+            play_later: '#fb923c',
             not_started: '#c66a93',
             wont_play: '#7a96bc'
         };
         if (statusColors[status]) return statusColors[status];
-        const palette = ['#c66a93', '#7a96bc', '#00f5d4', '#06b6d4', '#38bdf8'];
+        const palette = ['#c66a93', '#7a96bc', '#ffb074', '#fb923c', '#fb7185'];
         const id = Number(game.id || game.game_id || 0);
         return palette[id % palette.length];
     }
@@ -468,13 +468,13 @@
         const gameName = game.name || game.game_name || 'Untitled Game';
         const status = (game.play_status || 'not_started').toLowerCase();
         const conf = statusConfig[status] || statusConfig.not_started;
-        const color = conf.dotColor || '#00f5d4';
+        const color = conf.dotColor || '#ffb074';
         const label = conf.label || 'Not Started';
         const isBookmarked = (game.is_bookmarked || game.bookmarked) ? 'active' : '';
 
         const placeholderSvg = '<div class="card-image-placeholder"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.4;"><rect x="2" y="6" width="20" height="12" rx="4"/><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"/></svg></div>';
         const imageContent = imgUrl
-            ? `<img src="${escHtml(imgUrl)}" alt="${escHtml(gameName)}" loading="lazy" decoding="async" onerror="if(!this.dataset.retry){this.dataset.retry='1';var s=this.src;if(s.endsWith('.webp')){this.src=s.replace(/\\.webp$/,'.jpg');}else{this.src='/static/images/'+(s.split('/').pop());}}else{this.parentElement.innerHTML='${placeholderSvg}';}">`
+            ? `<img src="${escHtml(imgUrl)}" alt="${escHtml(gameName)}" loading="lazy" decoding="async">`
             : placeholderSvg;
 
         card.innerHTML = `
@@ -498,6 +498,19 @@
                 </button>
             </div>
         `;
+
+        const cardImg = card.querySelector('.card-image img');
+        if (cardImg) {
+            cardImg.addEventListener('error', function () {
+                if (!this.dataset.retry) {
+                    this.dataset.retry = '1';
+                    const s = this.src;
+                    this.src = s.endsWith('.webp') ? s.replace(/\.webp$/, '.jpg') : '/static/images/' + s.split('/').pop();
+                } else {
+                    this.parentElement.innerHTML = placeholderSvg;
+                }
+            });
+        }
 
         card.addEventListener('click', (e) => {
             if (e.target.closest('.bookmark-toggle')) return;
@@ -544,7 +557,7 @@
         if (!container) return;
         container.innerHTML = '';
         if (!games || games.length === 0) {
-            container.innerHTML = '<p style="color: rgba(212, 204, 239, 0.5); font-size: 0.95rem;">No games found in this category.</p>';
+            container.innerHTML = '<p style="color: rgba(254, 215, 170, 0.5); font-size: 0.95rem;">No games found in this category.</p>';
             return;
         }
         const frag = document.createDocumentFragment();
@@ -668,7 +681,7 @@
         const overlay = document.createElement('div');
         overlay.id = 'transitionOverlay';
         overlay.className = 'transition-overlay';
-        overlay.style.background = `radial-gradient(circle at 50% 50%, ${accentColor}25 0%, rgba(2, 11, 16, 0.85) 60%, rgba(2, 11, 16, 0.98) 100%)`;
+        overlay.style.background = `radial-gradient(circle at 50% 50%, ${accentColor}25 0%, rgba(20, 11, 18, 0.85) 60%, rgba(20, 11, 18, 0.98) 100%)`;
 
         const radialGlow = document.createElement('div');
         radialGlow.className = 'transition-radial-glow';

@@ -25,8 +25,8 @@ const GAMER_AVATARS = [
     {
         id: 'avatar_cyber',
         name: 'Cyber Neon',
-        accent: '#00f5d4',
-        svg: `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><circle cx="20" cy="20" r="18" fill="#0d1117" stroke="#00f5d4" stroke-width="2"/><path d="M10 17C10 13 14 10 20 10C26 10 30 13 30 17V22C30 26 26 29 20 29C14 29 10 26 10 22V17Z" fill="#161b22" stroke="#7209b7" stroke-width="1.5"/><rect x="12" y="17" width="16" height="5" rx="2.5" fill="#00f5d4"/><circle cx="16" cy="19.5" r="1.5" fill="#fff"/><circle cx="24" cy="19.5" r="1.5" fill="#fff"/><path d="M16 26H24" stroke="#f72585" stroke-width="2" stroke-linecap="round"/><path d="M8 20L10 19M32 20L30 19" stroke="#00f5d4" stroke-width="2"/></svg>`
+        accent: '#ffb074',
+        svg: `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><circle cx="20" cy="20" r="18" fill="#190e16" stroke="#ffb074" stroke-width="2"/><path d="M10 17C10 13 14 10 20 10C26 10 30 13 30 17V22C30 26 26 29 20 29C14 29 10 26 10 22V17Z" fill="#161b22" stroke="#7209b7" stroke-width="1.5"/><rect x="12" y="17" width="16" height="5" rx="2.5" fill="#ffb074"/><circle cx="16" cy="19.5" r="1.5" fill="#fff"/><circle cx="24" cy="19.5" r="1.5" fill="#fff"/><path d="M16 26H24" stroke="#f72585" stroke-width="2" stroke-linecap="round"/><path d="M8 20L10 19M32 20L30 19" stroke="#ffb074" stroke-width="2"/></svg>`
     },
     {
         id: 'avatar_knight',
@@ -38,13 +38,13 @@ const GAMER_AVATARS = [
         id: 'avatar_retro',
         name: 'Retro Arcade',
         accent: '#f72585',
-        svg: `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><circle cx="20" cy="20" r="18" fill="#1a1423" stroke="#f72585" stroke-width="2"/><rect x="10" y="14" width="20" height="13" rx="4" fill="#2d1e3e" stroke="#f72585" stroke-width="1.5"/><path d="M14 18V22M12 20H16" stroke="#00f5d4" stroke-width="2" stroke-linecap="round"/><circle cx="24" cy="19" r="1.5" fill="#ffbe0b"/><circle cx="27" cy="21" r="1.5" fill="#f72585"/><rect x="18" y="24" width="4" height="1" fill="#fff"/></svg>`
+        svg: `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><circle cx="20" cy="20" r="18" fill="#1a1423" stroke="#f72585" stroke-width="2"/><rect x="10" y="14" width="20" height="13" rx="4" fill="#2d1e3e" stroke="#f72585" stroke-width="1.5"/><path d="M14 18V22M12 20H16" stroke="#ffb074" stroke-width="2" stroke-linecap="round"/><circle cx="24" cy="19" r="1.5" fill="#ffbe0b"/><circle cx="27" cy="21" r="1.5" fill="#f72585"/><rect x="18" y="24" width="4" height="1" fill="#fff"/></svg>`
     },
     {
         id: 'avatar_wizard',
         name: 'Arcane Wizard',
         accent: '#9d4edd',
-        svg: `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><circle cx="20" cy="20" r="18" fill="#130e24" stroke="#9d4edd" stroke-width="2"/><path d="M20 9L27 24H13L20 9Z" fill="#241442" stroke="#c77dff" stroke-width="1.5"/><ellipse cx="20" cy="24" rx="10" ry="3" fill="#3c096c" stroke="#c77dff" stroke-width="1.5"/><polygon points="20,13 21,15.5 24,15.5 21.5,17 22.5,19.5 20,18 17.5,19.5 18.5,17 16,15.5 19,15.5" fill="#ffbe0b"/><circle cx="20" cy="29" r="1.5" fill="#00f5d4"/></svg>`
+        svg: `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><circle cx="20" cy="20" r="18" fill="#130e24" stroke="#9d4edd" stroke-width="2"/><path d="M20 9L27 24H13L20 9Z" fill="#241442" stroke="#c77dff" stroke-width="1.5"/><ellipse cx="20" cy="24" rx="10" ry="3" fill="#3c096c" stroke="#c77dff" stroke-width="1.5"/><polygon points="20,13 21,15.5 24,15.5 21.5,17 22.5,19.5 20,18 17.5,19.5 18.5,17 16,15.5 19,15.5" fill="#ffbe0b"/><circle cx="20" cy="29" r="1.5" fill="#ffb074"/></svg>`
     },
     {
         id: 'avatar_mech',
@@ -67,8 +67,8 @@ const GAMER_AVATARS = [
     {
         id: 'avatar_marine',
         name: 'Space Marine',
-        accent: '#48cae4',
-        svg: `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><circle cx="20" cy="20" r="18" fill="#081b29" stroke="#48cae4" stroke-width="2"/><circle cx="20" cy="20" r="10" fill="#13314d" stroke="#48cae4" stroke-width="1.5"/><ellipse cx="20" cy="19" rx="7" ry="5.5" fill="#00b4d8"/><ellipse cx="18" cy="17.5" rx="4" ry="2.5" fill="#90e0ef" opacity="0.6"/><circle cx="13" cy="26" r="1" fill="#ffd166"/><circle cx="27" cy="26" r="1" fill="#ffd166"/></svg>`
+        accent: '#fcd34d',
+        svg: `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><circle cx="20" cy="20" r="18" fill="#081b29" stroke="#fcd34d" stroke-width="2"/><circle cx="20" cy="20" r="10" fill="#13314d" stroke="#fcd34d" stroke-width="1.5"/><ellipse cx="20" cy="19" rx="7" ry="5.5" fill="#fb923c"/><ellipse cx="18" cy="17.5" rx="4" ry="2.5" fill="#90e0ef" opacity="0.6"/><circle cx="13" cy="26" r="1" fill="#ffd166"/><circle cx="27" cy="26" r="1" fill="#ffd166"/></svg>`
     }
 ];
 
@@ -546,8 +546,8 @@ function renderProfileAvatarCircle(avatarId, username = 'U') {
         avatarCircle.style.boxShadow = `0 8px 24px ${av.accent}40`;
     } else {
         avatarCircle.textContent = (username || 'U').charAt(0).toUpperCase();
-        avatarCircle.style.background = 'linear-gradient(135deg, #00b4d8, #00f5d4)';
-        avatarCircle.style.boxShadow = '0 8px 24px rgba(0,245,212,0.35)';
+        avatarCircle.style.background = 'linear-gradient(135deg, #fb923c, #ffb074)';
+        avatarCircle.style.boxShadow = '0 8px 24px rgba(255,176,116,0.35)';
     }
 }
 
@@ -735,7 +735,7 @@ function updateNavbarUserState(user) {
                 target.textContent = initial;
                 target.style.background = user.role === 'admin' 
                     ? 'linear-gradient(135deg, #7209b7, #f72585)' 
-                    : 'linear-gradient(135deg, #00b4d8, #00f5d4)';
+                    : 'linear-gradient(135deg, #fb923c, #ffb074)';
                 target.style.color = '#fff';
                 target.style.boxShadow = '';
             }
@@ -746,7 +746,7 @@ function updateNavbarUserState(user) {
             dropdown.innerHTML = `
                 <div class="user-menu-header" style="display:flex; align-items:center; gap:10px;">
                     <div style="width:36px; height:36px; border-radius:50%; flex-shrink:0;">
-                        ${avData ? avData.svg : `<div style="width:100%; height:100%; border-radius:50%; background:linear-gradient(135deg, #00b4d8, #00f5d4); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700;">${initial}</div>`}
+                        ${avData ? avData.svg : `<div style="width:100%; height:100%; border-radius:50%; background:linear-gradient(135deg, #fb923c, #ffb074); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700;">${initial}</div>`}
                     </div>
                     <div style="flex:1; overflow:hidden;">
                         <div class="user-menu-header-name">@${escHtml(user.username)}</div>

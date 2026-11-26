@@ -139,19 +139,40 @@ document.addEventListener('DOMContentLoaded', () => {
                             const playStatus = (game.play_status || 'not_started').replace('_', ' ').toUpperCase();
                             const genres = (game.genres || []).map(g => typeof g === 'object' ? g.genre_name : g).slice(0, 2).join(', ') || 'Game';
 
-                            const fallbackPoster = '<div class="spotlight-item-poster" style="display:flex;align-items:center;justify-content:center;color:#888;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="12" rx="4"/><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"/></svg></div>';
+                            const fallbackPoster = '<div class="spotlight-item-poster" style="display:flex;align-items:center;justify-content:center;color:#fbbf24;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="12" rx="4"/><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"/></svg></div>';
                             const poster = imgUrl
-                                ? `<img class="spotlight-item-poster" src="${escHtml(imgUrl)}" alt="${escHtml(gameName)}" loading="lazy" decoding="async" onerror="if(!this.dataset.retry){this.dataset.retry='1';var s=this.src;if(s.endsWith('.webp')){this.src=s.replace(/\\.webp$/,'.jpg');}else{this.src='/static/images/'+(s.split('/').pop());}}else if(this.dataset.retry==='1'){this.dataset.retry='2';var s2=this.src;if(s2.endsWith('.webp')){this.src=s2.replace(/\\.webp$/,'.jpg');}else{this.outerHTML='${fallbackPoster}';}}else{this.outerHTML='${fallbackPoster}';}">`
+                                ? `<img class="spotlight-item-poster" src="${escHtml(imgUrl)}" alt="${escHtml(gameName)}" loading="lazy" decoding="async">`
                                 : fallbackPoster;
 
                             item.innerHTML = `
                                 ${poster}
                                 <div class="spotlight-item-info">
                                     <span class="spotlight-item-title">${escHtml(gameName)}</span>
-                                    <span class="spotlight-item-meta">${escHtml(genres)} · <span style="color:#2dd4bf">${playStatus}</span></span>
+                                    <span class="spotlight-item-meta">${escHtml(genres)} · <span style="color:#ffb074">${playStatus}</span></span>
                                 </div>
-                                <span style="color:rgba(212,204,239,0.4); font-size:0.8rem;" title="Press Enter to open">↵</span>
+                                <span style="color:rgba(254,215,170,0.45); font-size:0.8rem;" title="Press Enter to open">↵</span>
                             `;
+
+                            const posterImg = item.querySelector('img.spotlight-item-poster');
+                            if (posterImg) {
+                                posterImg.addEventListener('error', function () {
+                                    if (!this.dataset.retry) {
+                                        this.dataset.retry = '1';
+                                        const s = this.src;
+                                        this.src = s.endsWith('.webp') ? s.replace(/\.webp$/, '.jpg') : '/static/images/' + s.split('/').pop();
+                                    } else if (this.dataset.retry === '1') {
+                                        this.dataset.retry = '2';
+                                        const s2 = this.src;
+                                        if (s2.endsWith('.webp')) {
+                                            this.src = s2.replace(/\.webp$/, '.jpg');
+                                        } else {
+                                            this.outerHTML = fallbackPoster;
+                                        }
+                                    } else {
+                                        this.outerHTML = fallbackPoster;
+                                    }
+                                });
+                            }
 
                             item.addEventListener('mouseenter', () => {
                                 selectedResultIndex = idx;
@@ -172,7 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             allItem.style.justifyContent = 'center';
                             allItem.style.borderTop = '1px solid rgba(255,255,255,0.06)';
                             allItem.style.marginTop = '4px';
-                            allItem.innerHTML = `<span style="color:#00f5d4; font-size:0.85rem; font-weight:600;">View all ${games.length} matching games in Library →</span>`;
+                            allItem.innerHTML = `<span style="color:#ffb074; font-size:0.85rem; font-weight:600;">View all ${games.length} matching games in Library →</span>`;
                             allItem.addEventListener('click', () => {
                                 closeSearch();
                                 window.location.href = `library.html?q=${encodeURIComponent(query)}`;

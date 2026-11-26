@@ -587,19 +587,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 const coverUrl = typeof getImageUrl === 'function' ? getImageUrl(rawCover) : rawCover;
                 const playStatus = (game.play_status || 'not_started').replace('_', ' ').toUpperCase();
 
-                const fallbackPoster = '<div class="spotlight-item-poster" style="display:flex;align-items:center;justify-content:center;color:#888;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="12" rx="4"/><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"/></svg></div>';
+                const fallbackPoster = '<div class="spotlight-item-poster" style="display:flex;align-items:center;justify-content:center;color:#fbbf24;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="12" rx="4"/><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"/></svg></div>';
                 const poster = coverUrl
-                    ? `<img class="spotlight-item-poster" src="${escHtml(coverUrl)}" alt="${escHtml(gameName)}" loading="lazy" decoding="async" onerror="if(!this.dataset.retry&&this.src.endsWith('.webp')){this.dataset.retry='1';this.src=this.src.replace(/\\.webp$/,'.jpg');}else{this.outerHTML='${fallbackPoster}';}">`
+                    ? `<img class="spotlight-item-poster" src="${escHtml(coverUrl)}" alt="${escHtml(gameName)}" loading="lazy" decoding="async">`
                     : fallbackPoster;
 
                 item.innerHTML = `
                     ${poster}
                     <div class="spotlight-item-info">
                         <span class="spotlight-item-title">${escHtml(gameName)}</span>
-                        <span class="spotlight-item-meta">${escHtml(gameGenres(game, 2, ', '))} · <span style="color:#2dd4bf">${playStatus}</span></span>
+                        <span class="spotlight-item-meta">${escHtml(gameGenres(game, 2, ', '))} · <span style="color:#ffb074">${playStatus}</span></span>
                     </div>
-                    <span style="color:rgba(212,204,239,0.4); font-size:0.8rem;" title="Press Enter to open">↵</span>
+                    <span style="color:rgba(254,215,170,0.45); font-size:0.8rem;" title="Press Enter to open">↵</span>
                 `;
+
+                const posterImg = item.querySelector('img.spotlight-item-poster');
+                if (posterImg) {
+                    posterImg.addEventListener('error', function () {
+                        if (!this.dataset.retry && this.src.endsWith('.webp')) {
+                            this.dataset.retry = '1';
+                            this.src = this.src.replace(/\.webp$/, '.jpg');
+                        } else {
+                            this.outerHTML = fallbackPoster;
+                        }
+                    });
+                }
 
                 item.addEventListener('mouseenter', () => {
                     selectedSuggestionIndex = idx;

@@ -4,15 +4,15 @@
 
 :root {
   --nx-accent: #8b5cf6;
-  --nx-accent-cyan: #00f5d4;
+  --nx-accent-cyan: #ffb074;
   --nx-accent-blue: #3b82f6;
-  --nx-card-bg: rgba(14, 18, 30, 0.78);
+  --nx-card-bg: rgba(32, 17, 26, 0.78);
   --nx-border: rgba(255, 255, 255, 0.12);
 }
 
 /* Translucent modal overlay with deep frosted backdrop blur */
 #loginModal.modal-overlay {
-  background: rgba(2, 6, 14, 0.72) !important;
+  background: rgba(20, 10, 18, 0.72) !important;
   backdrop-filter: blur(28px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
   display: flex !important;
@@ -67,7 +67,7 @@
 .nexus-orb-2 {
   width: 420px;
   height: 420px;
-  background: radial-gradient(circle, #00f5d4 0%, transparent 70%);
+  background: radial-gradient(circle, #ffb074 0%, transparent 70%);
   bottom: 10%;
   right: 25%;
   animation-delay: -5s;
@@ -149,7 +149,7 @@
 
 .nexus-modal-close:hover {
   background: rgba(255, 255, 255, 0.16);
-  border-color: rgba(0, 245, 212, 0.5);
+  border-color: rgba(255, 176, 116, 0.5);
   transform: rotate(90deg) scale(1.08);
 }
 
@@ -205,7 +205,7 @@
   height: 320px;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.35) 0%, rgba(0, 245, 212, 0.12) 40%, transparent 70%);
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.35) 0%, rgba(255, 176, 116, 0.12) 40%, transparent 70%);
   filter: blur(8px);
 }
 
@@ -223,7 +223,7 @@
   width: 200px;
   height: 200px;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 0 18px rgba(0, 245, 212, 0.15);
+  box-shadow: 0 0 18px rgba(255, 176, 116, 0.15);
 }
 
 .nexus-orbit-ring.ring-2 {
@@ -249,9 +249,9 @@
 }
 
 .nexus-ring-light-arc.arc-1 {
-  border-top-color: #00f5d4;
-  border-right-color: rgba(0, 245, 212, 0.35);
-  filter: drop-shadow(0 0 6px #00f5d4);
+  border-top-color: #ffb074;
+  border-right-color: rgba(255, 176, 116, 0.35);
+  filter: drop-shadow(0 0 6px #ffb074);
   animation: arcSpin 8s linear infinite;
 }
 
@@ -287,7 +287,7 @@
   position: absolute;
   inset: -12px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 245, 212, 0.5) 0%, rgba(139, 92, 246, 0.25) 50%, transparent 75%);
+  background: radial-gradient(circle, rgba(255, 176, 116, 0.5) 0%, rgba(139, 92, 246, 0.25) 50%, transparent 75%);
   filter: blur(8px);
   animation: corePulse 3s ease-in-out infinite alternate;
 }
@@ -301,7 +301,7 @@
   position: relative;
   width: 58px;
   height: 58px;
-  background: linear-gradient(135deg, #8b5cf6, #3b82f6, #00f5d4);
+  background: linear-gradient(135deg, #8b5cf6, #3b82f6, #ffb074);
   clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
   display: flex;
   align-items: center;
@@ -317,7 +317,7 @@
 .nexus-core-inner {
   width: 52px;
   height: 52px;
-  background: #0d111c;
+  background: #1c1018;
   clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
   display: flex;
   align-items: center;
@@ -327,7 +327,7 @@
 .nexus-brand-logo-svg {
   width: 24px;
   height: 24px;
-  filter: drop-shadow(0 0 6px #00f5d4);
+  filter: drop-shadow(0 0 6px #ffb074);
 }
 
 /* Orbiting 3D Game Cards */
@@ -406,7 +406,7 @@
   border-radius: 12px;
   background: rgba(18, 22, 38, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.22);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 16px rgba(0, 245, 212, 0.25);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 16px rgba(255, 176, 116, 0.25);
   overflow: hidden;
   position: relative;
   display: flex;
@@ -429,7 +429,7 @@
   left: 50%;
   transform: translateX(-50%);
   background: rgba(4, 8, 16, 0.95);
-  border: 1px solid rgba(0, 245, 212, 0.4);
+  border: 1px solid rgba(255, 176, 116, 0.4);
   color: #fff;
   font-size: 10px;
   font-weight: 600;
@@ -444,8 +444,8 @@
 
 .nexus-3d-game-card:hover {
   transform: scale(1.22) translateZ(30px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.8), 0 0 24px rgba(0, 245, 212, 0.65);
-  border-color: #00f5d4;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.8), 0 0 24px rgba(255, 176, 116, 0.65);
+  border-color: #ffb074;
 }
 
 .nexus-3d-game-card:hover .nexus-card-badge {
@@ -481,8 +481,8 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #00f5d4;
-  box-shadow: 0 0 8px #00f5d4;
+  background: #ffb074;
+  box-shadow: 0 0 8px #ffb074;
   animation: dotPulse 1.8s ease-in-out infinite;
 }
 
@@ -502,14 +502,14 @@
 }
 
 .nexus-gradient-text {
-  background: linear-gradient(90deg, #8b5cf6, #3b82f6, #00f5d4);
+  background: linear-gradient(90deg, #8b5cf6, #3b82f6, #ffb074);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .nexus-showcase-tagline {
   font-size: 0.86rem;
-  color: rgba(212, 204, 239, 0.65);
+  color: rgba(254, 215, 170, 0.65);
   margin: 0;
   line-height: 1.45;
 }
@@ -537,7 +537,7 @@
   left: 20px;
   right: 20px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, #8b5cf6 30%, #00f5d4 70%, transparent);
+  background: linear-gradient(90deg, transparent, #8b5cf6 30%, #ffb074 70%, transparent);
 }
 
 .nexus-card-header {
@@ -558,7 +558,7 @@
 .nexus-brand-badge svg {
   width: 20px;
   height: 20px;
-  color: #00f5d4;
+  color: #ffb074;
 }
 
 .nexus-form-title {
@@ -571,7 +571,7 @@
 
 .nexus-form-subtitle {
   font-size: 0.88rem;
-  color: rgba(212, 204, 239, 0.6);
+  color: rgba(254, 215, 170, 0.6);
   margin: 0;
   line-height: 1.4;
 }
@@ -601,7 +601,7 @@
 }
 
 .nexus-tabs .auth-tab-btn.active {
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.75), rgba(0, 245, 212, 0.65)) !important;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.75), rgba(255, 176, 116, 0.65)) !important;
   color: #fff !important;
   box-shadow: 0 4px 18px rgba(139, 92, 246, 0.35) !important;
 }
@@ -659,8 +659,8 @@
 }
 
 .nexus-input-wrapper:focus-within {
-  border-color: #00f5d4;
-  box-shadow: 0 0 0 3px rgba(0, 245, 212, 0.15), 0 0 16px rgba(0, 245, 212, 0.25);
+  border-color: #ffb074;
+  box-shadow: 0 0 0 3px rgba(255, 176, 116, 0.15), 0 0 16px rgba(255, 176, 116, 0.25);
   background: rgba(255, 255, 255, 0.07);
 }
 
@@ -675,7 +675,7 @@
 }
 
 .nexus-input-wrapper:focus-within .nexus-input-icon {
-  color: #00f5d4;
+  color: #ffb074;
 }
 
 .nexus-input-wrapper input {
@@ -733,7 +733,7 @@
 }
 
 .nexus-checkbox-label input {
-  accent-color: #00f5d4;
+  accent-color: #ffb074;
   width: 16px;
   height: 16px;
   cursor: pointer;
@@ -745,7 +745,7 @@
   width: 100% !important;
   height: 46px !important;
   border-radius: 12px !important;
-  background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 60%, #00f5d4 100%) !important;
+  background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 60%, #ffb074 100%) !important;
   border: none !important;
   color: #fff !important;
   font-weight: 700 !important;
@@ -762,7 +762,7 @@
 
 .nexus-btn-primary:hover {
   transform: translateY(-1px) scale(1.01) !important;
-  box-shadow: 0 14px 34px -4px rgba(0, 245, 212, 0.55) !important;
+  box-shadow: 0 14px 34px -4px rgba(255, 176, 116, 0.55) !important;
 }
 
 .nexus-btn-primary:active {
@@ -809,13 +809,13 @@
 
 .nexus-auth-card .avatar-option-btn:hover {
   background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(0, 245, 212, 0.4);
+  border-color: rgba(255, 176, 116, 0.4);
 }
 
 .nexus-auth-card .avatar-option-btn.selected {
-  background: rgba(0, 245, 212, 0.15);
-  border-color: #00f5d4;
-  box-shadow: 0 0 14px rgba(0, 245, 212, 0.35);
+  background: rgba(255, 176, 116, 0.15);
+  border-color: #ffb074;
+  box-shadow: 0 0 14px rgba(255, 176, 116, 0.35);
 }
 
 /* ==========================================================================

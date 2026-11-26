@@ -9,8 +9,8 @@ class ParticleText {
         this.text = options.text || 'GAMEVERSE';
         this.particleSize = options.particleSize || 2.2;
         this.density = options.density || 4;
-        this.color = options.color || '#f8fafc';
-        this.highlightColor = options.highlightColor || '#0891b2';
+        this.color = options.color || '#fff7ed';
+        this.highlightColor = options.highlightColor || '#f97316';
         this.scatter = options.scatter || 190;
         this.gatherDuration = options.gatherDuration || 1600;
         this.stagger = options.stagger || 420;
@@ -386,21 +386,21 @@ function initHeroParticleText() {
                 text: 'Welcome to',
                 fontSize: 'clamp(2.4rem, 4.5vw, 3.5rem)',
                 fontWeight: 700,
-                color: '#f8fafc',
-                highlightColor: '#2dd4bf'
+                color: '#fff7ed',
+                highlightColor: '#fdba74'
             },
             {
                 text: 'GAMEVERSE',
                 fontSize: 'clamp(3.1rem, 6.6vw, 5.0rem)',
                 fontWeight: 800,
-                color: '#f8fafc',
-                highlightColor: '#00f5d4'
+                color: '#fff7ed',
+                highlightColor: '#ffb074'
             }
         ],
         particleSize: 2.2,
         density: 4,
-        color: '#f8fafc',
-        highlightColor: '#00f5d4',
+        color: '#fff7ed',
+        highlightColor: '#ffb074',
         scatter: 190,
         gatherDuration: 1600,
         stagger: 420,

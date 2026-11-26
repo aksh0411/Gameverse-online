@@ -2,8 +2,8 @@
 /* Pixel-perfect alignment with prototype screenshot */
 
 body.standalone-game-page {
-  background: #020b10;
-  color: #e0f8fc;
+  background: #140b12;
+  color: #fff7ed;
   font-family: 'Inter', sans-serif;
   margin: 0;
   padding: 88px 20px 60px;
@@ -18,11 +18,11 @@ body.standalone-game-page {
 .game-detail-app-frame {
   width: 100%;
   max-width: 1240px;
-  background: #04141d;
-  border: 1px solid rgba(45, 212, 191, 0.12);
+  background: #1d1018;
+  border: 1px solid rgba(253, 186, 116, 0.12);
   border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 40px rgba(6, 182, 212, 0.12);
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 40px rgba(251, 146, 60, 0.12);
   position: relative;
 }
 
@@ -64,9 +64,9 @@ body.standalone-game-page {
   z-index: 1;
   pointer-events: none;
   background: 
-    linear-gradient(to right, #04141d 22%, rgba(4, 20, 29, 0.85) 36%, rgba(4, 20, 29, 0.3) 58%, transparent 85%),
-    linear-gradient(to top, #04141d 0%, rgba(4, 20, 29, 0.5) 18%, transparent 40%),
-    linear-gradient(to bottom, rgba(4, 20, 29, 0.35) 0%, transparent 20%);
+    linear-gradient(to right, #1d1018 22%, rgba(29, 16, 24, 0.85) 36%, rgba(29, 16, 24, 0.3) 58%, transparent 85%),
+    linear-gradient(to top, #1d1018 0%, rgba(29, 16, 24, 0.5) 18%, transparent 40%),
+    linear-gradient(to bottom, rgba(29, 16, 24, 0.35) 0%, transparent 20%);
 }
 
 /* ===== Hero Top Navigation ===== */
@@ -135,19 +135,19 @@ body.standalone-game-page {
   transform: scale(1.06);
 }
 .hero-circle-btn.active {
-  color: #00f5d4;
-  border-color: rgba(0, 245, 212, 0.5);
-  background: rgba(0, 245, 212, 0.15);
-  box-shadow: 0 0 15px rgba(0, 245, 212, 0.35);
+  color: #ffb074;
+  border-color: rgba(255, 176, 116, 0.5);
+  background: rgba(255, 176, 116, 0.15);
+  box-shadow: 0 0 15px rgba(255, 176, 116, 0.35);
 }
 .hero-circle-btn.active svg {
   fill: currentColor;
 }
 .hero-circle-btn#favoriteBtn.active {
-  color: #00f5d4;
-  border-color: rgba(0, 245, 212, 0.6);
-  background: rgba(0, 245, 212, 0.2);
-  box-shadow: 0 0 16px rgba(0, 245, 212, 0.45);
+  color: #ffb074;
+  border-color: rgba(255, 176, 116, 0.6);
+  background: rgba(255, 176, 116, 0.2);
+  box-shadow: 0 0 16px rgba(255, 176, 116, 0.45);
 }
 
 /* More menu dropdown */
@@ -175,7 +175,7 @@ body.standalone-game-page {
 .more-dropdown button {
   background: none;
   border: none;
-  color: #d4ccef;
+  color: #fed7aa;
   font-size: 13px;
   padding: 8px 12px;
   text-align: left;
@@ -270,9 +270,9 @@ body.standalone-game-page {
   left: 0;
   right: 0;
   height: 2px;
-  background: #00f5d4;
+  background: #ffb074;
   border-radius: 2px 2px 0 0;
-  box-shadow: 0 0 12px #00f5d4;
+  box-shadow: 0 0 12px #ffb074;
 }
 
 /* ===== Tab Panels ===== */
@@ -316,7 +316,7 @@ body.standalone-game-page {
   display: flex;
   justify-content: center;
   align-items: center;
-  color: #2dd4bf;
+  color: #fdba74;
   flex-shrink: 0;
   margin-top: 2px;
 }
@@ -430,7 +430,7 @@ body.standalone-game-page {
   background: linear-gradient(
     90deg,
     rgba(255, 255, 255, 0.04) 0%,
-    rgba(0, 245, 212, 0.15) 50%,
+    rgba(255, 176, 116, 0.15) 50%,
     rgba(255, 255, 255, 0.04) 100%
   );
   background-size: 250% 100%;
@@ -458,7 +458,7 @@ body.standalone-game-page {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 14.5px;
   font-weight: 700;
-  color: #f8fafc;
+  color: #fff7ed;
   letter-spacing: 0.6px;
   margin: 14px 0 2px 0;
   display: flex;
@@ -472,9 +472,9 @@ body.standalone-game-page {
 }
 
 .about-subtitle-gem {
-  color: #00f5d4;
+  color: #ffb074;
   font-size: 13px;
-  text-shadow: 0 0 10px rgba(0, 245, 212, 0.7);
+  text-shadow: 0 0 10px rgba(255, 176, 116, 0.7);
 }
 
 .about-paragraph {
@@ -519,11 +519,11 @@ body.standalone-game-page {
   transform: translateY(-1px);
 }
 .status-choice-btn.active {
-  background: linear-gradient(135deg, #0891b2, #0d9488);
-  border-color: rgba(45, 212, 191, 0.45);
+  background: linear-gradient(135deg, #f97316, #0d9488);
+  border-color: rgba(253, 186, 116, 0.45);
   color: #ffffff;
   font-weight: 600;
-  box-shadow: 0 0 20px -3px rgba(0, 245, 212, 0.45);
+  box-shadow: 0 0 20px -3px rgba(255, 176, 116, 0.45);
 }
 
 .status-btn-icon {
@@ -585,7 +585,7 @@ body.standalone-game-page {
   background: rgba(14, 10, 22, 0.65);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(212, 204, 239, 0.10);
+  border: 1px solid rgba(254, 215, 170, 0.10);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 16px 36px -12px rgba(0, 0, 0, 0.5);
   border-radius: 1rem;
   overflow: hidden;
@@ -599,13 +599,13 @@ body.standalone-game-page {
 }
 
 .game-card:hover {
-  border-color: rgba(45, 212, 191, 0.45);
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.2), 0 20px 48px -10px rgba(0, 0, 0, 0.7), 0 0 24px -6px rgba(0, 245, 212, 0.4);
+  border-color: rgba(253, 186, 116, 0.45);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.2), 0 20px 48px -10px rgba(0, 0, 0, 0.7), 0 0 24px -6px rgba(255, 176, 116, 0.4);
 }
 
 .game-card:hover .card-title {
   color: #ffffff;
-  text-shadow: 0 0 10px rgba(0, 245, 212, 0.4);
+  text-shadow: 0 0 10px rgba(255, 176, 116, 0.4);
 }
 
 /* Status Badge */
@@ -676,7 +676,7 @@ body.standalone-game-page {
   text-overflow: ellipsis;
 }
 .card-desc {
-  color: rgba(212, 204, 239, 0.6);
+  color: rgba(254, 215, 170, 0.6);
   font-size: 0.85rem;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -705,8 +705,8 @@ body.standalone-game-page {
   font-family: var(--font-heading);
   letter-spacing: 0.3px;
   color: #ffffff;
-  background: linear-gradient(135deg, rgba(8, 145, 178, 0.85), rgba(13, 148, 136, 0.85));
-  border: 1px solid rgba(45, 212, 191, 0.25);
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.85), rgba(13, 148, 136, 0.85));
+  border: 1px solid rgba(253, 186, 116, 0.25);
   text-align: center;
   cursor: pointer;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
@@ -723,10 +723,10 @@ body.standalone-game-page {
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .btn-sm:hover {
-  background: linear-gradient(135deg, #0891b2, #14b8a6);
-  border-color: rgba(0, 245, 212, 0.5);
+  background: linear-gradient(135deg, #f97316, #14b8a6);
+  border-color: rgba(255, 176, 116, 0.5);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4), 0 0 16px rgba(0, 245, 212, 0.25);
+  box-shadow: 0 6px 20px rgba(251, 146, 60, 0.4), 0 0 16px rgba(255, 176, 116, 0.25);
 }
 .btn-sm:hover .btn-arrow {
   transform: translateX(3px);
@@ -745,9 +745,9 @@ body.standalone-game-page {
   background: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(45, 212, 191, 0.14);
+  border: 1px solid rgba(253, 186, 116, 0.14);
   border-radius: 10px;
-  color: rgba(165, 243, 252, 0.55);
+  color: rgba(254, 215, 170, 0.55);
   cursor: pointer;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
   flex-shrink: 0;
@@ -763,10 +763,10 @@ body.standalone-game-page {
 
 .bookmark-toggle:hover {
   background: rgba(255, 255, 255, 0.09);
-  border-color: rgba(45, 212, 191, 0.4);
+  border-color: rgba(253, 186, 116, 0.4);
   color: #ffffff;
   transform: scale(1.08);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 14px rgba(0, 245, 212, 0.25);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 14px rgba(255, 176, 116, 0.25);
 }
 
 .bookmark-toggle:active {
@@ -775,10 +775,10 @@ body.standalone-game-page {
 
 /* Active State (Bookmarked in 4D Core) */
 .bookmark-toggle.active {
-  background: rgba(0, 245, 212, 0.18);
-  border-color: rgba(45, 212, 191, 0.6);
+  background: rgba(255, 176, 116, 0.18);
+  border-color: rgba(253, 186, 116, 0.6);
   color: var(--accent-pink);
-  box-shadow: 0 0 18px rgba(0, 245, 212, 0.45), 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 18px rgba(255, 176, 116, 0.45), 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .bookmark-toggle.active .bookmark-icon {
@@ -859,7 +859,7 @@ body.standalone-game-page {
   background: rgba(3, 10, 16, 0.85);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  border-bottom: 1px solid rgba(45, 212, 191, 0.12);
+  border-bottom: 1px solid rgba(253, 186, 116, 0.12);
 }
 .game-detail-modal-view.active .modal-navbar { display: flex; }
 
@@ -879,8 +879,8 @@ body.standalone-game-page {
 .modal-nav-logo svg {
   width: 21px;
   height: 21px;
-  color: var(--accent-pink, #00f5d4);
-  filter: drop-shadow(0 0 6px rgba(0, 245, 212, 0.45));
+  color: var(--accent-pink, #ffb074);
+  filter: drop-shadow(0 0 6px rgba(255, 176, 116, 0.45));
 }
 
 .modal-nav-actions {
@@ -914,8 +914,8 @@ body.standalone-game-page {
 }
 .modal-nav-profile:hover {
   transform: translateY(-1px);
-  border-color: rgba(0, 245, 212, 0.6);
-  box-shadow: 0 0 14px rgba(0, 245, 212, 0.4);
+  border-color: rgba(255, 176, 116, 0.6);
+  box-shadow: 0 0 14px rgba(255, 176, 116, 0.4);
 }
 
 @media (max-width: 768px) {

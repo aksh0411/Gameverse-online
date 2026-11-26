@@ -33,7 +33,7 @@
     let height = 0;
     const pointer = { x: -9999, y: -9999 };
 
-    const colors = ['rgba(0, 245, 212, 0.75)', 'rgba(139, 92, 246, 0.75)', 'rgba(59, 130, 246, 0.65)', 'rgba(255, 255, 255, 0.45)'];
+    const colors = ['rgba(255, 176, 116, 0.75)', 'rgba(251, 113, 133, 0.75)', 'rgba(252, 211, 77, 0.65)', 'rgba(255, 247, 237, 0.45)'];
 
     function resize() {
       const rect = panel.getBoundingClientRect();
@@ -96,7 +96,7 @@
           const d2 = dx * dx + dy * dy;
           if (d2 < 95 * 95) {
             const alpha = (1 - Math.sqrt(d2) / 95) * 0.18;
-            ctx.strokeStyle = `rgba(0, 245, 212, ${alpha})`;
+            ctx.strokeStyle = `rgba(255, 176, 116, ${alpha})`;
             ctx.lineWidth = 0.8;
             ctx.beginPath();
             ctx.moveTo(a.x, a.y);

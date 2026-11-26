@@ -15,7 +15,7 @@
     'use strict';
 
     const DEFAULTS = {
-        color1: '#00f5d4',      // primary cyan
+        color1: '#ffb074',      // primary cyan
         color2: '#FF9FFC',      // pink accent
         color3: '#ffffff',      // hot core
         speed: 0.2,             // flow travel speed

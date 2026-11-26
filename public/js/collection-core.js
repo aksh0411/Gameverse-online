@@ -66,7 +66,7 @@ function project4Dto3DInto(point, distance, out) {
 }
 
 // Multi-layered soft radiant billboard texture
-function createGlowPointTexture(innerColor = '#ffffff', outerColor = '#00f5d4', midStop = 0.3) {
+function createGlowPointTexture(innerColor = '#ffffff', outerColor = '#ffb074', midStop = 0.3) {
     const canvas = document.createElement('canvas');
     canvas.width = 128;
     canvas.height = 128;
@@ -75,7 +75,7 @@ function createGlowPointTexture(innerColor = '#ffffff', outerColor = '#00f5d4', 
     const grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
     grad.addColorStop(0, innerColor);
     grad.addColorStop(midStop, outerColor);
-    grad.addColorStop(0.7, 'rgba(6, 182, 212, 0.15)');
+    grad.addColorStop(0.7, 'rgba(251, 146, 60, 0.15)');
     grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
     ctx.fillStyle = grad;
@@ -87,7 +87,7 @@ function createGlowPointTexture(innerColor = '#ffffff', outerColor = '#00f5d4', 
 }
 
 // High-res bloom texture for large flares
-function createLargeFlareTexture(innerColor = '#ffffff', outerColor = '#00f5d4') {
+function createLargeFlareTexture(innerColor = '#ffffff', outerColor = '#ffb074') {
     const canvas = document.createElement('canvas');
     canvas.width = 256;
     canvas.height = 256;
@@ -96,8 +96,8 @@ function createLargeFlareTexture(innerColor = '#ffffff', outerColor = '#00f5d4')
     const grad = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
     grad.addColorStop(0, innerColor);
     grad.addColorStop(0.12, outerColor);
-    grad.addColorStop(0.35, 'rgba(6, 182, 212, 0.25)');
-    grad.addColorStop(0.6, 'rgba(45, 212, 191, 0.08)');
+    grad.addColorStop(0.35, 'rgba(251, 146, 60, 0.25)');
+    grad.addColorStop(0.6, 'rgba(253, 186, 116, 0.08)');
     grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
     ctx.fillStyle = grad;
@@ -116,9 +116,9 @@ function createAmbientHaloTexture() {
     const ctx = canvas.getContext('2d');
 
     const grad = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
-    grad.addColorStop(0, 'rgba(0, 245, 212, 0.22)');
-    grad.addColorStop(0.35, 'rgba(6, 182, 212, 0.12)');
-    grad.addColorStop(0.65, 'rgba(56, 189, 248, 0.05)');
+    grad.addColorStop(0, 'rgba(255, 176, 116, 0.22)');
+    grad.addColorStop(0.35, 'rgba(251, 146, 60, 0.12)');
+    grad.addColorStop(0.65, 'rgba(251, 113, 133, 0.05)');
     grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
     ctx.fillStyle = grad;
@@ -196,9 +196,9 @@ function createOrbitalRing(rx, ry, tiltX, tiltZ, warp3D, color, opacity, segment
 
 // Status colors mapping
 const statusColorMap = {
-    not_started: '#0e7490',
+    not_started: '#c2410c',
     playing: '#10b981',
-    play_later: '#06b6d4',
+    play_later: '#fb923c',
     completed: '#3b82f6',
     wont_play: '#6b2d4b'
 };
@@ -263,13 +263,13 @@ function createHeroScene(container) {
     // Double-layer icosahedron for richer wireframe look
     const coreMeshOuter = new THREE.Mesh(
         new THREE.IcosahedronGeometry(0.30, 2),
-        new THREE.MeshBasicMaterial({ color: '#38bdf8', wireframe: true, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending })
+        new THREE.MeshBasicMaterial({ color: '#fb7185', wireframe: true, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending })
     );
     coreGroup.add(coreMeshOuter);
 
     const coreMeshInner = new THREE.Mesh(
         new THREE.IcosahedronGeometry(0.18, 1),
-        new THREE.MeshBasicMaterial({ color: '#00f5d4', wireframe: true, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending })
+        new THREE.MeshBasicMaterial({ color: '#ffb074', wireframe: true, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending })
     );
     coreGroup.add(coreMeshInner);
 
@@ -278,17 +278,17 @@ function createHeroScene(container) {
     centerPointGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array([0, 0, 0]), 3));
 
     const outerBloom = new THREE.Points(centerPointGeo, new THREE.PointsMaterial({
-        size: 2.2, map: createLargeFlareTexture('#ffffff', '#00f5d4'), transparent: true, opacity: 0.75, blending: THREE.AdditiveBlending, depthWrite: false
+        size: 2.2, map: createLargeFlareTexture('#ffffff', '#ffb074'), transparent: true, opacity: 0.75, blending: THREE.AdditiveBlending, depthWrite: false
     }));
     coreGroup.add(outerBloom);
 
     const centerFlare = new THREE.Points(centerPointGeo, new THREE.PointsMaterial({
-        size: 1.3, map: createGlowPointTexture('#ffffff', '#06b6d4', 0.25), transparent: true, opacity: 0.90, blending: THREE.AdditiveBlending, depthWrite: false
+        size: 1.3, map: createGlowPointTexture('#ffffff', '#fb923c', 0.25), transparent: true, opacity: 0.90, blending: THREE.AdditiveBlending, depthWrite: false
     }));
     coreGroup.add(centerFlare);
 
     const cyanFlare = new THREE.Points(centerPointGeo, new THREE.PointsMaterial({
-        size: 0.75, map: createGlowPointTexture('#ffffff', '#38bdf8', 0.35), transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false
+        size: 0.75, map: createGlowPointTexture('#ffffff', '#fb7185', 0.35), transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false
     }));
     coreGroup.add(cyanFlare);
 
@@ -406,7 +406,7 @@ function createHeroScene(container) {
     const vertexGeo = new THREE.BufferGeometry();
     vertexGeo.setAttribute('position', new THREE.BufferAttribute(vertexPositions, 3));
     const vertexPoints = new THREE.Points(vertexGeo, new THREE.PointsMaterial({
-        size: 0.26, map: createGlowPointTexture('#ffffff', '#2dd4bf'), transparent: true, opacity: 0.90, blending: THREE.AdditiveBlending, depthWrite: false
+        size: 0.26, map: createGlowPointTexture('#ffffff', '#fdba74'), transparent: true, opacity: 0.90, blending: THREE.AdditiveBlending, depthWrite: false
     }));
     tesseractGroup.add(vertexPoints);
 
@@ -415,10 +415,10 @@ function createHeroScene(container) {
     rootGroup.add(ringsGroup);
 
     const ringConfigs = [
-        { rx: 2.10, ry: 1.25, tiltX: 0.40, tiltZ: 0.18, warp: 0.10, speed: 0.0016, color: '#38bdf8', opacity: 0.55, photonSize: 0.26 },
-        { rx: 1.85, ry: 1.35, tiltX: -0.50, tiltZ: -0.20, warp: 0.08, speed: -0.0014, color: '#00f5d4', opacity: 0.50, photonSize: 0.24 },
-        { rx: 2.15, ry: 1.10, tiltX: 0.55, tiltZ: -0.35, warp: 0.10, speed: 0.0018, color: '#06b6d4', opacity: 0.45, photonSize: 0.24 },
-        { rx: 1.45, ry: 1.05, tiltX: 0.75, tiltZ: 0.15, warp: 0.06, speed: 0.0020, color: '#2dd4bf', opacity: 0.50, photonSize: 0.20 }
+        { rx: 2.10, ry: 1.25, tiltX: 0.40, tiltZ: 0.18, warp: 0.10, speed: 0.0016, color: '#fb7185', opacity: 0.55, photonSize: 0.26 },
+        { rx: 1.85, ry: 1.35, tiltX: -0.50, tiltZ: -0.20, warp: 0.08, speed: -0.0014, color: '#ffb074', opacity: 0.50, photonSize: 0.24 },
+        { rx: 2.15, ry: 1.10, tiltX: 0.55, tiltZ: -0.35, warp: 0.10, speed: 0.0018, color: '#fb923c', opacity: 0.45, photonSize: 0.24 },
+        { rx: 1.45, ry: 1.05, tiltX: 0.75, tiltZ: 0.15, warp: 0.06, speed: 0.0020, color: '#fdba74', opacity: 0.50, photonSize: 0.20 }
     ];
 
     const ringObjects = ringConfigs.map((cfg, idx) => {
@@ -493,7 +493,7 @@ function createHeroScene(container) {
     const dustGeo = new THREE.BufferGeometry();
     dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPositions, 3));
     const dustMat = new THREE.PointsMaterial({
-        size: 0.18, map: createGlowPointTexture('#ffffff', '#06b6d4', 0.35), transparent: true, opacity: 0.65, blending: THREE.AdditiveBlending, depthWrite: false
+        size: 0.18, map: createGlowPointTexture('#ffffff', '#fb923c', 0.35), transparent: true, opacity: 0.65, blending: THREE.AdditiveBlending, depthWrite: false
     });
     const dustPoints = new THREE.Points(dustGeo, dustMat);
     rootGroup.add(dustPoints);
@@ -510,7 +510,7 @@ function createHeroScene(container) {
     }
     const orbGeo = new THREE.BufferGeometry();
     orbGeo.setAttribute('position', new THREE.BufferAttribute(orbPositions, 3));
-    const orbColors = ['#00f5d4', '#06b6d4', '#38bdf8', '#2dd4bf'];
+    const orbColors = ['#ffb074', '#fb923c', '#fb7185', '#fdba74'];
     const orbMat = new THREE.PointsMaterial({
         size: 0.35, map: createGlowPointTexture('#ffffff', orbColors[Math.floor(Math.random() * 4)], 0.3),
         transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false
@@ -976,8 +976,8 @@ const CELESTIAL_ORBITS = [
         rotZ: 0.24,
         ribbonWidth: 0.088,
         haloWidth: 0.19,
-        color: '#00f5d4',
-        glowColor: '#2dd4bf',
+        color: '#ffb074',
+        glowColor: '#fdba74',
         coreColor: '#f0fdfa',
         speed: 0.024
     },
@@ -990,8 +990,8 @@ const CELESTIAL_ORBITS = [
         rotZ: -0.20,
         ribbonWidth: 0.082,
         haloWidth: 0.18,
-        color: '#06b6d4',
-        glowColor: '#0891b2',
+        color: '#fb923c',
+        glowColor: '#f97316',
         coreColor: '#ecfeff',
         speed: 0.018
     },
@@ -1004,7 +1004,7 @@ const CELESTIAL_ORBITS = [
         rotZ: 0.12,
         ribbonWidth: 0.078,
         haloWidth: 0.17,
-        color: '#0284c7',
+        color: '#e11d48',
         glowColor: '#0ea5e9',
         coreColor: '#e0f2fe',
         speed: 0.013
@@ -1045,11 +1045,11 @@ const MAX_DEFAULT_VISIBLE_LABELS = 8;
 
 // Distinct Celestial Color Spectrum for Game Worlds (mapped directly to game status categories)
 const WORLD_PALETTES = [
-    { name: 'cyan', planet: '#22d3ee', rim: '#a5f3fc', corona: '#06b6d4', dot: '#22d3ee', theme: 'theme-cyan', rgb: [0.13, 0.83, 0.93] },     // Bookmarked
+    { name: 'cyan', planet: '#fcd34d', rim: '#fed7aa', corona: '#fb923c', dot: '#fcd34d', theme: 'theme-cyan', rgb: [0.13, 0.83, 0.93] },     // Bookmarked
     { name: 'amber', planet: '#fbbf24', rim: '#fef08a', corona: '#d97706', dot: '#fbbf24', theme: 'theme-amber', rgb: [0.98, 0.75, 0.14] },   // Favorited
     { name: 'purple', planet: '#a855f7', rim: '#e9d5ff', corona: '#7e22ce', dot: '#a855f7', theme: 'theme-purple', rgb: [0.66, 0.33, 0.97] },
     { name: 'rose', planet: '#f43f5e', rim: '#fecdd3', corona: '#e11d48', dot: '#f43f5e', theme: 'theme-rose', rgb: [0.96, 0.25, 0.37] },     // Backlog
-    { name: 'blue', planet: '#38bdf8', rim: '#bae6fd', corona: '#0284c7', dot: '#38bdf8', theme: 'theme-blue', rgb: [0.22, 0.74, 0.97] },     // Completed
+    { name: 'blue', planet: '#fb7185', rim: '#fecdd3', corona: '#e11d48', dot: '#fb7185', theme: 'theme-blue', rgb: [0.22, 0.74, 0.97] },     // Completed
     { name: 'emerald', planet: '#10b981', rim: '#a7f3d0', corona: '#059669', dot: '#10b981', theme: 'theme-green', rgb: [0.06, 0.73, 0.51] }   // Currently Playing
 ];
 
@@ -1082,9 +1082,9 @@ const GlassCrystalShader = {
         uDispersion: { value: 0.028 },
         uFresnelPower: { value: 3.2 },
         uGlassColor: { value: new THREE.Color('#031f2b') },     // Very deep dark violet base
-        uPlasmaColor1: { value: new THREE.Color('#0891b2') },   // Rich purple
-        uPlasmaColor2: { value: new THREE.Color('#00f5d4') },   // Magenta-purple (NOT cyan)
-        uRimColor: { value: new THREE.Color('#a5f3fc') }        // Soft lavender rim (NOT pure white)
+        uPlasmaColor1: { value: new THREE.Color('#f97316') },   // Rich purple
+        uPlasmaColor2: { value: new THREE.Color('#ffb074') },   // Magenta-purple (NOT cyan)
+        uRimColor: { value: new THREE.Color('#fed7aa') }        // Soft lavender rim (NOT pure white)
     },
     vertexShader: /* glsl */ `
         varying vec3 vWorldPosition;
@@ -1310,7 +1310,7 @@ function createOrbitRibbonGeometry(orbit, width = 0.08, segments = 180) {
 }
 
 // Procedural Volumetric Ribbon Energy Texture Generator
-function createVolumetricRibbonTexture(glowColor = '#22d3ee', coreColor = '#ffffff') {
+function createVolumetricRibbonTexture(glowColor = '#fcd34d', coreColor = '#ffffff') {
     const canvas = document.createElement('canvas');
     canvas.width = 512;
     canvas.height = 64;
@@ -1352,7 +1352,7 @@ function createVolumetricRibbonTexture(glowColor = '#22d3ee', coreColor = '#ffff
 }
 
 // Procedural Atmospheric Outer Halo Ribbon Texture
-function createHaloRibbonTexture(glowColor = '#22d3ee') {
+function createHaloRibbonTexture(glowColor = '#fcd34d') {
     const canvas = document.createElement('canvas');
     canvas.width = 128;
     canvas.height = 64;
@@ -1377,7 +1377,7 @@ function createHaloRibbonTexture(glowColor = '#22d3ee') {
 }
 
 // Radial glow canvas texture generator
-function createCoronaTexture(innerColor = '#ffffff', outerColor = '#06b6d4') {
+function createCoronaTexture(innerColor = '#ffffff', outerColor = '#fb923c') {
     const canvas = document.createElement('canvas');
     canvas.width = 128;
     canvas.height = 128;
@@ -1736,7 +1736,7 @@ function createRadarCoreScene(canvasContainer, pillsContainer, games) {
 
     const planetLeftGeo = new THREE.SphereGeometry(1.65, 32, 32);
     const planetLeftMat = new THREE.MeshBasicMaterial({
-        map: createCrescentPlanetTexture('#0891b2', '#020810'),
+        map: createCrescentPlanetTexture('#f97316', '#020810'),
         transparent: true,
         opacity: 0.85
     });
@@ -1747,7 +1747,7 @@ function createRadarCoreScene(canvasContainer, pillsContainer, games) {
 
     const planetRightGeo = new THREE.SphereGeometry(0.95, 24, 24);
     const planetRightMat = new THREE.MeshBasicMaterial({
-        map: createCrescentPlanetTexture('#06b6d4', '#030914'),
+        map: createCrescentPlanetTexture('#fb923c', '#030914'),
         transparent: true,
         opacity: 0.75
     });
@@ -1767,7 +1767,7 @@ function createRadarCoreScene(canvasContainer, pillsContainer, games) {
     starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
     const starMat = new THREE.PointsMaterial({
         size: 0.035,
-        color: '#a5f3fc',
+        color: '#fed7aa',
         transparent: true,
         opacity: 0.55
     });
@@ -1803,7 +1803,7 @@ function createRadarCoreScene(canvasContainer, pillsContainer, games) {
     // ── B. Razor-Sharp Neon Edge Bevels (Emissive Facet Edges) ──
     const wireGeo = new THREE.WireframeGeometry(crystalGeo);
     const wireMat = new THREE.LineBasicMaterial({
-        color: '#00f5d4', // Bright turquoise edge bevels
+        color: '#ffb074', // Bright turquoise edge bevels
         transparent: true,
         opacity: 0.82,
         blending: THREE.AdditiveBlending,
@@ -1818,7 +1818,7 @@ function createRadarCoreScene(canvasContainer, pillsContainer, games) {
     innerFacetGeo.scale(0.75, 1.08, 0.75);
     innerFacetGeo.computeVertexNormals();
     const innerFacetMat = new THREE.MeshBasicMaterial({
-        color: '#0891b2', // Deep Turkish blue
+        color: '#f97316', // Deep Turkish blue
         transparent: true,
         opacity: 0.55,
         blending: THREE.AdditiveBlending,
@@ -1832,7 +1832,7 @@ function createRadarCoreScene(canvasContainer, pillsContainer, games) {
     const innerGeo = new THREE.OctahedronGeometry(0.14, 0);
     innerGeo.scale(0.75, 1.10, 0.75);
     const innerMat = new THREE.MeshBasicMaterial({
-        color: '#a5f3fc', // Luminous sea-glass
+        color: '#fed7aa', // Luminous sea-glass
         transparent: true,
         opacity: 0.85,
         blending: THREE.AdditiveBlending
@@ -1845,7 +1845,7 @@ function createRadarCoreScene(canvasContainer, pillsContainer, games) {
     flareGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array([0, 0, 0]), 3));
     const flareMat = new THREE.PointsMaterial({
         size: 0.85,
-        map: createCoronaTexture('#a5f3fc', '#06b6d4'),
+        map: createCoronaTexture('#fed7aa', '#fb923c'),
         transparent: true,
         opacity: 0.80,
         blending: THREE.AdditiveBlending,
@@ -1860,7 +1860,7 @@ function createRadarCoreScene(canvasContainer, pillsContainer, games) {
         new THREE.Vector3(0, 1.25, 0)
     ]);
     const axisMat = new THREE.LineBasicMaterial({
-        color: '#00f5d4',
+        color: '#ffb074',
         transparent: true,
         opacity: 0.60,
         blending: THREE.AdditiveBlending,
@@ -1874,7 +1874,7 @@ function createRadarCoreScene(canvasContainer, pillsContainer, games) {
     topFlareGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array([0, 0.57, 0]), 3));
     const apexFlareMat = new THREE.PointsMaterial({
         size: 0.45,
-        map: createCoronaTexture('#ffffff', '#2dd4bf'),
+        map: createCoronaTexture('#ffffff', '#fdba74'),
         transparent: true,
         opacity: 0.95,
         blending: THREE.AdditiveBlending,
@@ -1901,7 +1901,7 @@ function createRadarCoreScene(canvasContainer, pillsContainer, games) {
         const rGeo = new THREE.BufferGeometry();
         rGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(ripplePts), 3));
         const rMat = new THREE.LineBasicMaterial({
-            color: idx % 2 === 0 ? '#00f5d4' : '#0891b2',
+            color: idx % 2 === 0 ? '#ffb074' : '#f97316',
             transparent: true,
             opacity: 0.55 - idx * 0.10,
             blending: THREE.AdditiveBlending,
@@ -2004,7 +2004,7 @@ function createRadarCoreScene(canvasContainer, pillsContainer, games) {
     sparkCrossGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array([crossPt.x, crossPt.y, crossPt.z]), 3));
     const sparkCrossMat = new THREE.PointsMaterial({
         size: 0.32,
-        map: createCoronaTexture('#ffffff', '#38bdf8'),
+        map: createCoronaTexture('#ffffff', '#fb7185'),
         transparent: true,
         opacity: 0.85,
         blending: THREE.AdditiveBlending,

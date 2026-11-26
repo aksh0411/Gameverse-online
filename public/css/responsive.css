@@ -56,6 +56,11 @@
     opacity: 0.5;
   }
 
+  .warp-text-container {
+    height: 84px;
+    margin-top: 18px;
+  }
+
   .orbital-badge-pill { font-size: 0.68rem; padding: 2px 8px 2px 6px; }
   .pill-badge-icon { width: 22px; height: 22px; }
   .pill-badge-icon svg { width: 12px; height: 12px; }

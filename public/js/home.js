@@ -9,33 +9,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // 2. Fetch lightweight stats — show cached value instantly, update in background
-    const heroCountEl = document.getElementById('heroGameCount');
-    const setHeroCount = (n) => {
-        if (heroCountEl) heroCountEl.textContent = `${n}+ Titles Indexed`;
-    };
-    try {
-        const cached = localStorage.getItem('gv_stats_cache');
-        let total = 200;
-        if (cached) {
-            try {
-                const parsed = JSON.parse(cached);
-                total = parsed.total_games || total;
-            } catch (_) {}
-        }
-        setHeroCount(total);
-
-        const stats = await apiGet('/stats').catch(() => null);
-        if (stats && stats.total_games) {
-            localStorage.setItem('gv_stats_cache', JSON.stringify(stats));
-            if (stats.total_games !== total) {
-                setHeroCount(stats.total_games);
-            }
-        }
-    } catch (err) {
-        console.error("Error loading home stats:", err);
-    }
-
     // 4. Avatar Navigation (Open Profile Modal or Login Modal)
     const avatarBtn = document.getElementById('avatarBtn');
     if (avatarBtn) {
@@ -72,11 +45,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             e.preventDefault();
             if (document.getElementById('pageTransitionOverlay')) return;
 
-            const accent = '#00f5d4';
+            const accent = '#ffb074';
             const overlay = document.createElement('div');
             overlay.id = 'pageTransitionOverlay';
             overlay.className = 'transition-overlay';
-            overlay.style.background = `radial-gradient(circle at 50% 50%, ${accent}25 0%, rgba(2, 11, 16, 0.9) 60%, rgba(2, 11, 16, 0.98) 100%)`;
+            overlay.style.background = `radial-gradient(circle at 50% 50%, ${accent}25 0%, rgba(20, 11, 18, 0.9) 60%, rgba(20, 11, 18, 0.98) 100%)`;
 
             const radialGlow = document.createElement('div');
             radialGlow.className = 'transition-radial-glow';
