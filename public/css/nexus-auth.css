@@ -20,7 +20,18 @@
   justify-content: center !important;
   padding: 24px 16px !important;
   overflow-y: auto !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
   z-index: 25000 !important;
+}
+
+#loginModal.modal-overlay::-webkit-scrollbar,
+#loginModal *::-webkit-scrollbar,
+.nexus-modal::-webkit-scrollbar,
+.nexus-auth-card::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 #loginModal.modal-overlay.hidden {
@@ -514,6 +525,8 @@
   justify-content: center;
   background: rgba(10, 14, 24, 0.88);
   overflow-y: auto;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
   max-height: 85vh;
 }
 

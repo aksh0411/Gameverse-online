@@ -187,15 +187,32 @@ a {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' /%3E%3C/svg%3E");
 }
 
-/* ===== Scrollbar (Clean & Transparent Track) ===== */
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(8, 145, 178, 0.25); border-radius: 9999px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(0, 245, 212, 0.6); }
-
+/* ===== Global Invisible Scrollbars (Retains Full Scrolling Capability across All Browsers) ===== */
+html,
+body,
 * {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(8, 145, 178, 0.25) transparent;
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE 10+ and Edge */
+}
+
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+::-webkit-scrollbar-track,
+*::-webkit-scrollbar-track {
+  display: none !important;
+  background: transparent !important;
+}
+
+::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-thumb {
+  display: none !important;
+  background: transparent !important;
 }
 
 /* ===== Buttons ===== */
@@ -873,15 +890,15 @@ body.modal-open {
 }
 .modal-overlay.hidden { display: none !important; }
 
-/* Overlay scrollbar (slim neon) */
+/* Overlay scrollbar (completely hidden) */
 .modal-overlay {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 245, 212, 0.35) transparent;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
-.modal-overlay::-webkit-scrollbar { width: 6px; }
-.modal-overlay::-webkit-scrollbar-thumb {
-  background: rgba(0, 245, 212, 0.35);
-  border-radius: 4px;
+.modal-overlay::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 .modal {
