@@ -14,7 +14,7 @@
   position: relative;
   width: 100%;
   overflow: hidden;
-  background: #020b10;
+  background: var(--gv-bg-void);
   isolation: isolate;
 }
 
@@ -32,12 +32,12 @@
   inset: 0;
   background: linear-gradient(
     180deg,
-    #020b10 0%,
+    var(--gv-bg-void) 0%,
     #04141d 20%,
     #07202c 45%,
     #051822 65%,
     #030f16 85%,
-    #020b10 100%
+    var(--gv-bg-void) 100%
   );
 }
 
@@ -183,18 +183,29 @@
   transform: translateX(4px);
 }
 
-/* Warp Text Statement (replaces the old stats strip) */
-.warp-text-container {
-  position: relative;
-  width: 100%;
-  height: clamp(96px, 14vh, 170px);
-  margin-top: 26px;
-  pointer-events: auto;
+/* Lightweight Hero Telemetry Counter (replaces WebGL WarpText) */
+.hero-stat-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 22px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--gv-bg-card);
+  border: 1px solid var(--gv-border);
+  font-family: var(--font-heading);
+  font-size: var(--font-sm);
+  font-weight: 500;
+  color: var(--gv-text-secondary);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
 }
-.warp-text-container canvas {
-  width: 100%;
-  height: 100%;
-  display: block;
+.hero-stat-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gv-cyan);
+  box-shadow: 0 0 8px var(--gv-cyan);
 }
 
 /* ========================================================================= */
@@ -307,7 +318,7 @@
 }
 
 .orbital-badge-pill.theme-blue .pill-status-dot {
-  background: #38bdf8;
+  background: var(--gv-blue);
   box-shadow: 0 0 6px rgba(56, 189, 248, 0.8);
 }
 .orbital-badge-pill.theme-blue:hover {
@@ -437,7 +448,7 @@
   height: 110px;
   border-radius: 50%;
   padding: 3px;
-  background: linear-gradient(135deg, #0891b2 0%, #006d77 50%, #38bdf8 100%);
+  background: linear-gradient(135deg, var(--gv-teal) 0%, #006d77 50%, var(--gv-blue) 100%);
   box-shadow: 0 0 28px rgba(168, 85, 247, 0.4), inset 0 0 14px rgba(168, 85, 247, 0.2);
   display: flex;
   align-items: center;
@@ -595,7 +606,7 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(168, 85, 247, 0.2);
-  border-left: 3.5px solid #0891b2;
+  border-left: 3.5px solid var(--gv-teal);
   border-radius: 14px;
   padding: 12px 18px;
   text-align: left;
@@ -645,7 +656,7 @@
   line-height: 1.05;
   font-size: 1.15rem;
   font-weight: 600;
-  color: #a5f3fc;
+  color: var(--gv-text-secondary);
   filter: drop-shadow(0 0 8px rgba(192, 132, 252, 0.25));
 }
 
@@ -891,8 +902,8 @@ body.hero-only .hero-grid {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #00f5d4;
-  box-shadow: 0 0 10px #00f5d4;
+  background: var(--gv-cyan);
+  box-shadow: 0 0 10px var(--gv-cyan);
   animation: morphDotBreathe 2s infinite ease-in-out;
 }
 

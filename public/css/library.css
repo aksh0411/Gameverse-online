@@ -326,7 +326,7 @@ html:has(body.library-page) {
 }
 .dot-amber { background: #f59e0b; box-shadow: 0 0 8px rgba(245, 158, 11, 0.55); }
 .dot-rose { background: #f43f5e; box-shadow: 0 0 8px rgba(244, 63, 94, 0.55); }
-.dot-cyan { background: #38bdf8; box-shadow: 0 0 8px rgba(56, 189, 248, 0.55); }
+.dot-cyan { background: var(--gv-blue); box-shadow: 0 0 8px rgba(56, 189, 248, 0.55); }
 .dot-emerald { background: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.55); }
 
 /* Sidebar bottom (nav + ambient art card) */
@@ -449,7 +449,7 @@ html:has(body.library-page) {
     font-weight: 600;
 }
 
-/* Hide Center Navigation Cluster (Cosmic Eye + Mini Tesseract) inside dashboard topbar to prevent search bar overlap */
+/* Hide Center Navigation Cluster inside dashboard topbar to prevent search bar overlap */
 .dashboard-topbar .nav-center-cluster,
 .library-page .nav-center-cluster,
 .library-page #navCenterCluster {
@@ -618,7 +618,7 @@ html:has(body.library-page) {
     line-height: 1.1;
 }
 .radar-title span {
-    background: linear-gradient(120deg, #22d3ee, #00f5d4);
+    background: linear-gradient(120deg, #22d3ee, var(--gv-cyan));
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -843,7 +843,7 @@ body.library-page .orbital-badge-pill {
 }
 .catalog-sort-select option {
     background: #04141d;
-    color: #e0f8fc;
+    color: var(--gv-text-primary);
 }
 
 /* View switcher */
@@ -956,7 +956,7 @@ body.library-page .orbital-badge-pill {
 }
 .wide-status-pill.status-playing .pill-dot { background: #10b981; box-shadow: 0 0 6px rgba(16, 185, 129, 0.8); }
 .wide-status-pill.status-not_started .pill-dot { background: #f43f5e; box-shadow: 0 0 6px rgba(244, 63, 94, 0.7); }
-.wide-status-pill.status-completed .pill-dot { background: #38bdf8; box-shadow: 0 0 6px rgba(56, 189, 248, 0.8); }
+.wide-status-pill.status-completed .pill-dot { background: var(--gv-blue); box-shadow: 0 0 6px rgba(56, 189, 248, 0.8); }
 .wide-status-pill.status-play_later .pill-dot { background: #f59e0b; box-shadow: 0 0 6px rgba(245, 158, 11, 0.8); }
 .wide-status-pill.status-wont_play .pill-dot { background: #64748b; }
 
@@ -1248,7 +1248,7 @@ body.library-page .orbital-badge-pill {
         background: linear-gradient(135deg, rgba(8, 30, 42, 0.7), rgba(4, 18, 26, 0.9));
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
-        color: #e0f8fc;
+        color: var(--gv-text-primary);
         font-family: var(--font-heading);
         font-size: 0.82rem;
         cursor: pointer;
