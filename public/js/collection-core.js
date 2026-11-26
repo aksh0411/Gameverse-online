@@ -1478,7 +1478,7 @@ function rebuildRadarNodes(filteredGames) {
         const label = filterLabels[_currentRadarFilter] || 'matching';
         pillsContainer.innerHTML = `
             <div class="collection-core-empty-state animate-fade-in" role="status" aria-live="polite">
-                <span class="empty-icon" aria-hidden="true">✨</span>
+                <span class="empty-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="m12 8 2 4 4 2-4 2-2 4-2-4-4-2 4-2Z"/></svg></span>
                 <h3>No ${label} worlds</h3>
                 <p>Tag games as ${label} to project them into this dimensional orbit.</p>
             </div>

@@ -472,9 +472,10 @@
         const label = conf.label || 'Not Started';
         const isBookmarked = (game.is_bookmarked || game.bookmarked) ? 'active' : '';
 
+        const placeholderSvg = '<div class="card-image-placeholder"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.4;"><rect x="2" y="6" width="20" height="12" rx="4"/><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"/></svg></div>';
         const imageContent = imgUrl
-            ? `<img src="${escHtml(imgUrl)}" alt="${escHtml(gameName)}" loading="lazy" decoding="async" onerror="if(!this.dataset.retry){this.dataset.retry='1';var s=this.src;if(s.endsWith('.webp')){this.src=s.replace(/\\.webp$/,'.jpg');}else{this.src='/static/images/'+(s.split('/').pop());}}else{this.parentElement.innerHTML='<div class=card-image-placeholder>🎮</div>';}">`
-            : `<div class="card-image-placeholder">🎮</div>`;
+            ? `<img src="${escHtml(imgUrl)}" alt="${escHtml(gameName)}" loading="lazy" decoding="async" onerror="if(!this.dataset.retry){this.dataset.retry='1';var s=this.src;if(s.endsWith('.webp')){this.src=s.replace(/\\.webp$/,'.jpg');}else{this.src='/static/images/'+(s.split('/').pop());}}else{this.parentElement.innerHTML='${placeholderSvg}';}">`
+            : placeholderSvg;
 
         card.innerHTML = `
             <div class="card-status"><span class="status-dot" style="background:${color}; box-shadow: 0 0 6px ${color}"></span>${label}</div>
@@ -517,7 +518,7 @@
                 game.bookmarked = nextState;
                 bookmarkBtn.classList.toggle('active', nextState);
                 if (typeof window.showToast === 'function') {
-                    window.showToast(nextState ? 'Saved to bookmarks 🔖' : 'Removed from bookmarks', nextState ? 'success' : 'info');
+                    window.showToast(nextState ? 'Saved to bookmarks' : 'Removed from bookmarks', nextState ? 'success' : 'info');
                 }
                 if (typeof saveVisitorPreference === 'function') {
                     saveVisitorPreference('bookmarks', gid, nextState);
@@ -966,7 +967,7 @@
                 }
 
                 if (typeof window.showToast === 'function') {
-                    window.showToast(nextState ? 'Saved to bookmarks 🔖' : 'Removed from bookmarks', nextState ? 'success' : 'info');
+                    window.showToast(nextState ? 'Saved to bookmarks' : 'Removed from bookmarks', nextState ? 'success' : 'info');
                 }
 
                 if (typeof window.refreshStats === 'function') window.refreshStats();

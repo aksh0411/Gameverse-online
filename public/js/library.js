@@ -587,9 +587,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const coverUrl = typeof getImageUrl === 'function' ? getImageUrl(rawCover) : rawCover;
                 const playStatus = (game.play_status || 'not_started').replace('_', ' ').toUpperCase();
 
+                const fallbackPoster = '<div class="spotlight-item-poster" style="display:flex;align-items:center;justify-content:center;color:#888;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="12" rx="4"/><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"/></svg></div>';
                 const poster = coverUrl
-                    ? `<img class="spotlight-item-poster" src="${escHtml(coverUrl)}" alt="${escHtml(gameName)}" loading="lazy" decoding="async" onerror="if(!this.dataset.retry&&this.src.endsWith('.webp')){this.dataset.retry='1';this.src=this.src.replace(/\\.webp$/,'.jpg');}else{this.outerHTML='<div class=spotlight-item-poster style=display:flex;align-items:center;justify-content:center;color:#888>\u{1F3AE}</div>';}">`
-                    : `<div class="spotlight-item-poster" style="display:flex;align-items:center;justify-content:center;color:#888;">🎮</div>`;
+                    ? `<img class="spotlight-item-poster" src="${escHtml(coverUrl)}" alt="${escHtml(gameName)}" loading="lazy" decoding="async" onerror="if(!this.dataset.retry&&this.src.endsWith('.webp')){this.dataset.retry='1';this.src=this.src.replace(/\\.webp$/,'.jpg');}else{this.outerHTML='${fallbackPoster}';}">`
+                    : fallbackPoster;
 
                 item.innerHTML = `
                     ${poster}

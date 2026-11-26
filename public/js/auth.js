@@ -91,12 +91,12 @@ function showToast(message, type = 'success', duration = 3400) {
     const toast = document.createElement('div');
     toast.className = `gv-toast toast-${type}`;
 
-    let icon = '🎮';
-    if (type === 'favorite') icon = '⭐';
-    else if (type === 'bookmark') icon = '🔖';
-    else if (type === 'success') icon = '✨';
-    else if (type === 'warning') icon = '⚠️';
-    else if (type === 'info') icon = '🕹️';
+    let icon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>';
+    if (type === 'favorite') icon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>';
+    else if (type === 'bookmark') icon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>';
+    else if (type === 'success') icon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
+    else if (type === 'warning') icon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+    else if (type === 'info') icon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
 
     toast.innerHTML = `
         <div class="gv-toast-icon">${icon}</div>
@@ -129,7 +129,7 @@ function checkPendingToasts() {
     if (welcomeUser) {
         sessionStorage.removeItem('gv_welcome_toast');
         setTimeout(() => {
-            showToast(`Welcome back, ${welcomeUser}! 🎮`, 'success', 4000);
+            showToast(`Welcome back, ${welcomeUser}!`, 'success', 4000);
         }, 400);
     }
     const expiredToast = sessionStorage.getItem('gv_expired_toast');
@@ -631,7 +631,7 @@ async function selectGamerAvatar(avatarId) {
     if (isLoggedIn() && typeof apiPatch === 'function') {
         try {
             await apiPatch('/me/profile', { avatar_url: avatarId });
-            showToast(`Avatar updated to ${avData.name}! 🎮`, 'info');
+            showToast(`Avatar updated to ${avData.name}!`, 'info');
         } catch(e) {
             console.warn('Failed to sync avatar to database:', e);
         }
@@ -751,26 +751,31 @@ function updateNavbarUserState(user) {
                     <div style="flex:1; overflow:hidden;">
                         <div class="user-menu-header-name">@${escHtml(user.username)}</div>
                         ${user.email ? `<div style="font-size:0.75rem; color:#aaa; margin-top:2px; word-break:break-all;">${escHtml(user.email)}</div>` : ''}
-                        <div class="user-menu-header-role" style="margin-top:4px;">${user.role === 'admin' ? '🛡️ Administrator' : '🎮 Explorer'}</div>
+                        <div class="user-menu-header-role" style="margin-top:4px;">${user.role === 'admin' ? 'Administrator' : 'Explorer'}</div>
                     </div>
                 </div>
                 <a href="library.html?filter=favorites" class="user-menu-item">
-                    <span>❤️</span> My Favorites
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                    <span>My Favorites</span>
                 </a>
                 <a href="library.html?filter=playing" class="user-menu-item">
-                    <span>🕹️</span> Currently Playing
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    <span>Currently Playing</span>
                 </a>
                 <a href="library.html?filter=backlog" class="user-menu-item">
-                    <span>📚</span> Backlog
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                    <span>Backlog</span>
                 </a>
                 ${user.role === 'admin' ? `
                     <button type="button" class="user-menu-item" id="userMenuAdminBtn">
-                        <span>⚙️</span> Add New Game
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                        <span>Add New Game</span>
                     </button>
                 ` : ''}
                 <div style="height:1px; background:rgba(255,255,255,0.08); margin:4px 0;"></div>
                 <button type="button" class="user-menu-item" id="userMenuSignOutBtn" style="color:#ff5c7c;">
-                    <span>🚪</span> Sign Out
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    <span>Sign Out</span>
                 </button>
             `;
 
@@ -819,10 +824,12 @@ function updateNavbarUserState(user) {
         if (dropdown) {
             dropdown.innerHTML = `
                 <button type="button" class="user-menu-item" id="userMenuSignInBtn">
-                    <span>🔑</span> Sign In
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg>
+                    <span>Sign In</span>
                 </button>
                 <button type="button" class="user-menu-item" id="userMenuSignUpBtn">
-                    <span>✨</span> Create Account
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                    <span>Create Account</span>
                 </button>
             `;
             const signInBtn = dropdown.querySelector('#userMenuSignInBtn');
