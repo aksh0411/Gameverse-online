@@ -120,8 +120,16 @@
         }
 
         _start() {
+            // Pause rendering when nav scrolls out of view (saves CPU)
+            this._isVisible = true;
+            if ('IntersectionObserver' in window) {
+                this._visObs = new IntersectionObserver((entries) => {
+                    this._isVisible = entries[0].isIntersecting;
+                }, { threshold: 0 });
+                this._visObs.observe(this.container);
+            }
             const step = () => {
-                if (!this.isPaused) {
+                if (!this.isPaused && this._isVisible) {
                     this._draw();
                 }
                 requestAnimationFrame(step);
@@ -422,8 +430,16 @@
         }
 
         _startLoop() {
+            // Pause rendering when nav scrolls out of view (saves CPU)
+            this._isVisible = true;
+            if ('IntersectionObserver' in window && this.container) {
+                this._visObs = new IntersectionObserver((entries) => {
+                    this._isVisible = entries[0].isIntersecting;
+                }, { threshold: 0 });
+                this._visObs.observe(this.container);
+            }
             const step = (time) => {
-                if (!this.isPaused) {
+                if (!this.isPaused && this._isVisible) {
                     this._update(time);
                     if (this.tesseract && !this.tesseract.isPaused) {
                         this.tesseract._draw();

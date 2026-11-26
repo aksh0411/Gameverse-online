@@ -130,7 +130,7 @@
   grid-template-columns: 1.05fr 0.95fr;
   gap: 36px;
   align-items: center;
-  min-height: calc(100vh - 80px);
+  min-height: calc(100dvh - 80px);
   pointer-events: none;
 }
 
@@ -828,14 +828,14 @@ body.hero-only {
   height: 100%;
 }
 body.hero-only .universe-shell {
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 body.hero-only #hero {
-  min-height: 100vh;
+  min-height: 100dvh;
   padding-bottom: 0;
 }
 body.hero-only .hero-grid {
-  min-height: calc(100vh - 140px);
+  min-height: calc(100dvh - 140px);
   padding: 110px 28px 24px;
 }
 /* Very short viewports: let the hero breathe instead of clipping content */

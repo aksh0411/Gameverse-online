@@ -894,7 +894,7 @@ body.modal-open {
   right: 0;
   bottom: 0;
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
   background: rgba(4, 3, 10, 0.88);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -1319,4 +1319,47 @@ body.modal-open {
   width: 16px;
   height: 16px;
   cursor: pointer;
+}
+
+
+/* ========================================================================= */
+/* PHASE 1: Micro-Interactions, Focus Rings & Text Improvements              */
+/* ========================================================================= */
+
+/* -- Global focus-visible ring for keyboard navigation -- */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--gv-cyan, #00f2fe);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* -- Tactile press feedback on interactive cards -- */
+.game-card:active,
+.sidebar-nav-item:active,
+.spotlight-dialog:active,
+.avatar-circle-btn:active {
+  transform: scale(0.98);
+  transition: transform 80ms ease-out;
+}
+
+/* -- Smooth hover lift on game cards -- */
+.game-card {
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms ease;
+}
+.game-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px -8px rgba(0, 242, 254, 0.08);
+}
+.game-card:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* -- Body text: prevent orphaned last words -- */
+p, li, dd, figcaption, blockquote {
+  text-wrap: pretty;
 }

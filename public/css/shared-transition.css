@@ -49,7 +49,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   width: min(100vw, 850px);
-  height: min(100vh, 850px);
+  height: min(100dvh, 850px);
   border-radius: 50%;
   pointer-events: none;
   transition: opacity 400ms ease;
@@ -79,7 +79,7 @@
 
 .transition-expanding-panel.expanded {
   width: 100vw !important;
-  height: 100vh !important;
+  height: 100dvh !important;
   border-radius: 0px !important;
 }
 

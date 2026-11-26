@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GAMEVERSE — Personal Game Archive</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300f5d4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2' y='6' width='20' height='12' rx='4'/%3E%3Cpath d='M6 12h4M8 10v4M15 11h.01M18 13h.01'/%3E%3C/svg%3E">
+  
+  <!-- High-priority self-hosted variable font preloads (Zero external render-blocking roundtrips) -->
+  <link rel="preload" href="fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
+  
+  <link rel="stylesheet" href="css/style.css?v=18.0">
+  <link rel="stylesheet" href="css/home.css?v=18.0">
+  <link rel="stylesheet" href="css/game-detail.css?v=18.0">
+  <link rel="stylesheet" href="css/shared-transition.css?v=18.0">
+  <link rel="stylesheet" href="css/nexus-auth.css?v=18.0">
+  <link rel="stylesheet" href="css/responsive.css?v=18.0">
+</head>
+<body class="hero-only">
+  <!-- Global Shared Top Navigation Bar (Persists Across All Pages & Modals) -->
+  <header class="floating-header" id="globalHeader">
+    <a href="index.html" class="brand-logo" id="globalBrandLogo">
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="4"></rect><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"></path></svg>
+      <span>GAME<span class="logo-accent">VERSE</span></span>
+    </a>
+
+    <!-- Nav Center Cluster: Cosmic Eye + Floating Mini Tesseract -->
+    <div class="nav-center-cluster" id="navCenterCluster"></div>
+
+    <div class="top-icon-cluster">
+      <!-- Avatar Button -->
+      <div class="avatar-circle-btn" id="avatarBtn" title="Admin / Profile" aria-label="Admin profile"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
+    </div>
+  </header>
+
+  <!-- Spotlight Search Modal Overlay -->
+  <div class="spotlight-overlay hidden" id="searchOverlay" role="dialog" aria-modal="true" aria-label="Search collection modal">
+    <div class="spotlight-dialog glass-panel">
+      <div class="spotlight-input-row">
+        <svg class="spotlight-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"></circle>
+          <line x1="21" y1="21" x2="16.5" y2="16.5"></line>
+        </svg>
+        <input type="text" id="searchInput" placeholder="Search title, genre, platform..." aria-label="Search games by title, genre, or platform" autocomplete="off">
+        <button class="spotlight-close" id="searchClose" aria-label="Close search">&times;</button>
+      </div>
+      <div class="spotlight-results hidden" id="searchResults"></div>
+    </div>
+  </div>
+
+  <!-- ===== Shared Parent 4D Universe Environment ===== -->
+  <div class="universe-shell grain">
+    <!-- Single Shared Dimensional Atmosphere across Hero & Collection Core -->
+    <div class="universe-atmosphere">
+      <div class="universe-gradient-base"></div>
+      <div class="universe-gradient-plum-hero"></div>
+      <div class="universe-gradient-rose-hero"></div>
+      <div class="universe-gradient-plum-core"></div>
+      <div class="universe-gradient-cyan-core"></div>
+    </div>
+
+    <!-- Floating geometric ring accents across the continuous dimensional space -->
+    <div class="universe-ring universe-ring-1"></div>
+    <div class="universe-ring universe-ring-2"></div>
+    <div class="universe-ring universe-ring-3"></div>
+
+    <!-- ===== Section 1: Hero (the entire home experience — the collection lives in library.html) ===== -->
+    <section id="hero">
+      <!-- 4D HyperVisual — pure full-bleed 3D canvas positioned on right (integrated seamlessly, no cutoff) -->
+      <div class="hero-visual animate-fade-in">
+        <div id="hero3d" class="hero-visual-canvas"></div>
+      </div>
+
+      <div class="hero-grid">
+        <!-- Left: Text content -->
+        <div class="hero-content animate-fade-up">
+          <h1 class="sr-only">Welcome to GameVerse</h1>
+          <div id="particleTextHero" class="particle-text-container" aria-hidden="true"></div>
+          <p class="hero-desc">A living collection of worlds, stories and experiments — projected through a dimensional lens.</p>
+
+          <div class="hero-buttons">
+            <a href="library.html" class="btn-primary" id="exploreCollectionBtn">Explore Collection <span class="arrow">→</span></a>
+          </div>
+
+          <div id="warpTextHero" class="warp-text-container" aria-hidden="true"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- About Me Modal Overlay (Opens on Avatar Click or Navigation) -->
+  <div class="modal-overlay hidden" id="aboutModal" role="dialog" aria-modal="true" aria-label="About Akshay personal profile">
+    <div class="about-card glass-panel about-modal-inner" id="aboutModalCard">
+      <!-- Ambient card background glow -->
+      <div class="about-glow-orb" aria-hidden="true"></div>
+
+      <!-- Modal Close Button -->
+      <button class="about-close-btn" id="aboutModalClose" title="Close Modal" aria-label="Close Modal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <!-- Personal Avatar with Glowing Ring & Gamer Badge -->
+      <div class="about-avatar-wrapper">
+        <div class="about-avatar-ring">
+          <svg class="about-avatar-svg" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Akshay's personal avatar illustration">
+            <defs>
+              <clipPath id="avatarCircleClipModal">
+                <circle cx="60" cy="60" r="58" />
+              </clipPath>
+              <radialGradient id="skyGradModal" cx="60" cy="30" r="70" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#2a164d"/>
+                <stop offset="50%" stop-color="#180c2e"/>
+                <stop offset="100%" stop-color="#0a0514"/>
+              </radialGradient>
+              <linearGradient id="cityMistModal" x1="60" y1="50" x2="60" y2="85" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#a855f7" stop-opacity="0"/>
+                <stop offset="100%" stop-color="#ec4899" stop-opacity="0.25"/>
+              </linearGradient>
+              <linearGradient id="hoodieBackModal" x1="30" y1="70" x2="90" y2="120" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#1e1430"/>
+                <stop offset="60%" stop-color="#120b1f"/>
+                <stop offset="100%" stop-color="#090510"/>
+              </linearGradient>
+              <linearGradient id="rimGlowModal" x1="20" y1="60" x2="100" y2="60" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#a855f7" stop-opacity="0.9"/>
+                <stop offset="50%" stop-color="#f472b6" stop-opacity="0.4"/>
+                <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.9"/>
+              </linearGradient>
+            </defs>
+            
+            <g clip-path="url(#avatarCircleClipModal)">
+              <rect width="120" height="120" fill="url(#skyGradModal)" />
+              
+              <!-- Stars / Cosmic Dust -->
+              <circle cx="25" cy="22" r="0.8" fill="#e9d5ff" opacity="0.8" />
+              <circle cx="45" cy="15" r="1.1" fill="#fbcfe8" opacity="0.9" />
+              <circle cx="85" cy="18" r="0.9" fill="#c084fc" opacity="0.7" />
+              <circle cx="35" cy="38" r="0.6" fill="#ffffff" opacity="0.6" />
+              <circle cx="95" cy="32" r="1.2" fill="#38bdf8" opacity="0.85" />
+              <circle cx="15" cy="45" r="0.8" fill="#e879f9" opacity="0.5" />
+              <circle cx="70" cy="28" r="0.7" fill="#ffffff" opacity="0.7" />
+
+              <!-- Distant City Skyline Silhouettes -->
+              <path d="M10 85 V62 H18 V55 H26 V68 H34 V52 H44 V65 H52 V58 H62 V70 H70 V54 H82 V64 H92 V48 H102 V66 H112 V85 Z" fill="#130a24" />
+              <rect x="0" y="50" width="120" height="35" fill="url(#cityMistModal)" />
+              
+              <!-- Glowing Neon Windows -->
+              <rect x="13" y="66" width="2" height="3" rx="0.5" fill="#38bdf8" opacity="0.85" />
+              <rect x="21" y="58" width="2" height="2" rx="0.5" fill="#f472b6" opacity="0.9" />
+              <rect x="21" y="63" width="2" height="2" rx="0.5" fill="#38bdf8" opacity="0.75" />
+              <rect x="37" y="56" width="3" height="2" rx="0.5" fill="#fbcfe8" opacity="0.8" />
+              <rect x="37" y="61" width="3" height="2" rx="0.5" fill="#a855f7" opacity="0.9" />
+              <rect x="47" y="68" width="2" height="2.5" rx="0.5" fill="#38bdf8" opacity="0.7" />
+              <rect x="73" y="58" width="2.5" height="2" rx="0.5" fill="#f472b6" opacity="0.85" />
+              <rect x="73" y="63" width="2.5" height="2" rx="0.5" fill="#fbcfe8" opacity="0.7" />
+              <rect x="85" y="58" width="2" height="3" rx="0.5" fill="#38bdf8" opacity="0.9" />
+              <rect x="95" y="52" width="2" height="2" rx="0.5" fill="#fbcfe8" opacity="0.8" />
+              <rect x="95" y="57" width="2" height="2" rx="0.5" fill="#a855f7" opacity="0.75" />
+              <rect x="105" y="70" width="2" height="2" rx="0.5" fill="#38bdf8" opacity="0.8" />
+
+              <!-- Window Sill -->
+              <line x1="0" y1="84" x2="120" y2="84" stroke="rgba(168, 85, 247, 0.3)" stroke-width="1.5" />
+              <rect x="0" y="84" width="120" height="36" fill="#0c0716" opacity="0.9" />
+
+              <!-- Character Silhouette (Hoodie & Headphones) -->
+              <path d="M22 120 C22 96 35 84 48 81 C52 80 68 80 72 81 C85 84 98 96 98 120 Z" fill="url(#hoodieBackModal)" />
+              <path d="M24 120 C24 98 36 86 48 83 C52 82 68 82 72 83 C84 86 96 98 96 120" stroke="url(#rimGlowModal)" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.8" />
+
+              <!-- Hood fold -->
+              <path d="M42 84 C42 76 48 72 60 72 C72 72 78 76 78 84 C78 90 70 94 60 94 C50 94 42 90 42 84 Z" fill="#180f26" />
+              <path d="M45 83 C48 77 54 74 60 74 C66 74 72 77 75 83" stroke="rgba(192, 132, 252, 0.4)" stroke-width="1" fill="none" />
+
+              <!-- Head & Hair -->
+              <path d="M46 64 C44 54 48 44 60 44 C72 44 76 54 74 64 C74 72 69 77 60 77 C51 77 46 72 46 64 Z" fill="#0d0717" />
+              <path d="M45 56 C41 50 45 42 52 38 C56 36 65 36 70 40 C75 42 79 48 76 55 C74 50 71 45 66 45 C62 45 58 47 55 49 C52 51 48 53 45 56 Z" fill="#140b24" />
+              <path d="M46 52 C44 44 50 38 60 38 C68 38 74 43 75 52" stroke="#c084fc" stroke-width="1.2" stroke-linecap="round" fill="none" opacity="0.75" />
+
+              <!-- Headphones -->
+              <path d="M43 56 C41 40 50 34 60 34 C70 34 79 40 77 56" stroke="#2a1b45" stroke-width="3" stroke-linecap="round" fill="none" />
+              <path d="M44 54 C43 42 51 36 60 36 C69 36 77 42 76 54" stroke="#a855f7" stroke-width="1" stroke-linecap="round" fill="none" opacity="0.8" />
+              <rect x="40" y="52" width="6" height="13" rx="3" fill="#1b112c" stroke="#a855f7" stroke-width="1" />
+              <circle cx="43" cy="58.5" r="1.5" fill="#e879f9" opacity="0.9" />
+              <rect x="74" y="52" width="6" height="13" rx="3" fill="#1b112c" stroke="#38bdf8" stroke-width="1" />
+              <circle cx="77" cy="58.5" r="1.5" fill="#38bdf8" opacity="0.9" />
+            </g>
+          </svg>
+
+          <!-- Avatar Glass Stamp / Note -->
+          <div class="avatar-speech-badge" aria-hidden="true">
+            <span>Good Games</span>
+            <span>Better Days</span>
+          </div>
+
+          <!-- Bottom Right Controller Icon Badge -->
+          <div class="avatar-controller-badge" title="Gamer at heart">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="6" width="20" height="12" rx="4"></rect>
+              <path d="M6 12h4m-2-2v4m7-2h.01m3 0h.01"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Heading & Roles -->
+      <h2 class="about-heading">Hey, I'm <span class="text-gradient">Akshay</span></h2>
+      <p class="about-subtitle">2nd year CS student &nbsp;·&nbsp; Builder &nbsp;·&nbsp; Gamer</p>
+
+      <!-- Story paragraphs -->
+      <div class="about-story-flow">
+        <p class="about-paragraph">
+          I'm a 20-year-old 2nd year CS student who got tired of having 50+ games scattered across platforms with zero way to track what I've actually played.
+        </p>
+        <p class="about-paragraph about-highlight-line">
+          So I built <span class="text-gradient">Gameverse</span>.
+        </p>
+        <p class="about-paragraph">
+          No fancy reason — I just wanted one place where I could see everything, rate stuff honestly, and stop forgetting about games I paid actual money for.
+        </p>
+      </div>
+
+      <!-- Delicate Ornamental Divider with Gamepad icon -->
+      <div class="about-ornament-divider" aria-hidden="true">
+        <span class="divider-line"></span>
+        <span class="divider-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="6" width="20" height="12" rx="4"></rect>
+            <path d="M6 12h4m-2-2v4m7-2h.01m3 0h.01"></path>
+          </svg>
+        </span>
+        <span class="divider-line"></span>
+      </div>
+
+      <!-- Outside Gameverse Section + Handwritten Annotation -->
+      <div class="about-outside-wrapper">
+        <div class="about-outside-box">
+          <div class="outside-box-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="6" width="20" height="12" rx="4"></rect>
+              <path d="M6 12h4m-2-2v4m7-2h.01m3 0h.01"></path>
+            </svg>
+          </div>
+          <div class="outside-box-content">
+            <div class="outside-box-label">OUTSIDE GAMEVERSE</div>
+            <div class="outside-box-desc">You'll usually find me coding, gaming, or adding new games to my library faster than I can play them.</div>
+          </div>
+        </div>
+        
+        <!-- Handwritten annotation on top right of the box -->
+        <div class="handwritten-annotation annotation-outside" aria-hidden="true">
+          <div class="handwritten-line">One</div>
+          <div class="handwritten-line">Life,</div>
+          <div class="handwritten-line">Many</div>
+          <div class="handwritten-line">
+            Worlds
+            <svg class="handwritten-underline" width="46" height="5" viewBox="0 0 46 5" fill="none">
+              <path d="M2 3 Q 23 1, 44 3" stroke="rgba(192, 132, 252, 0.6)" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Closing note -->
+      <div class="about-closing-block">
+        <div class="closing-heading">Thanks for checking out Gameverse!</div>
+        <div class="closing-sub">Hope you find it as useful as I do.</div>
+      </div>
+
+      <!-- Admin Action Buttons (Login / Logout) -->
+      <div class="about-actions-row">
+        <button class="about-pill-btn admin-login-btn" id="adminLoginBtn">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/>
+          </svg>
+          <span>Login as Admin</span>
+        </button>
+        <button class="about-pill-btn admin-logout-btn hidden" id="adminLogoutBtn">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+          </svg>
+          <span>Logout Admin</span>
+        </button>
+      </div>
+
+      <!-- Decorative Corner Accents -->
+      <div class="about-corner-pixel" aria-hidden="true">
+        <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+          <rect x="2" y="24" width="8" height="8" rx="1.5" fill="rgba(168, 85, 247, 0.18)"/>
+          <rect x="10" y="24" width="8" height="8" rx="1.5" fill="rgba(168, 85, 247, 0.35)"/>
+          <rect x="2" y="32" width="8" height="8" rx="1.5" fill="rgba(168, 85, 247, 0.45)"/>
+          <rect x="10" y="32" width="8" height="8" rx="1.5" fill="rgba(168, 85, 247, 0.28)"/>
+          <rect x="18" y="32" width="8" height="8" rx="1.5" fill="rgba(168, 85, 247, 0.15)"/>
+        </svg>
+      </div>
+
+      <div class="handwritten-annotation annotation-corner" aria-hidden="true">
+        <span>Play</span>
+        <span>Collect</span>
+        <span>Remember</span>
+        <span class="dots">...</span>
+      </div>
+    </div>
+  </div>
+
+        <!-- User Profile Modal (Displays Username, Email & Logout) -->
+  <div class="modal-overlay hidden" id="userProfileModal" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle">
+    <div class="modal glass-panel profile-modal">
+      <button class="modal-close" id="userProfileClose" aria-label="Close profile modal">&times;</button>
+      
+      <!-- Clickable Avatar Picture with Edit Badge -->
+      <div style="text-align: center;">
+        <div class="profile-avatar-wrapper" id="profileAvatarTrigger" title="Click avatar to change">
+          <div id="profileAvatarCircle" style="width: 76px; height: 76px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700; color: #fff; background: linear-gradient(135deg, #00b4d8, #00f5d4); box-shadow: 0 8px 24px rgba(0,245,212,0.35); transition: transform 0.2s, box-shadow 0.2s; overflow: hidden;">
+            U
+          </div>
+          <div class="avatar-edit-badge" title="Change avatar"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></div>
+        </div>
+        <div>
+          <span class="avatar-change-hint" id="avatarChangeHint">Click avatar to change ▾</span>
+        </div>
+      </div>
+
+      <h3 id="profileModalTitle" style="margin-bottom: 12px; font-size: 1.25rem; color: #fff; font-weight: 700;">Gamer Profile</h3>
+
+      <!-- Avatar Picker Section (Hidden by default, only shows when clicking profile pic) -->
+      <div class="profile-avatar-section hidden" id="profileAvatarSection" style="margin: 0 0 14px; text-align: left; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(0, 245, 212, 0.25); border-radius: 12px; padding: 12px 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span style="font-size: 0.74rem; text-transform: uppercase; letter-spacing: 1.2px; color: #888; font-weight: 600;">Choose Gamer Avatar:</span>
+          <span id="profileAvatarCurrentLabel" style="font-size: 0.78rem; color: #00f5d4; font-weight: 600;">Cyber Neon</span>
+        </div>
+        <div id="profileAvatarGrid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;"></div>
+      </div>
+
+      <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; padding: 14px 18px; margin: 0 0 14px; text-align: left;">
+        <div style="margin-bottom: 10px;">
+          <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.2px; color: #888; font-weight: 600;">Username :</div>
+          <div id="profileModalUsername" style="font-size: 1.15rem; font-weight: 700; color: #00f5d4; margin-top: 2px; word-break: break-all;">@username</div>
+        </div>
+        <div style="margin-bottom: 10px;">
+          <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.2px; color: #888; font-weight: 600;">User's Mail :</div>
+          <div id="profileModalEmail" style="font-size: 0.92rem; font-weight: 500; color: #ffffff; word-break: break-all; margin-top: 2px;">user@example.com</div>
+        </div>
+        <div>
+          <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.2px; color: #888; font-weight: 600;">Status / Role :</div>
+          <div id="profileModalRole" style="font-size: 0.88rem; font-weight: 600; color: #f72585; margin-top: 2px;">Explorer</div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
+        <a href="library.html?filter=favorites" class="btn-primary" style="padding: 10px; font-size: 0.85rem; text-decoration: none; text-align: center; border-radius: 8px;">
+          Favorites
+        </a>
+        <a href="library.html" class="btn-primary" style="padding: 10px; font-size: 0.85rem; text-decoration: none; text-align: center; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;">
+          Library
+        </a>
+      </div>
+
+      <!-- Prominent Red Logout Button -->
+      <button type="button" class="btn-primary" id="profileModalLogoutBtn" style="width: 100%; background: linear-gradient(135deg, #e63946, #d90429); border: none; padding: 11px; font-size: 0.95rem; font-weight: 700; cursor: pointer; border-radius: 10px; letter-spacing: 0.5px;">
+        Log Out
+      </button>
+    </div>
+  </div>
+<!-- Universal Auth Modal: Nexus 3D Animated Futuristic Authentication UI -->
+  <div class="modal-overlay hidden" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="authModalTitle">
+    <!-- Ambient glowing orbs background -->
+    <div class="nexus-ambient-layer" aria-hidden="true">
+      <div class="nexus-dot-grid"></div>
+      <div class="nexus-glow-orb nexus-orb-1"></div>
+      <div class="nexus-glow-orb nexus-orb-2"></div>
+      <div class="nexus-glow-orb nexus-orb-3"></div>
+    </div>
+
+    <!-- Main Split-Screen Modal Container -->
+    <div class="nexus-modal">
+      <button class="nexus-modal-close modal-close" id="loginClose" aria-label="Close auth modal">&times;</button>
+
+      <!-- LEFT PANEL: Interactive 3D Showcase -->
+      <div class="nexus-showcase-panel" id="nexusShowcasePanel" aria-hidden="true">
+        <!-- Interactive Particle Canvas -->
+        <canvas class="nexus-particle-canvas" id="nexusParticleCanvas"></canvas>
+
+        <!-- 3D Stage Wrapper -->
+        <div class="nexus-3d-stage-wrapper">
+          <div class="nexus-3d-stage" id="nexus3dStage">
+            <!-- Concentric Platform & Orbital Rings -->
+            <div class="nexus-stage-platform"></div>
+            <div class="nexus-orbit-ring ring-1">
+              <div class="nexus-ring-light-arc arc-1"></div>
+            </div>
+            <div class="nexus-orbit-ring ring-dashed"></div>
+            <div class="nexus-orbit-ring ring-2">
+              <div class="nexus-ring-light-arc arc-2"></div>
+            </div>
+
+            <!-- Central Glowing Hex Core -->
+            <div class="nexus-core-anchor">
+              <div class="nexus-core-pulse"></div>
+              <div class="nexus-core-hex">
+                <div class="nexus-core-inner">
+                  <svg class="nexus-brand-logo-svg" viewBox="0 0 24 24" fill="none" stroke="#00f5d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                    <polyline points="2 17 12 22 22 17"></polyline>
+                    <polyline points="2 12 12 17 22 12"></polyline>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- Inner Orbiting Cards (4 slots) -->
+            <div class="nexus-orbit-container orbit-inner">
+              <div class="nexus-card-slot slot-1">
+                <div class="nexus-card-counter">
+                  <div class="nexus-3d-game-card" title="Cyberpunk 2077">
+                    <img src="static/images/game_1.webp" alt="Cyberpunk" onerror="this.src='static/images/game_1.jpg'">
+                    <span class="nexus-card-badge">Cyberpunk</span>
+                  </div>
+                </div>
+              </div>
+              <div class="nexus-card-slot slot-2">
+                <div class="nexus-card-counter">
+                  <div class="nexus-3d-game-card" title="Elden Ring">
+                    <img src="static/images/game_10.webp" alt="Elden Ring" onerror="this.src='static/images/game_10.jpg'">
+                    <span class="nexus-card-badge">Elden Ring</span>
+                  </div>
+                </div>
+              </div>
+              <div class="nexus-card-slot slot-3">
+                <div class="nexus-card-counter">
+                  <div class="nexus-3d-game-card" title="Hollow Knight">
+                    <img src="static/images/game_100.webp" alt="Hollow Knight" onerror="this.src='static/images/game_100.jpg'">
+                    <span class="nexus-card-badge">Hollow Knight</span>
+                  </div>
+                </div>
+              </div>
+              <div class="nexus-card-slot slot-4">
+                <div class="nexus-card-counter">
+                  <div class="nexus-3d-game-card" title="Witcher 3">
+                    <img src="static/images/game_101.webp" alt="Witcher 3" onerror="this.src='static/images/game_101.jpg'">
+                    <span class="nexus-card-badge">Witcher 3</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Outer Orbiting Cards (4 slots) -->
+            <div class="nexus-orbit-container orbit-outer">
+              <div class="nexus-card-slot slot-5">
+                <div class="nexus-card-counter">
+                  <div class="nexus-3d-game-card" title="Titanfall 2">
+                    <img src="static/images/game_85.jpg" alt="Titanfall 2">
+                    <span class="nexus-card-badge">Titanfall 2</span>
+                  </div>
+                </div>
+              </div>
+              <div class="nexus-card-slot slot-6">
+                <div class="nexus-card-counter">
+                  <div class="nexus-3d-game-card" title="Sea of Thieves">
+                    <img src="static/images/game_88.jpg" alt="Sea of Thieves">
+                    <span class="nexus-card-badge">Sea of Thieves</span>
+                  </div>
+                </div>
+              </div>
+              <div class="nexus-card-slot slot-7">
+                <div class="nexus-card-counter">
+                  <div class="nexus-3d-game-card" title="Metal Gear Solid V">
+                    <img src="static/images/game_80.jpg" alt="MGS V">
+                    <span class="nexus-card-badge">MGS V</span>
+                  </div>
+                </div>
+              </div>
+              <div class="nexus-card-slot slot-8">
+                <div class="nexus-card-counter">
+                  <div class="nexus-3d-game-card" title="Cult of the Lamb">
+                    <img src="static/images/game_157.jpg" alt="Cult of the Lamb">
+                    <span class="nexus-card-badge">Cult of the Lamb</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Showcase Copy Bottom -->
+        <div class="nexus-showcase-copy">
+          <div class="nexus-eyebrow-pill">
+            <span class="nexus-live-dot"></span>
+            <span>PERSONAL GAMING ARCHIVE</span>
+          </div>
+          <h2 class="nexus-showcase-headline">
+            Enter the <span class="nexus-gradient-text">GameVerse</span>
+          </h2>
+          <p class="nexus-showcase-tagline">
+            Synchronize your gaming library, achievements, and cross-platform profile in real time.
+          </p>
+        </div>
+      </div>
+
+      <!-- RIGHT PANEL: Glassmorphism Auth Card -->
+      <div class="nexus-auth-card">
+        <div class="nexus-card-hairline"></div>
+
+        <div class="nexus-card-header">
+          <div class="nexus-brand-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+              <polyline points="2 17 12 22 22 17"></polyline>
+              <polyline points="2 12 12 17 22 12"></polyline>
+            </svg>
+            <span>GAMEVERSE AUTH</span>
+          </div>
+          <h3 class="nexus-form-title" id="authModalTitle">Welcome Back</h3>
+          <p class="nexus-form-subtitle">Enter your credentials to access your personal gaming deck.</p>
+        </div>
+
+        <!-- Tab Header (Sign In / Sign Up) -->
+        <div class="nexus-tabs auth-tabs" id="authTabs">
+          <button type="button" class="auth-tab-btn active" id="tabSignIn">Sign In</button>
+          <button type="button" class="auth-tab-btn" id="tabSignUp">Sign Up</button>
+        </div>
+
+        <!-- VIEW 1: Sign In -->
+        <div id="authViewSignIn" class="auth-view">
+          <form id="loginForm" class="nexus-form">
+            <div class="form-group nexus-input-group">
+              <label for="loginIdentifier">Email or Username</label>
+              <div class="nexus-input-wrapper">
+                <span class="nexus-input-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                </span>
+                <input type="text" id="loginIdentifier" name="identifier" placeholder="Username or email" autocomplete="username" required>
+              </div>
+            </div>
+
+            <div class="form-group nexus-input-group">
+              <div class="nexus-label-row">
+                <label for="loginPassword">Password</label>
+                <a href="#" id="forgotPasswordLink" class="auth-link-subtle" style="font-size:0.82rem; color:#00f5d4;">Forgot?</a>
+              </div>
+              <div class="nexus-input-wrapper">
+                <span class="nexus-input-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </span>
+                <input type="password" id="loginPassword" name="password" placeholder="••••••••" autocomplete="current-password" required>
+                <button type="button" class="nexus-password-toggle" id="loginPasswordToggle" aria-label="Toggle password visibility">
+                  <svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+                  <svg class="eye-open hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group remember-me-row nexus-remember-row">
+              <label for="loginRememberMe" class="nexus-checkbox-label">
+                <input type="checkbox" id="loginRememberMe" name="remember_me">
+                <span>Remember me on this device (30 days)</span>
+              </label>
+            </div>
+
+            <button type="submit" class="nexus-btn-primary btn-primary" id="loginSubmitBtn">
+              <span class="nexus-btn-sweep"></span>
+              <span>Sign In</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </button>
+          </form>
+        </div>
+
+        <!-- VIEW 2: Sign Up -->
+        <div id="authViewSignUp" class="auth-view hidden">
+          <form id="signUpForm" class="nexus-form">
+            <div class="form-group nexus-input-group">
+              <label for="signUpUsername">Username (Letters only)</label>
+              <div class="nexus-input-wrapper">
+                <span class="nexus-input-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </span>
+                <input type="text" id="signUpUsername" name="username" placeholder="e.g. MasterChief (4-20 letters)" autocomplete="off" required>
+              </div>
+              <div id="usernameStatus" class="username-feedback"></div>
+            </div>
+
+            <div class="form-group nexus-input-group">
+              <label for="signUpEmail">Email</label>
+              <div class="nexus-input-wrapper">
+                <span class="nexus-input-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                </span>
+                <input type="email" id="signUpEmail" name="email" placeholder="you@example.com" autocomplete="email" required>
+              </div>
+            </div>
+
+            <div class="form-group nexus-input-group">
+              <label for="signUpPassword">Password</label>
+              <div class="nexus-input-wrapper">
+                <span class="nexus-input-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </span>
+                <input type="password" id="signUpPassword" name="password" placeholder="At least 6 characters" autocomplete="new-password" required>
+                <button type="button" class="nexus-password-toggle" id="signUpPasswordToggle" aria-label="Toggle password visibility">
+                  <svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+                  <svg class="eye-open hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group nexus-input-group" style="margin-top: 10px;">
+              <label style="font-size: 0.82rem; color: #aaa; margin-bottom: 6px; display: block;">Choose Starter Avatar</label>
+              <div class="signup-avatar-grid" id="signUpAvatarGrid"></div>
+              <input type="hidden" id="signUpSelectedAvatar" value="avatar_cyber">
+            </div>
+
+            <button type="submit" class="nexus-btn-primary btn-primary" id="signUpSubmitBtn">
+              <span class="nexus-btn-sweep"></span>
+              <span>Create Account</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </button>
+          </form>
+        </div>
+
+        <!-- VIEW 3: OTP Verification -->
+        <div id="authViewOtp" class="auth-view hidden">
+          <h4 style="margin-bottom:8px; color:var(--accent-cyan, #00f5d4); font-size:1.15rem; font-weight:700;">Confirm Your Email</h4>
+          <p style="font-size:0.85rem; color:#aaa; margin-bottom:16px;">Click the link in the confirmation email, OR enter the 6-digit code sent to <span id="otpTargetEmail" style="color:#fff; font-weight:600;"></span>.</p>
+          <form id="otpForm" class="nexus-form">
+            <div class="form-group nexus-input-group">
+              <div class="nexus-input-wrapper">
+                <input type="text" id="otpCode" name="otp" placeholder="6-digit code" maxlength="8" style="text-align:center; font-size:1.4rem; letter-spacing:4px; padding:0 12px !important;" required>
+              </div>
+            </div>
+            <button type="submit" class="nexus-btn-primary btn-primary" style="width:100%">
+              <span class="nexus-btn-sweep"></span>
+              <span>Verify Code</span>
+            </button>
+            <div style="display:flex; justify-content:space-between; margin-top:12px;">
+              <button type="button" class="auth-text-btn" id="resendOtpBtn">Resend code</button>
+              <button type="button" class="auth-text-btn" id="backToSignInFromOtp">Back to Sign In</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- VIEW 4: Forgot Password -->
+        <div id="authViewForgot" class="auth-view hidden">
+          <h4 style="margin-bottom:8px; color:var(--accent-pink, #f72585); font-size:1.15rem; font-weight:700;">Reset Password</h4>
+          <p style="font-size:0.85rem; color:#aaa; margin-bottom:16px;">Enter your username or email to receive a password reset link.</p>
+          <form id="forgotForm" class="nexus-form">
+            <div class="form-group nexus-input-group">
+              <div class="nexus-input-wrapper">
+                <span class="nexus-input-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                </span>
+                <input type="text" id="forgotIdentifier" name="identifier" placeholder="Email or Username" required>
+              </div>
+            </div>
+            <button type="submit" class="nexus-btn-primary btn-primary" style="width:100%">
+              <span class="nexus-btn-sweep"></span>
+              <span>Send Reset Link</span>
+            </button>
+            <div style="margin-top:12px; text-align:center;">
+              <button type="button" class="auth-text-btn" id="backToSignInFromForgot">Back to Sign In</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Global Error / Info Banner -->
+        <p class="error-msg hidden" id="loginError" style="margin-top:15px; font-size:0.88rem;"></p>
+        <p class="info-msg hidden" id="loginInfo" style="margin-top:15px; font-size:0.88rem; color:var(--accent-cyan, #00f5d4);"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin: Add/Edit Game Modal -->
+  <div class="modal-overlay hidden" id="addGameModal" role="dialog" aria-modal="true" aria-labelledby="gameFormTitle">
+    <div class="modal modal-large glass-panel">
+      <button class="modal-close" id="gameModalClose" aria-label="Close game form modal">&times;</button>
+      <h3 id="gameFormTitle">Add New Game</h3>
+      <form id="gameForm" enctype="multipart/form-data">
+        <input type="hidden" name="game_id" id="editGameId">
+        <!-- Basic Info -->
+        <div class="form-section">
+          <h4>Basic Info</h4>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Game Name *</label>
+              <input type="text" name="name" id="f_name" required>
+            </div>
+            <div class="form-group">
+              <label>Release Date</label>
+              <input type="date" name="release_date" id="f_release_date">
+            </div>
+            <div class="form-group">
+              <label>Rating (0-10)</label>
+              <input type="number" name="rating" id="f_rating" min="0" max="10" step="0.1">
+            </div>
+            <div class="form-group">
+              <label>Price</label>
+              <input type="number" name="price" id="f_price" min="0" step="0.01">
+            </div>
+            <div class="form-group">
+              <label>Game Engine</label>
+              <input type="text" name="engine" id="f_engine">
+            </div>
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input type="checkbox" name="is_free_to_play" id="f_is_free_to_play"> Free to Play
+              </label>
+            </div>
+          </div>
+          <div class="form-group full-width">
+            <label>Description</label>
+            <textarea name="description" id="f_description" rows="4"></textarea>
+          </div>
+        </div>
+
+        <!-- Cover Image -->
+        <div class="form-section">
+          <h4>Cover Image</h4>
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label>Image URL (Optional / Direct Link)</label>
+            <input type="text" name="cover_image_url" id="f_cover_image_url" placeholder="https://... or /static/images/game_1.png">
+          </div>
+          <div class="image-upload">
+            <label style="font-size:0.85rem; color:rgba(212,204,239,0.7); display:block; margin-bottom:6px;">Or Upload File:</label>
+            <input type="file" name="cover_image" accept="image/*" id="coverImageInput">
+            <div class="image-preview" id="imagePreview">No image selected</div>
+          </div>
+        </div>
+
+        <!-- Developer & Publisher -->
+        <div class="form-section">
+          <h4>Developer & Publisher</h4>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Developer</label>
+              <select name="developer_id" id="developerSelect"><option value="">Select...</option></select>
+            </div>
+            <div class="form-group">
+              <label>Publisher</label>
+              <select name="publisher_id" id="publisherSelect"><option value="">Select...</option></select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Genres, Platforms, Modes -->
+        <div class="form-section">
+          <h4>Categories</h4>
+          <div class="form-group">
+            <label>Genres</label>
+            <div class="checkbox-group" id="genreCheckboxes"></div>
+          </div>
+          <div class="form-group">
+            <label>Platforms</label>
+            <div class="checkbox-group" id="platformCheckboxes"></div>
+          </div>
+          <div class="form-group">
+            <label>Game Modes</label>
+            <div class="checkbox-group" id="modeCheckboxes"></div>
+          </div>
+        </div>
+
+        <!-- System Requirements -->
+        <div class="form-section">
+          <h4>System Requirements (Optional)</h4>
+          <div class="form-grid">
+            <div class="form-group"><label>OS</label><input type="text" name="operating_system" id="f_os"></div>
+            <div class="form-group"><label>Min CPU</label><input type="text" name="minimum_cpu" id="f_min_cpu"></div>
+            <div class="form-group"><label>Min GPU</label><input type="text" name="minimum_gpu" id="f_min_gpu"></div>
+            <div class="form-group"><label>Min RAM</label><input type="text" name="minimum_ram" id="f_min_ram"></div>
+            <div class="form-group"><label>Min Storage</label><input type="text" name="minimum_storage" id="f_min_storage"></div>
+            <div class="form-group"><label>Rec CPU</label><input type="text" name="recommended_cpu" id="f_rec_cpu"></div>
+            <div class="form-group"><label>Rec GPU</label><input type="text" name="recommended_gpu" id="f_rec_gpu"></div>
+            <div class="form-group"><label>Rec RAM</label><input type="text" name="recommended_ram" id="f_rec_ram"></div>
+            <div class="form-group"><label>Rec Storage</label><input type="text" name="recommended_storage" id="f_rec_storage"></div>
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div class="form-section">
+          <h4>Personal Status</h4>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Play Status</label>
+              <select name="play_status" id="f_play_status">
+                <option value="not_started">Not Started</option>
+                <option value="playing">Playing</option>
+                <option value="play_later">Play Later</option>
+                <option value="completed">Completed</option>
+                <option value="wont_play">Won't Play</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="checkbox-label"><input type="checkbox" name="is_bookmarked" id="f_is_bookmarked"> Bookmarked</label>
+            </div>
+            <div class="form-group">
+              <label class="checkbox-label"><input type="checkbox" name="is_favorited" id="f_is_favorited"> Favorited</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">Save Game</button>
+          <button type="button" class="btn-outline modal-cancel" id="gameModalCancel">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin FAB -->
+  <button class="fab hidden" id="addGameFab" title="Add New Game"><span class="fab-icon">+</span><span class="fab-label">Add Game</span></button>
+
+  <!-- Dark Translucent Backdrop Scrim for Shared-Element Detail View -->
+  <div id="detailBackdropScrim" class="detail-backdrop-scrim"></div>
+
+  <!-- Shared-Element Detail Modal View -->
+  <div id="gameDetailModalView" class="game-detail-modal-view">
+    <div class="game-detail-app-frame" id="modalDetailFrame">
+
+      <!-- Modal Navbar (GameVerse logo · search · profile) -->
+      <nav class="modal-navbar" aria-label="GameVerse navigation">
+        <a href="index.html" class="modal-nav-logo" id="modalNavLogo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="4"></rect><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"></path></svg>
+          <span>GAME<span class="logo-accent">VERSE</span></span>
+        </a>
+        <div class="modal-nav-actions">
+          <button class="icon-circle-btn" id="modalNavSearch" title="Search (Ctrl+K)" aria-label="Search collection">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
+          </button>
+          <button class="modal-nav-profile" id="modalNavProfile" title="Profile" aria-label="Profile"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></button>
+        </div>
+      </nav>
+      
+      <!-- Hero Card with Embedded Artwork, Top Navigation & Headline -->
+      <div class="game-detail-hero-card" id="modalHeroCard">
+        <!-- Background Artwork Layer (fades into black on left & bottom) -->
+        <div class="hero-backdrop" id="modalHeroBg">
+          <img id="modalHeroImg" class="hero-img-element" alt="Game Artwork" loading="lazy" decoding="async" />
+        </div>
+        <div class="hero-backdrop-gradient"></div>
+        
+        <!-- Top Action Bar Inside Hero Card -->
+        <div class="hero-top-nav">
+          <button type="button" class="hero-back-pill" id="modalBackBtn" aria-label="Back to Collection">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back to Collection
+          </button>
+          
+          <div class="hero-right-actions">
+            <button class="hero-circle-btn" id="modalBookmarkBtn" title="Toggle Bookmark" aria-label="Toggle Bookmark">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            </button>
+
+            <button class="hero-circle-btn" id="modalFavoriteBtn" title="Toggle Favorite" aria-label="Toggle Favorite">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="more-menu-wrapper hidden" id="modalAdminMenuWrapper">
+              <button class="hero-circle-btn" id="modalAdminMenuToggle" title="More Options" aria-label="More Options">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </button>
+              <div class="more-dropdown glass-panel hidden" id="modalAdminMenuDropdown">
+                <button id="modalEditGameBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px; vertical-align:middle;"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>Edit Game</button>
+                <button id="modalDeleteGameBtn" class="delete-opt"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px; vertical-align:middle;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>Delete Game</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hero Details Info (Status Badge, Huge Title, Tagline) -->
+        <div class="hero-text-content" id="modalHeroText">
+          <div class="hero-status-tag" id="modalStatusTag">PLAYING</div>
+          <h1 class="hero-game-title" id="modalGameName">Loading Game...</h1>
+          <p class="hero-game-tagline" id="modalGameDescription"></p>
+        </div>
+      </div>
+
+      <!-- Animated Content Section (Staggered fade/slide in) -->
+      <div class="detail-animated-content">
+        <!-- Tabs Navigation Bar (Overview, System Requirements, Related) -->
+        <div class="detail-tabs-bar detail-stagger-item stagger-1">
+          <button class="detail-tab active" data-modal-tab="overview">Overview</button>
+          <button class="detail-tab" data-modal-tab="sysreq">System Requirements</button>
+          <button class="detail-tab" data-modal-tab="related">Related</button>
+        </div>
+
+        <!-- Tab 1: Overview Panel -->
+        <div class="tab-panel active detail-stagger-item stagger-2" id="modalTab-overview">
+          <!-- 5-Column Metadata Info Strip -->
+          <div class="meta-strip-card" id="modalQuickInfoRow">
+            <!-- Injected dynamically via JS: Genre, Developer, Released, Platform, Engine -->
+          </div>
+
+          <!-- 2-Column Split: About This Game (Left) & My Status (Right) -->
+          <div class="overview-two-col">
+            <!-- Left: About This Game -->
+            <div class="content-box about-box">
+              <h2 class="box-title">About This Game</h2>
+              <div class="box-desc about-text-content" id="modalFullDescription"></div>
+            </div>
+
+            <!-- Right: My Status -->
+            <div class="content-box status-box">
+              <h2 class="box-title">My Status</h2>
+              <div class="status-buttons-row" id="modalStatusSelector">
+                <button class="status-choice-btn" data-val="not_started">
+                  <span class="status-btn-icon">◇</span> Not Started
+                </button>
+                <button class="status-choice-btn" data-val="playing">
+                  <span class="status-btn-icon">▷</span> Playing
+                </button>
+                <button class="status-choice-btn" data-val="completed">
+                  <span class="status-btn-icon">✓</span> Completed
+                </button>
+                <button class="status-choice-btn" data-val="play_later">
+                  <span class="status-btn-icon">◷</span> Play Later
+                </button>
+                <button class="status-choice-btn" data-val="wont_play">
+                  <span class="status-btn-icon">⊘</span> Won't Play
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: System Requirements Panel -->
+        <div class="tab-panel detail-stagger-item stagger-3" id="modalTab-sysreq">
+          <div class="sysreq-split-grid">
+            <div class="content-box sysreq-box">
+              <h2 class="box-title">Minimum Requirements</h2>
+              <table class="sysreq-table" id="modalSysreqMin"></table>
+            </div>
+            <div class="content-box sysreq-box sysreq-rec">
+              <h2 class="box-title" style="color:#d98caf">Recommended Requirements</h2>
+              <table class="sysreq-table" id="modalSysreqRec"></table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Related Games Panel -->
+        <div class="tab-panel detail-stagger-item stagger-4" id="modalTab-related">
+          <div class="related-games-grid" id="modalRelatedGamesGrid">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/api.js?v=18.0"></script>
+  <script src="js/auth.js?v=18.0"></script>
+  <!-- Lazy-loaded Detail Modal & Shared Transition (Idle + Interaction Stub) -->
+  <script>
+    (function() {
+      let _loaded = false;
+      let _pendingCalls = [];
+
+      function loadSharedTransition(callback) {
+        if (_loaded) {
+          if (callback) callback();
+          return;
+        }
+        if (document.getElementById('sharedTransitionScript')) {
+          if (callback) _pendingCalls.push(callback);
+          return;
+        }
+        if (callback) _pendingCalls.push(callback);
+
+        const s = document.createElement('script');
+        s.id = 'sharedTransitionScript';
+        s.src = 'js/shared-transition.js?v=18.0';
+        s.onload = function() {
+          _loaded = true;
+          _pendingCalls.forEach(fn => { try { fn(); } catch(e){ console.error(e); } });
+          _pendingCalls = [];
+        };
+        document.body.appendChild(s);
+        cleanup();
+      }
+
+      function cleanup() {
+        window.removeEventListener('pointerdown', onInteraction);
+        window.removeEventListener('keydown', onInteraction);
+      }
+
+      function onInteraction() {
+        loadSharedTransition();
+      }
+
+      window.ensureSharedTransition = loadSharedTransition;
+
+      // Safe global stub: if search or satellites call openGameDetail before script loads
+      window.openGameDetail = function(cardEl, gameData) {
+        loadSharedTransition(() => {
+          if (typeof window.openGameDetail === 'function') {
+            window.openGameDetail(cardEl, gameData);
+          }
+        });
+      };
+
+      // Load on idle (after hero paints)
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => loadSharedTransition(), { timeout: 1600 });
+      } else {
+        setTimeout(loadSharedTransition, 1200);
+      }
+
+      window.addEventListener('pointerdown', onInteraction, { once: true, passive: true });
+      window.addEventListener('keydown', onInteraction, { once: true, passive: true });
+    })();
+  </script>
+  <script src="js/search.js?v=18.0"></script>
+  <script src="js/threads-background.js?v=1.0"></script>
+  <script src="js/collection-core.js?v=9.3"></script>
+  <script src="js/particle-text.js?v=1.2"></script>
+  <script src="js/warp-text.js?v=3.0"></script>
+  <script src="js/cosmic-eye.js?v=1.0"></script>
+  <script src="js/home.js?v=10.5"></script>
+  <script src="js/nexus-3d-scene.js?v=18.0"></script>
+
+</body>
+</html>
