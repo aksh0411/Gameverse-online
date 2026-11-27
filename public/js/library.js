@@ -107,24 +107,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (badgeBacklog) badgeBacklog.textContent = backlogCount;
         if (badgeCompleted) badgeCompleted.textContent = completedCount;
         if (badgeBookmarked) badgeBookmarked.textContent = bookmarkedCount;
-
-        // Bento Stats Tile updates
-        const completionPct = total > 0 ? Math.round((completedCount / total) * 100) : 0;
-        const bentoTotalEl = document.getElementById('bentoTotalGames');
-        const bentoPctEl = document.getElementById('bentoCompletionPct');
-        const bentoBarEl = document.getElementById('bentoCompletionBar');
-        const bentoCompletedEl = document.getElementById('bentoCountCompleted');
-        const radarPlayingEl = document.getElementById('radarCountPlaying');
-        const radarFavEl = document.getElementById('radarCountFavorited');
-        const radarBookmarkEl = document.getElementById('radarCountBookmarked');
-
-        if (bentoTotalEl) bentoTotalEl.textContent = total;
-        if (bentoPctEl) bentoPctEl.textContent = `${completionPct}% Complete`;
-        if (bentoBarEl) bentoBarEl.style.width = `${completionPct}%`;
-        if (bentoCompletedEl) bentoCompletedEl.textContent = completedCount;
-        if (radarPlayingEl) radarPlayingEl.textContent = playingCount;
-        if (radarFavEl) radarFavEl.textContent = favCount;
-        if (radarBookmarkEl) radarBookmarkEl.textContent = bookmarkedCount;
     }
 
     // Shared image fallback handler (replaces inline onerror strings)

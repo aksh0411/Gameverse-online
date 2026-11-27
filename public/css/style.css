@@ -1313,9 +1313,6 @@ p, li, dd, figcaption, blockquote {
 .catalog-count-indicator,
 .genre-bundle-count,
 .wide-card-rating,
-.bento-stats-total,
-.bento-stat-num,
-.bento-stats-completion,
 .meta-strip-value,
 .card-rating {
   font-variant-numeric: tabular-nums;

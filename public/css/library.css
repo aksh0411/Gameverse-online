@@ -570,10 +570,10 @@ html:has(body.library-page) {
     display: none;
 }
 
-/* ── 5. Bento Telemetry Row (2fr Radar + 1fr Spotlight + 1fr Stats) ── */
+/* ── 5. Bento Telemetry Row (2fr Radar + 1fr Spotlight) ── */
 .telemetry-row {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr;
     gap: 20px;
     margin-bottom: 30px;
     align-items: stretch;
@@ -740,83 +740,6 @@ html:has(body.library-page) {
 .bento-cta-btn:hover {
     background: rgba(249, 115, 22, 0.30);
     border-color: rgba(255, 176, 116, 0.65);
-}
-
-/* Bento Tile 3: Archive Pulse / Stats Card */
-.bento-stats-card {
-    display: flex;
-    flex-direction: column;
-    padding: 20px;
-    gap: 14px;
-}
-.bento-stats-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-.bento-stats-completion {
-    font-family: var(--font-heading);
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: var(--plum-300, #fcd34d);
-    font-variant-numeric: tabular-nums;
-}
-.bento-stats-hero {
-    margin-top: 4px;
-}
-.bento-stats-total {
-    font-family: var(--font-heading);
-    font-size: 2.55rem;
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: -0.03em;
-    color: #ffffff;
-    font-variant-numeric: tabular-nums;
-}
-.bento-stats-sublabel {
-    margin-top: 4px;
-    font-size: 0.76rem;
-    color: var(--gv-text-muted);
-}
-.bento-progress-track {
-    height: 6px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.06);
-    overflow: hidden;
-}
-.bento-progress-fill {
-    height: 100%;
-    border-radius: 999px;
-    background: linear-gradient(90deg, #f97316, #ffb074, #fcd34d);
-    transition: width 0.55s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.bento-stats-grid {
-    margin-top: auto;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-}
-.bento-stat-cell {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    padding: 12px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    background: rgba(255, 255, 255, 0.025);
-}
-.bento-stat-num {
-    font-family: var(--font-heading);
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #ffffff;
-    line-height: 1.1;
-    font-variant-numeric: tabular-nums;
-}
-.bento-stat-key {
-    font-size: 0.7rem;
-    color: var(--gv-text-muted);
-    letter-spacing: 0.3px;
 }
 
 /* Radar card (3D Collection Core integrated edge-to-edge, header floats on top) */
@@ -1466,19 +1389,21 @@ body.library-page .orbital-badge-pill {
 
 @media (max-width: 1200px) {
     .telemetry-row {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1.6fr 1fr;
     }
-    .telemetry-radar-card {
-        grid-column: 1 / -1;
+    .telemetry-radar-card,
+    .bento-spotlight-card {
         height: 400px;
-    }
-    .bento-spotlight-card,
-    .bento-stats-card {
-        height: 340px;
     }
 }
 
 @media (max-width: 1024px) {
+    .telemetry-row {
+        grid-template-columns: 1fr;
+    }
+    .bento-spotlight-card {
+        height: 300px;
+    }
     .dashboard-sidebar {
         position: fixed;
         top: 0;
@@ -1603,8 +1528,7 @@ body.library-page .orbital-badge-pill {
     .telemetry-radar-card.expanded {
         display: block;
     }
-    .bento-spotlight-card,
-    .bento-stats-card {
+    .bento-spotlight-card {
         height: auto;
         min-height: 290px;
     }
