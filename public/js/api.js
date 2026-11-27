@@ -316,7 +316,9 @@ async function applyVisitorPreferences(games) {
                     g.favorited = g.is_favorited;
                     g.is_bookmarked = Boolean(saved.is_bookmarked);
                     g.bookmarked = g.is_bookmarked;
-                    if (saved.status) g.play_status = saved.status;
+                    const resolvedSt = saved.status || (localPrefs.statuses && localPrefs.statuses[gid]) || 'not_started';
+                    g.play_status = resolvedSt;
+                    if (resolvedSt !== 'not_started') freshPrefs.statuses[gid] = resolvedSt;
                 } else {
                     // Not in DB — if local prefs had it from recent click before sync, preserve or merge
                     if (localPrefs.favorites && localPrefs.favorites[gid]) {
@@ -328,6 +330,10 @@ async function applyVisitorPreferences(games) {
                         g.is_bookmarked = true;
                         g.bookmarked = true;
                         freshPrefs.bookmarks[gid] = true;
+                    }
+                    if (localPrefs.statuses && localPrefs.statuses[gid] && localPrefs.statuses[gid] !== 'not_started') {
+                        g.play_status = localPrefs.statuses[gid];
+                        freshPrefs.statuses[gid] = localPrefs.statuses[gid];
                     }
                 }
             });

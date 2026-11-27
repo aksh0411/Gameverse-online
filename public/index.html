@@ -852,7 +852,7 @@
 
         <!-- Hero Details Info (Status Badge, Huge Title, Tagline) -->
         <div class="hero-text-content" id="modalHeroText">
-          <div class="hero-status-tag" id="modalStatusTag">PLAYING</div>
+          <div class="hero-status-tag" id="modalStatusTag">NOT STARTED</div>
           <h1 class="hero-game-title" id="modalGameName">Loading Game...</h1>
           <p class="hero-game-tagline" id="modalGameDescription"></p>
         </div>
@@ -934,8 +934,8 @@
   <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/api.js?v=19.0"></script>
-  <script src="js/auth.js?v=19.0"></script>
+  <script src="js/api.js?v=20.0"></script>
+  <script src="js/auth.js?v=20.0"></script>
   <!-- Lazy-loaded Detail Modal & Shared Transition (Idle + Interaction Stub) -->
   <script>
     (function() {
@@ -955,7 +955,7 @@
 
         const s = document.createElement('script');
         s.id = 'sharedTransitionScript';
-        s.src = 'js/shared-transition.js?v=19.0';
+        s.src = 'js/shared-transition.js?v=20.0';
         s.onload = function() {
           _loaded = true;
           _pendingCalls.forEach(fn => { try { fn(); } catch(e){ console.error(e); } });
@@ -998,7 +998,7 @@
   </script>
   <script src="js/search.js?v=18.0"></script>
   <script src="js/threads-background.js?v=1.0"></script>
-  <script src="js/collection-core.js?v=9.3"></script>
+  <script src="js/collection-core.js?v=20.0"></script>
   <script src="js/particle-text.js?v=1.2"></script>
   <script src="js/warp-text.js?v=3.0"></script>
   <script src="js/cosmic-eye.js?v=1.0"></script>

@@ -701,10 +701,30 @@ async function logoutUser() {
         }
     } catch(e) {}
 
+    // Clean up user and visitor preferences
+    const activeUsername = sessionStorage.getItem(USER_NAME_KEY) || localStorage.getItem(USER_NAME_KEY);
     clearAuthSession();
     try {
         localStorage.removeItem('gv_visitor_preferences');
+        if (activeUsername) {
+            localStorage.removeItem(`gv_user_prefs_${activeUsername.toLowerCase()}`);
+        }
     } catch(e) {}
+
+    // Reset in-memory game caches so stale user flags never linger
+    if (Array.isArray(window.__ALL_GAMES__)) {
+        window.__ALL_GAMES__.forEach(g => {
+            g.play_status = 'not_started';
+            g.is_bookmarked = false;
+            g.bookmarked = false;
+            g.is_favorited = false;
+            g.favorited = false;
+        });
+    }
+    if (typeof window.setRadarFilter === 'function') {
+        try { window.setRadarFilter('all'); } catch(e) {}
+    }
+
     hideAdminControls();
     updateNavbarUserState(null);
     closeUserProfileModal();

@@ -30,7 +30,13 @@
             tagBorder: 'rgba(187, 174, 223, 0.3)'
         },
         play_later: {
-            label: 'PLAY LATER',
+            label: 'BACKLOG',
+            tagBg: 'rgba(156, 82, 207, 0.15)',
+            tagColor: '#d9b3ee',
+            tagBorder: 'rgba(217, 179, 238, 0.3)'
+        },
+        backlog: {
+            label: 'BACKLOG',
             tagBg: 'rgba(156, 82, 207, 0.15)',
             tagColor: '#d9b3ee',
             tagBorder: 'rgba(217, 179, 238, 0.3)'
@@ -282,7 +288,8 @@
             const btns = statusSelector.querySelectorAll('.status-choice-btn');
             btns.forEach(btn => {
                 const btnVal = btn.getAttribute('data-val');
-                btn.classList.toggle('active', btnVal === playStatus);
+                const isMatch = btnVal === playStatus || (playStatus === 'backlog' && btnVal === 'play_later');
+                btn.classList.toggle('active', isMatch);
             });
         }
 
@@ -320,6 +327,27 @@
                 statusTag.style.background = conf.tagBg;
                 statusTag.style.color = conf.tagColor;
                 statusTag.style.borderColor = conf.tagBorder;
+            }
+
+            // Sync status buttons in selector to match resolved status
+            const statusSelector = document.getElementById('modalStatusSelector');
+            if (statusSelector) {
+                const btns = statusSelector.querySelectorAll('.status-choice-btn');
+                btns.forEach(btn => {
+                    const btnVal = btn.getAttribute('data-val');
+                    const isMatch = btnVal === resolvedStatus || (resolvedStatus === 'backlog' && btnVal === 'play_later');
+                    btn.classList.toggle('active', isMatch);
+                });
+            }
+
+            // Sync Bookmark and Favorite buttons if state changed during hydration
+            const bookmarkBtn = document.getElementById('modalBookmarkBtn');
+            if (bookmarkBtn) {
+                bookmarkBtn.classList.toggle('active', !!(fullData.is_bookmarked || fullData.bookmarked));
+            }
+            const favoriteBtn = document.getElementById('modalFavoriteBtn');
+            if (favoriteBtn) {
+                favoriteBtn.classList.toggle('active', !!(fullData.is_favorited || fullData.favorited));
             }
 
             // Update hero artwork

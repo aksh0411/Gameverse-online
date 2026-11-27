@@ -84,8 +84,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const total = games.length;
         const favCount = games.filter(g => Boolean(g.is_favorited)).length;
         const playingCount = games.filter(g => (g.play_status || '').toLowerCase() === 'playing').length;
-        // Backlog = play later games only
-        const backlogCount = games.filter(g => (g.play_status || '').toLowerCase() === 'play_later').length;
+        // Backlog = play later / backlog games
+        const backlogCount = games.filter(g => {
+            const st = (g.play_status || '').toLowerCase();
+            return st === 'play_later' || st === 'backlog';
+        }).length;
         const completedCount = games.filter(g => (g.play_status || '').toLowerCase() === 'completed').length;
         const bookmarkedCount = games.filter(g => Boolean(g.is_bookmarked)).length;
         // Bundle count = games grouped by their primary (first) genre, matching the Collections view
@@ -319,8 +322,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 results = results.filter(g => (g.play_status || '').toLowerCase() === 'playing');
                 break;
             case 'backlog':
-                // Backlog view = play later games only
-                results = results.filter(g => (g.play_status || '').toLowerCase() === 'play_later');
+            case 'play_later':
+                results = results.filter(g => {
+                    const st = (g.play_status || '').toLowerCase();
+                    return st === 'play_later' || st === 'backlog';
+                });
                 break;
             case 'completed':
                 results = results.filter(g => (g.play_status || '').toLowerCase() === 'completed');
@@ -428,15 +434,17 @@ document.addEventListener('DOMContentLoaded', () => {
             'playing': 'Playing',
             'not_started': 'Not Started',
             'play_later': 'Backlog',
+            'backlog': 'Backlog',
             'completed': 'Completed',
             'wont_play': 'Paused'
         };
         return map[rawStatus] || 'Not Started';
     }
 
-    // Pill color grouping per raw status (play_later keeps its own amber dot)
+    // Pill color grouping per raw status (play_later / backlog keeps its own amber dot)
     function displayStatus(game) {
-        return (game.play_status || 'not_started').toLowerCase();
+        const s = (game.play_status || 'not_started').toLowerCase();
+        return s === 'backlog' ? 'play_later' : s;
     }
 
     function gameGenres(game, max, joiner) {

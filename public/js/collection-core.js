@@ -199,6 +199,7 @@ const statusColorMap = {
     not_started: '#c2410c',
     playing: '#10b981',
     play_later: '#fb923c',
+    backlog: '#fb923c',
     completed: '#3b82f6',
     wont_play: '#6b2d4b'
 };
@@ -207,6 +208,7 @@ const badgeThemeMap = {
     not_started: 'theme-silver',
     playing: 'theme-green',
     play_later: 'theme-amber',
+    backlog: 'theme-amber',
     completed: 'theme-blue',
     wont_play: 'theme-silver'
 };
@@ -1060,7 +1062,7 @@ function isCuratedGame(g) {
     const isFav = Boolean(g.is_favorited || g.favorited);
     const isBm = Boolean(g.is_bookmarked || g.bookmarked);
     const status = (g.play_status || '').toLowerCase();
-    const hasStatus = status === 'playing' || status === 'play_later' || status === 'completed';
+    const hasStatus = status === 'playing' || status === 'play_later' || status === 'backlog' || status === 'completed';
     return isFav || isBm || hasStatus;
 }
 
@@ -1495,17 +1497,19 @@ function rebuildRadarNodes(filteredGames) {
         const gameName = (game.name || game.game_name || 'Untitled').trim();
         const playStatus = (game.play_status || 'not_started').toLowerCase();
 
-        let palette = WORLD_PALETTES[i % WORLD_PALETTES.length];
+        let palette;
         if (playStatus === 'playing') {
             palette = WORLD_PALETTES[5]; // Emerald
+        } else if (playStatus === 'completed') {
+            palette = WORLD_PALETTES[4]; // Blue
+        } else if (playStatus === 'play_later' || playStatus === 'backlog') {
+            palette = WORLD_PALETTES[3]; // Rose
         } else if (game.is_favorited || game.favorited) {
             palette = WORLD_PALETTES[1]; // Amber
         } else if (game.is_bookmarked || game.bookmarked) {
             palette = WORLD_PALETTES[0]; // Cyan
-        } else if (playStatus === 'completed') {
-            palette = WORLD_PALETTES[4]; // Blue
-        } else if (playStatus === 'play_later') {
-            palette = WORLD_PALETTES[3]; // Rose
+        } else {
+            palette = WORLD_PALETTES[2]; // Ambient Purple for neutral/starter nodes (avoids fake bookmark/playing dots)
         }
 
         const orbitIdx = i % numOrbits;
@@ -2454,13 +2458,17 @@ window.setRadarFilter = function (filterName) {
         filtered = list.filter(g => Boolean(g.is_favorited || g.favorited));
     } else if (filterName === 'playing') {
         filtered = list.filter(g => (g.play_status || '').toLowerCase() === 'playing');
-    } else if (filterName === 'backlog') {
-        // Backlog view = play later games only
-        filtered = list.filter(g => (g.play_status || '').toLowerCase() === 'play_later');
+    } else if (filterName === 'backlog' || filterName === 'play_later') {
+        filtered = list.filter(g => {
+            const st = (g.play_status || '').toLowerCase();
+            return st === 'play_later' || st === 'backlog';
+        });
     } else if (filterName === 'completed') {
         filtered = list.filter(g => (g.play_status || '').toLowerCase() === 'completed');
-    } else {
+    } else if (filterName === 'bookmarked') {
         filtered = list.filter(g => Boolean(g.is_bookmarked || g.bookmarked));
+    } else {
+        filtered = getCuratedRadarList(list);
     }
 
     const pillsLayer = _universeState.pillsContainer || document.getElementById('corePillsLayer');
@@ -2513,11 +2521,24 @@ function initCollectionCore(gamesData) {
     const core3d = document.getElementById('core3d');
     const pillsLayer = document.getElementById('corePillsLayer');
     if (core3d && pillsLayer) {
-        let initialList = rawList.filter(g => Boolean(g.is_bookmarked || g.bookmarked));
-        if (_currentRadarFilter === 'favorited') {
+        let initialList = rawList;
+        if (_currentRadarFilter === 'all') {
+            initialList = getCuratedRadarList(rawList);
+        } else if (_currentRadarFilter === 'favorited') {
             initialList = rawList.filter(g => Boolean(g.is_favorited || g.favorited));
         } else if (_currentRadarFilter === 'playing') {
             initialList = rawList.filter(g => (g.play_status || '').toLowerCase() === 'playing');
+        } else if (_currentRadarFilter === 'backlog' || _currentRadarFilter === 'play_later') {
+            initialList = rawList.filter(g => {
+                const st = (g.play_status || '').toLowerCase();
+                return st === 'play_later' || st === 'backlog';
+            });
+        } else if (_currentRadarFilter === 'completed') {
+            initialList = rawList.filter(g => (g.play_status || '').toLowerCase() === 'completed');
+        } else if (_currentRadarFilter === 'bookmarked') {
+            initialList = rawList.filter(g => Boolean(g.is_bookmarked || g.bookmarked));
+        } else {
+            initialList = getCuratedRadarList(rawList);
         }
         createRadarCoreScene(core3d, pillsLayer, initialList);
     }
