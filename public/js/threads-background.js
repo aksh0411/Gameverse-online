@@ -15,9 +15,9 @@
     'use strict';
 
     const DEFAULTS = {
-        color1: '#ffb074',      // primary cyan
-        color2: '#FF9FFC',      // pink accent
-        color3: '#ffffff',      // hot core
+        color1: '#ffb074',      // Sunrise peach
+        color2: '#fb7185',      // Sunset coral
+        color3: '#fff7ed',      // warm ivory core
         speed: 0.2,             // flow travel speed
         threadCount: 6,         // threads in the fan
         frequency: 5,           // flow-pulse density along each thread
