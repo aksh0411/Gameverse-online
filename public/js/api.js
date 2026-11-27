@@ -26,8 +26,11 @@ async function apiGet(endpoint) {
 }
 
 function getAuthToken() {
-    // 1. Supabase User Token (check sessionStorage, then localStorage, then Supabase SDK key)
-    let userToken = sessionStorage.getItem('gv_access_token') || localStorage.getItem('gv_access_token');
+    const isRemembered = localStorage.getItem('gv_remember_me') === 'true';
+    const maxDurationMs = isRemembered ? (30 * 24 * 3600 * 1000) : (3 * 3600 * 1000);
+
+    // 1. Primary Token (sessionStorage first, then remembered localStorage, then Supabase SDK key)
+    let userToken = sessionStorage.getItem('gv_access_token') || (isRemembered ? localStorage.getItem('gv_access_token') : null);
     if (!userToken) {
         try {
             for (let i = 0; i < localStorage.length; i++) {
@@ -45,27 +48,41 @@ function getAuthToken() {
     }
 
     if (userToken) {
-        const loginTime = parseInt(sessionStorage.getItem('gv_login_time') || localStorage.getItem('gv_login_time'), 10);
-        if (loginTime && (Date.now() - loginTime) >= (3 * 3600 * 1000)) {
-            sessionStorage.removeItem('gv_access_token');
-            sessionStorage.removeItem('gv_token_expiry');
-            sessionStorage.removeItem('gv_login_time');
-            localStorage.removeItem('gv_access_token');
-            localStorage.removeItem('gv_token_expiry');
-            localStorage.removeItem('gv_login_time');
+        const loginTime = parseInt(sessionStorage.getItem('gv_login_time') || (isRemembered ? localStorage.getItem('gv_login_time') : ''), 10);
+        const expiry = parseInt(sessionStorage.getItem('gv_token_expiry') || (isRemembered ? localStorage.getItem('gv_token_expiry') : ''), 10);
+        if ((loginTime && (Date.now() - loginTime) >= maxDurationMs) || (expiry && Date.now() >= expiry)) {
+            if (typeof clearAuthSession === 'function') {
+                clearAuthSession();
+            } else {
+                sessionStorage.removeItem('gv_access_token');
+                sessionStorage.removeItem('gv_token_expiry');
+                sessionStorage.removeItem('gv_login_time');
+                sessionStorage.removeItem('admin_token');
+                sessionStorage.removeItem('admin_token_expiry');
+                localStorage.removeItem('gv_access_token');
+                localStorage.removeItem('gv_token_expiry');
+                localStorage.removeItem('gv_login_time');
+                localStorage.removeItem('admin_token');
+                localStorage.removeItem('admin_token_expiry');
+            }
             return null;
         }
         return userToken;
     }
 
-    // 2. Legacy Admin Token fallback
-    const token = sessionStorage.getItem('admin_token') || localStorage.getItem('admin_token');
+    // 2. Admin Token fallback
+    const token = sessionStorage.getItem('admin_token') || (isRemembered ? localStorage.getItem('admin_token') : null);
     if (!token) return null;
-    const expiry = parseInt(sessionStorage.getItem('admin_token_expiry') || localStorage.getItem('admin_token_expiry'), 10);
-    if (expiry && Date.now() > expiry) {
-        sessionStorage.removeItem('admin_token');
-        sessionStorage.removeItem('admin_token_expiry');
-        localStorage.removeItem('admin_token');
+    const expiry = parseInt(sessionStorage.getItem('admin_token_expiry') || (isRemembered ? localStorage.getItem('admin_token_expiry') : ''), 10);
+    if (expiry && Date.now() >= expiry) {
+        if (typeof clearAuthSession === 'function') {
+            clearAuthSession();
+        } else {
+            sessionStorage.removeItem('admin_token');
+            sessionStorage.removeItem('admin_token_expiry');
+            localStorage.removeItem('admin_token');
+            localStorage.removeItem('admin_token_expiry');
+        }
         if (typeof hideAdminControls === 'function') hideAdminControls();
         return null;
     }
@@ -74,13 +91,25 @@ function getAuthToken() {
 
 async function handleAuthError(res) {
     if (res.status === 401) {
-        sessionStorage.removeItem('admin_token');
-        sessionStorage.removeItem('admin_token_expiry');
-        localStorage.removeItem('admin_token');
+        if (typeof clearAuthSession === 'function') {
+            clearAuthSession();
+        } else {
+            sessionStorage.removeItem('admin_token');
+            sessionStorage.removeItem('admin_token_expiry');
+            sessionStorage.removeItem('gv_access_token');
+            localStorage.removeItem('admin_token');
+            localStorage.removeItem('admin_token_expiry');
+            localStorage.removeItem('gv_access_token');
+        }
         if (typeof hideAdminControls === 'function') hideAdminControls();
-        const loginModal = document.getElementById('loginModal');
-        if (loginModal) loginModal.classList.remove('hidden');
-        throw new Error('Your admin session has expired or is not logged in. Please log in as Admin.');
+        if (typeof updateNavbarUserState === 'function') updateNavbarUserState(null);
+        if (typeof openLoginModal === 'function') {
+            openLoginModal('Your session has expired. Please sign in again.', 'signin');
+        } else {
+            const loginModal = document.getElementById('loginModal');
+            if (loginModal) loginModal.classList.remove('hidden');
+        }
+        throw new Error('Your session has expired or is not logged in. Please sign in again.');
     }
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || `API Error: ${res.status}`);

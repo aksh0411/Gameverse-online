@@ -18,7 +18,7 @@ if _backend_dir not in sys.path:
 import database
 
 # Import routes
-from auth import router as auth_router, init_login_attempts_table
+from auth import router as auth_router, init_login_attempts_table, validate_auth_config
 from routes.user_auth import router as user_auth_router
 from routes.user_library import router as user_library_router
 from routes.games import router as games_router
@@ -32,6 +32,7 @@ from routes.modes import router as modes_router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
+    validate_auth_config()
     try:
         database.pool = database.create_pool(open_pool=False)
         database.pool.open()

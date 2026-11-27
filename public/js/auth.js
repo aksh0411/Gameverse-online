@@ -148,39 +148,47 @@ function getActiveSessionDuration() {
 
 // --- Role & Auth State Checks ---
 function isAdmin() {
-    if (sessionStorage.getItem(USER_ROLE_KEY) === 'admin') {
-        const token = sessionStorage.getItem(USER_TOKEN_KEY);
-        const expiry = parseInt(sessionStorage.getItem(USER_EXPIRY_KEY), 10);
-        if (token && (!expiry || Date.now() < expiry)) {
-            return true;
-        }
+    if (!isLoggedIn()) return false;
+    if (window.currentUser && window.currentUser.role === 'admin' && window.currentUser.is_admin === true) {
+        return true;
     }
-    const token = sessionStorage.getItem(SESSION_TOKEN_KEY);
-    if (!token) return false;
-    const expiry = parseInt(sessionStorage.getItem(SESSION_EXPIRY_KEY), 10);
-    if (!expiry || Date.now() > expiry) {
-        clearAuthSession();
-        return false;
-    }
-    return true;
+    const isRemembered = localStorage.getItem(REMEMBER_ME_KEY) === 'true';
+    const role = sessionStorage.getItem(USER_ROLE_KEY) || (isRemembered ? localStorage.getItem(USER_ROLE_KEY) : null);
+    if (role !== 'admin') return false;
+
+    const token = sessionStorage.getItem(USER_TOKEN_KEY)
+        || sessionStorage.getItem(SESSION_TOKEN_KEY)
+        || (isRemembered ? (localStorage.getItem(USER_TOKEN_KEY) || localStorage.getItem(SESSION_TOKEN_KEY)) : null);
+    return Boolean(token);
 }
 window.isAdmin = isAdmin;
 
 function isLoggedIn() {
+    const isRemembered = localStorage.getItem(REMEMBER_ME_KEY) === 'true';
     const token = (typeof getAuthToken === 'function')
         ? getAuthToken()
-        : (sessionStorage.getItem(USER_TOKEN_KEY) || localStorage.getItem(USER_TOKEN_KEY) || sessionStorage.getItem(SESSION_TOKEN_KEY));
+        : (sessionStorage.getItem(USER_TOKEN_KEY)
+            || sessionStorage.getItem(SESSION_TOKEN_KEY)
+            || (isRemembered ? (localStorage.getItem(USER_TOKEN_KEY) || localStorage.getItem(SESSION_TOKEN_KEY)) : null));
     if (!token) return false;
 
     // Check session duration (30 days if Remember Me, else 3 hours)
     const duration = getActiveSessionDuration();
-    const loginTime = parseInt(sessionStorage.getItem(LOGIN_TIME_KEY) || localStorage.getItem(LOGIN_TIME_KEY), 10);
+    const loginTime = parseInt(
+        sessionStorage.getItem(LOGIN_TIME_KEY) || (isRemembered ? localStorage.getItem(LOGIN_TIME_KEY) : ''),
+        10
+    );
     if (loginTime && (Date.now() - loginTime) >= duration) {
         clearAuthSession();
         return false;
     }
 
-    const expiry = parseInt(sessionStorage.getItem(USER_EXPIRY_KEY) || localStorage.getItem(USER_EXPIRY_KEY) || sessionStorage.getItem(SESSION_EXPIRY_KEY), 10);
+    const expiry = parseInt(
+        sessionStorage.getItem(USER_EXPIRY_KEY)
+            || sessionStorage.getItem(SESSION_EXPIRY_KEY)
+            || (isRemembered ? (localStorage.getItem(USER_EXPIRY_KEY) || localStorage.getItem(SESSION_EXPIRY_KEY)) : ''),
+        10
+    );
     if (expiry && Date.now() >= expiry) {
         clearAuthSession();
         return false;
@@ -299,7 +307,6 @@ window.unlockBodyScroll = unlockBodyScroll;
 // --- Modal Control ---
 function openLoginModal(message, defaultTab = 'signin') {
     lockBodyScroll();
-    ensureAdminAssets();
     renderAvatarGrids();
     const loginModal = document.getElementById('loginModal');
     if (!loginModal) return;
@@ -361,19 +368,26 @@ function requireAuth(actionDescription = 'save to your library') {
 }
 window.requireAuth = requireAuth;
 
-// --- Assets Loader ---
+// --- Assets Loader (lazy-loaded exclusively for verified admins) ---
+let _pendingAddGameModalOpen = false;
 function ensureAdminAssets() {
     if (!document.getElementById('adminCss')) {
         const link = document.createElement('link');
         link.id = 'adminCss';
         link.rel = 'stylesheet';
-        link.href = 'css/admin.css?v=9.0';
+        link.href = 'css/admin.css?v=19.0';
         document.head.appendChild(link);
     }
     if (!document.getElementById('adminScript')) {
         const script = document.createElement('script');
         script.id = 'adminScript';
-        script.src = 'js/admin.js?v=9.2';
+        script.src = 'js/admin.js?v=19.0';
+        script.addEventListener('load', () => {
+            if (_pendingAddGameModalOpen && typeof window.openAddGameModal === 'function') {
+                _pendingAddGameModalOpen = false;
+                window.openAddGameModal();
+            }
+        });
         document.body.appendChild(script);
     }
 }
@@ -764,7 +778,7 @@ function updateNavbarUserState(user) {
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                     <span>Backlog</span>
                 </a>
-                ${user.role === 'admin' ? `
+                ${(user.role === 'admin' && user.is_admin === true) ? `
                     <button type="button" class="user-menu-item" id="userMenuAdminBtn">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                         <span>Add New Game</span>
@@ -781,8 +795,12 @@ function updateNavbarUserState(user) {
             if (adminBtn) {
                 adminBtn.addEventListener('click', () => {
                     dropdown.classList.add('hidden');
-                    const addGameModal = document.getElementById('addGameModal');
-                    if (addGameModal) addGameModal.classList.remove('hidden');
+                    if (typeof window.openAddGameModal === 'function') {
+                        window.openAddGameModal();
+                    } else {
+                        _pendingAddGameModalOpen = true;
+                        ensureAdminAssets();
+                    }
                 });
             }
 
@@ -795,7 +813,7 @@ function updateNavbarUserState(user) {
             }
         }
 
-        if (user.role === 'admin') {
+        if (user.role === 'admin' && user.is_admin === true) {
             showAdminControls();
         } else {
             hideAdminControls();
@@ -850,11 +868,42 @@ function updateNavbarUserState(user) {
 }
 
 // --- Synchronize User Session with Backend & Update Navbar ---
+function _preserveUserOnTransientError(userFallback) {
+    if (!isLoggedIn()) return null;
+    const isRemembered = localStorage.getItem(REMEMBER_ME_KEY) === 'true';
+    const storedRole = userFallback?.role
+        || sessionStorage.getItem(USER_ROLE_KEY)
+        || (isRemembered ? localStorage.getItem(USER_ROLE_KEY) : null)
+        || 'user';
+    const isAdminRole = storedRole === 'admin';
+    const preservedUser = {
+        username: userFallback?.username
+            || userFallback?.user_metadata?.username
+            || sessionStorage.getItem(USER_NAME_KEY)
+            || (isRemembered ? localStorage.getItem(USER_NAME_KEY) : null)
+            || (userFallback?.email ? userFallback.email.split('@')[0] : 'User'),
+        email: userFallback?.email
+            || sessionStorage.getItem(USER_EMAIL_KEY)
+            || (isRemembered ? localStorage.getItem(USER_EMAIL_KEY) : null)
+            || '',
+        role: storedRole,
+        is_admin: isAdminRole,
+        avatar_url: userFallback?.avatar_url
+            || userFallback?.user_metadata?.avatar_url
+            || sessionStorage.getItem(USER_AVATAR_KEY)
+            || localStorage.getItem(USER_AVATAR_KEY)
+            || 'avatar_cyber'
+    };
+    updateNavbarUserState(preservedUser);
+    return preservedUser;
+}
+
 async function syncUserSession(token, userFallback = null) {
     if (!token) {
         updateNavbarUserState(null);
         return null;
     }
+    const isRemembered = localStorage.getItem(REMEMBER_ME_KEY) === 'true';
     try {
         const res = await fetch(`${API_BASE}/admin/verify`, {
             headers: { 'Authorization': `Bearer ${token}` }
@@ -862,22 +911,38 @@ async function syncUserSession(token, userFallback = null) {
         if (res.ok) {
             const data = await res.json();
             const avatarVal = data.avatar_url || userFallback?.user_metadata?.avatar_url || sessionStorage.getItem(USER_AVATAR_KEY) || localStorage.getItem(USER_AVATAR_KEY) || 'avatar_cyber';
+            const isAdminVerified = Boolean(data.is_admin) && data.role === 'admin';
             const user = {
                 username: data.username || userFallback?.user_metadata?.username || sessionStorage.getItem(USER_NAME_KEY) || 'User',
                 email: userFallback?.email || sessionStorage.getItem(USER_EMAIL_KEY) || '',
-                role: data.role || (data.is_admin ? 'admin' : 'user'),
-                is_admin: Boolean(data.is_admin),
+                role: isAdminVerified ? 'admin' : 'user',
+                is_admin: isAdminVerified,
                 avatar_url: avatarVal
             };
             sessionStorage.setItem(USER_ROLE_KEY, user.role);
             sessionStorage.setItem(USER_NAME_KEY, user.username);
             sessionStorage.setItem(USER_AVATAR_KEY, user.avatar_url);
+            sessionStorage.setItem(USER_TOKEN_KEY, token);
             if (user.email) sessionStorage.setItem(USER_EMAIL_KEY, user.email);
-            localStorage.setItem(USER_ROLE_KEY, user.role);
-            localStorage.setItem(USER_NAME_KEY, user.username);
-            localStorage.setItem(USER_AVATAR_KEY, user.avatar_url);
-            if (user.email) localStorage.setItem(USER_EMAIL_KEY, user.email);
-            localStorage.setItem(USER_TOKEN_KEY, token);
+            if (isAdminVerified) {
+                sessionStorage.setItem(SESSION_TOKEN_KEY, token);
+            } else {
+                sessionStorage.removeItem(SESSION_TOKEN_KEY);
+                sessionStorage.removeItem(SESSION_EXPIRY_KEY);
+            }
+            if (isRemembered) {
+                localStorage.setItem(USER_ROLE_KEY, user.role);
+                localStorage.setItem(USER_NAME_KEY, user.username);
+                localStorage.setItem(USER_AVATAR_KEY, user.avatar_url);
+                localStorage.setItem(USER_TOKEN_KEY, token);
+                if (user.email) localStorage.setItem(USER_EMAIL_KEY, user.email);
+                if (isAdminVerified) {
+                    localStorage.setItem(SESSION_TOKEN_KEY, token);
+                } else {
+                    localStorage.removeItem(SESSION_TOKEN_KEY);
+                    localStorage.removeItem(SESSION_EXPIRY_KEY);
+                }
+            }
             updateNavbarUserState(user);
 
             // Re-apply preferences now that user identity is confirmed
@@ -896,35 +961,22 @@ async function syncUserSession(token, userFallback = null) {
                 } catch(e) {}
             }
             return user;
-        } else if (userFallback) {
-            const fallbackUser = {
-                username: userFallback.user_metadata?.username || sessionStorage.getItem(USER_NAME_KEY) || (userFallback.email ? userFallback.email.split('@')[0] : 'User'),
-                email: userFallback.email || sessionStorage.getItem(USER_EMAIL_KEY) || '',
-                role: 'user',
-                is_admin: false,
-                avatar_url: userFallback.user_metadata?.avatar_url || sessionStorage.getItem(USER_AVATAR_KEY) || localStorage.getItem(USER_AVATAR_KEY) || 'avatar_cyber'
-            };
-            sessionStorage.setItem(USER_ROLE_KEY, 'user');
-            sessionStorage.setItem(USER_NAME_KEY, fallbackUser.username);
-            sessionStorage.setItem(USER_AVATAR_KEY, fallbackUser.avatar_url);
-            if (fallbackUser.email) sessionStorage.setItem(USER_EMAIL_KEY, fallbackUser.email);
-            updateNavbarUserState(fallbackUser);
-            return fallbackUser;
         }
+        if (res.status === 401 || res.status === 403) {
+            // Real authentication failure: clear session and fail closed
+            clearAuthSession();
+            hideAdminControls();
+            updateNavbarUserState(null);
+            return null;
+        }
+        // Temporary server error (5xx / 429): keep current session & role intact
+        console.warn(`[GameVerse Auth] Verify returned temporary status ${res.status}; preserving local session.`);
+        return _preserveUserOnTransientError(userFallback);
     } catch (e) {
-        if (userFallback) {
-            const fallbackUser = {
-                username: userFallback.user_metadata?.username || sessionStorage.getItem(USER_NAME_KEY) || 'User',
-                email: userFallback.email || sessionStorage.getItem(USER_EMAIL_KEY) || '',
-                role: 'user',
-                is_admin: false,
-                avatar_url: userFallback.user_metadata?.avatar_url || sessionStorage.getItem(USER_AVATAR_KEY) || localStorage.getItem(USER_AVATAR_KEY) || 'avatar_cyber'
-            };
-            updateNavbarUserState(fallbackUser);
-            return fallbackUser;
-        }
+        // Temporary network/timeout error: do not log out or strip admin role
+        console.warn('[GameVerse Auth] Verify request failed temporarily; preserving local session.');
+        return _preserveUserOnTransientError(userFallback);
     }
-    return null;
 }
 
 // --- Initialize Supabase Client & Catch Sessions / Hash Errors ---
@@ -959,17 +1011,18 @@ async function initAuthSystem() {
             // Listen for session changes (email link clicks, signups, signouts, refreshes)
             window.supabaseClient.auth.onAuthStateChange(async (event, session) => {
                 if (session && session.access_token) {
+                    const isRemembered = localStorage.getItem(REMEMBER_ME_KEY) === 'true';
                     sessionStorage.setItem(USER_TOKEN_KEY, session.access_token);
-                    localStorage.setItem(USER_TOKEN_KEY, session.access_token);
+                    if (isRemembered) localStorage.setItem(USER_TOKEN_KEY, session.access_token);
                     if (!sessionStorage.getItem(LOGIN_TIME_KEY)) {
                         const nowStr = Date.now().toString();
                         sessionStorage.setItem(LOGIN_TIME_KEY, nowStr);
-                        localStorage.setItem(LOGIN_TIME_KEY, nowStr);
+                        if (isRemembered) localStorage.setItem(LOGIN_TIME_KEY, nowStr);
                     }
                     const loginTime = parseInt(sessionStorage.getItem(LOGIN_TIME_KEY) || localStorage.getItem(LOGIN_TIME_KEY), 10);
-                    const expiryStr = (loginTime + AUTO_LOGOUT_MS).toString();
+                    const expiryStr = (loginTime + getActiveSessionDuration()).toString();
                     sessionStorage.setItem(USER_EXPIRY_KEY, expiryStr);
-                    localStorage.setItem(USER_EXPIRY_KEY, expiryStr);
+                    if (isRemembered) localStorage.setItem(USER_EXPIRY_KEY, expiryStr);
                     setupAutoSignOut();
                     closeLoginModal();
                     await syncUserSession(session.access_token, session.user);
@@ -981,25 +1034,31 @@ async function initAuthSystem() {
                 }
             });
 
-            // Catch existing session or email confirmation link hash
-            const { data: sessionData } = await window.supabaseClient.auth.getSession();
-            if (sessionData && sessionData.session) {
-                const s = sessionData.session;
-                sessionStorage.setItem(USER_TOKEN_KEY, s.access_token);
-                localStorage.setItem(USER_TOKEN_KEY, s.access_token);
-                if (!sessionStorage.getItem(LOGIN_TIME_KEY)) {
-                    const nowStr = Date.now().toString();
-                    sessionStorage.setItem(LOGIN_TIME_KEY, nowStr);
-                    localStorage.setItem(LOGIN_TIME_KEY, nowStr);
+            // If an explicit admin token is already active, verify it before falling back to Supabase SDK storage
+            const isRemembered = localStorage.getItem(REMEMBER_ME_KEY) === 'true';
+            const activeAdminToken = sessionStorage.getItem(SESSION_TOKEN_KEY)
+                || (isRemembered ? localStorage.getItem(SESSION_TOKEN_KEY) : null);
+            if (!activeAdminToken) {
+                // Catch existing Supabase session or email confirmation link hash
+                const { data: sessionData } = await window.supabaseClient.auth.getSession();
+                if (sessionData && sessionData.session) {
+                    const s = sessionData.session;
+                    sessionStorage.setItem(USER_TOKEN_KEY, s.access_token);
+                    if (isRemembered) localStorage.setItem(USER_TOKEN_KEY, s.access_token);
+                    if (!sessionStorage.getItem(LOGIN_TIME_KEY)) {
+                        const nowStr = Date.now().toString();
+                        sessionStorage.setItem(LOGIN_TIME_KEY, nowStr);
+                        if (isRemembered) localStorage.setItem(LOGIN_TIME_KEY, nowStr);
+                    }
+                    const loginTime = parseInt(sessionStorage.getItem(LOGIN_TIME_KEY) || localStorage.getItem(LOGIN_TIME_KEY), 10);
+                    const expiryStr = (loginTime + getActiveSessionDuration()).toString();
+                    sessionStorage.setItem(USER_EXPIRY_KEY, expiryStr);
+                    if (isRemembered) localStorage.setItem(USER_EXPIRY_KEY, expiryStr);
+                    setupAutoSignOut();
+                    closeLoginModal();
+                    await syncUserSession(s.access_token, s.user);
+                    return;
                 }
-                const loginTime = parseInt(sessionStorage.getItem(LOGIN_TIME_KEY) || localStorage.getItem(LOGIN_TIME_KEY), 10);
-                const expiryStr = (loginTime + AUTO_LOGOUT_MS).toString();
-                sessionStorage.setItem(USER_EXPIRY_KEY, expiryStr);
-                localStorage.setItem(USER_EXPIRY_KEY, expiryStr);
-                setupAutoSignOut();
-                closeLoginModal();
-                await syncUserSession(s.access_token, s.user);
-                return;
             }
         } else {
             console.warn('[GameVerse Auth] Supabase config incomplete from server:', config);
@@ -1008,19 +1067,37 @@ async function initAuthSystem() {
         console.warn('Supabase client config unavailable:', e);
     }
 
-    // Verify current stored session
-    const token = sessionStorage.getItem(USER_TOKEN_KEY) || sessionStorage.getItem(SESSION_TOKEN_KEY);
+    // Verify current stored session (sessionStorage first, or remembered localStorage in new tabs)
+    const isRemembered = localStorage.getItem(REMEMBER_ME_KEY) === 'true';
+    const token = sessionStorage.getItem(USER_TOKEN_KEY)
+        || sessionStorage.getItem(SESSION_TOKEN_KEY)
+        || (isRemembered ? (localStorage.getItem(USER_TOKEN_KEY) || localStorage.getItem(SESSION_TOKEN_KEY)) : null);
     if (token) {
         if (!isLoggedIn()) {
             clearAuthSession();
             updateNavbarUserState(null);
             return;
         }
+        // Hydrate sessionStorage from remembered localStorage if opening a new tab
+        if (!sessionStorage.getItem(USER_TOKEN_KEY)) sessionStorage.setItem(USER_TOKEN_KEY, token);
+        const storedRole = sessionStorage.getItem(USER_ROLE_KEY) || (isRemembered ? localStorage.getItem(USER_ROLE_KEY) : null) || 'user';
+        const storedName = sessionStorage.getItem(USER_NAME_KEY) || (isRemembered ? localStorage.getItem(USER_NAME_KEY) : null);
+        const storedEmail = sessionStorage.getItem(USER_EMAIL_KEY) || (isRemembered ? localStorage.getItem(USER_EMAIL_KEY) : null);
+        const storedAvatar = sessionStorage.getItem(USER_AVATAR_KEY) || localStorage.getItem(USER_AVATAR_KEY);
+        const storedLoginTime = sessionStorage.getItem(LOGIN_TIME_KEY) || (isRemembered ? localStorage.getItem(LOGIN_TIME_KEY) : null);
+        const storedExpiry = sessionStorage.getItem(USER_EXPIRY_KEY) || sessionStorage.getItem(SESSION_EXPIRY_KEY) || (isRemembered ? (localStorage.getItem(USER_EXPIRY_KEY) || localStorage.getItem(SESSION_EXPIRY_KEY)) : null);
+        if (storedRole) sessionStorage.setItem(USER_ROLE_KEY, storedRole);
+        if (storedName) sessionStorage.setItem(USER_NAME_KEY, storedName);
+        if (storedEmail) sessionStorage.setItem(USER_EMAIL_KEY, storedEmail);
+        if (storedAvatar) sessionStorage.setItem(USER_AVATAR_KEY, storedAvatar);
+        if (storedLoginTime) sessionStorage.setItem(LOGIN_TIME_KEY, storedLoginTime);
+        if (storedExpiry) sessionStorage.setItem(USER_EXPIRY_KEY, storedExpiry);
+
         setupAutoSignOut();
         const fallback = {
-            username: sessionStorage.getItem(USER_NAME_KEY),
-            email: sessionStorage.getItem(USER_EMAIL_KEY),
-            role: sessionStorage.getItem(USER_ROLE_KEY) || 'user'
+            username: storedName,
+            email: storedEmail,
+            role: storedRole
         };
         await syncUserSession(token, fallback.username ? fallback : null);
     } else {
@@ -1037,7 +1114,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Periodic session expiration check (every 15 seconds)
     setInterval(() => {
-        const token = sessionStorage.getItem(USER_TOKEN_KEY) || sessionStorage.getItem(SESSION_TOKEN_KEY);
+        const isRem = localStorage.getItem(REMEMBER_ME_KEY) === 'true';
+        const token = sessionStorage.getItem(USER_TOKEN_KEY)
+            || sessionStorage.getItem(SESSION_TOKEN_KEY)
+            || (isRem ? (localStorage.getItem(USER_TOKEN_KEY) || localStorage.getItem(SESSION_TOKEN_KEY)) : null);
         if (token && !isLoggedIn()) {
             console.warn('Session expired. Signing out.');
             sessionStorage.setItem('gv_expired_toast', 'true');
@@ -1280,28 +1360,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         if (adminRes.ok) {
                             const adminData = await adminRes.json();
-                            // Legacy admin login succeeded
+                            // Clear any stale previous user/Supabase session before storing admin session
+                            clearAuthSession();
+                            if (rememberMe) {
+                                localStorage.setItem(REMEMBER_ME_KEY, 'true');
+                            }
+                            if (window.supabaseClient && window.supabaseClient.auth) {
+                                window.supabaseClient.auth.signOut({ scope: 'local' }).catch(() => {});
+                            }
+
                             const adminToken = adminData.access_token;
-                            sessionStorage.setItem(SESSION_TOKEN_KEY, adminToken);
-                            sessionStorage.setItem(USER_TOKEN_KEY, adminToken);
-                            localStorage.setItem(SESSION_TOKEN_KEY, adminToken);
-                            localStorage.setItem(USER_TOKEN_KEY, adminToken);
+                            const resolvedName = adminData.username || identifier;
                             const now = Date.now();
-                            sessionStorage.setItem(LOGIN_TIME_KEY, now.toString());
-                            localStorage.setItem(LOGIN_TIME_KEY, now.toString());
                             const duration = getActiveSessionDuration();
-                            sessionStorage.setItem(USER_EXPIRY_KEY, (now + duration).toString());
-                            localStorage.setItem(USER_EXPIRY_KEY, (now + duration).toString());
+                            const expiryStr = (now + duration).toString();
+
+                            sessionStorage.setItem(SESSION_TOKEN_KEY, adminToken);
+                            sessionStorage.setItem(SESSION_EXPIRY_KEY, expiryStr);
+                            sessionStorage.setItem(USER_TOKEN_KEY, adminToken);
+                            sessionStorage.setItem(LOGIN_TIME_KEY, now.toString());
+                            sessionStorage.setItem(USER_EXPIRY_KEY, expiryStr);
                             sessionStorage.setItem(USER_ROLE_KEY, 'admin');
-                            sessionStorage.setItem(USER_NAME_KEY, identifier);
-                            localStorage.setItem(USER_ROLE_KEY, 'admin');
-                            localStorage.setItem(USER_NAME_KEY, identifier);
+                            sessionStorage.setItem(USER_NAME_KEY, resolvedName);
+                            if (rememberMe) {
+                                localStorage.setItem(SESSION_TOKEN_KEY, adminToken);
+                                localStorage.setItem(SESSION_EXPIRY_KEY, expiryStr);
+                                localStorage.setItem(USER_TOKEN_KEY, adminToken);
+                                localStorage.setItem(LOGIN_TIME_KEY, now.toString());
+                                localStorage.setItem(USER_EXPIRY_KEY, expiryStr);
+                                localStorage.setItem(USER_ROLE_KEY, 'admin');
+                                localStorage.setItem(USER_NAME_KEY, resolvedName);
+                            }
                             setupAutoSignOut();
 
-                            const adminUser = { username: identifier, role: 'admin', email: null, avatar_url: null };
-                            sessionStorage.setItem('gv_welcome_toast', identifier);
+                            const adminUser = { username: resolvedName, role: 'admin', is_admin: true, email: null, avatar_url: null };
+                            sessionStorage.setItem('gv_welcome_toast', resolvedName);
                             closeLoginModal();
-                            showAdminControls();
                             updateNavbarUserState(adminUser);
                             redirectAfterLogin();
                             return;
@@ -1315,6 +1409,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // --- Supabase user login succeeded ---
+                sessionStorage.removeItem(SESSION_TOKEN_KEY);
+                sessionStorage.removeItem(SESSION_EXPIRY_KEY);
+                localStorage.removeItem(SESSION_TOKEN_KEY);
+                localStorage.removeItem(SESSION_EXPIRY_KEY);
+
                 if (window.supabaseClient && data.access_token && data.refresh_token) {
                     try {
                         await window.supabaseClient.auth.setSession({
@@ -1498,10 +1597,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (res.data && res.data.session) {
                     const s = res.data.session;
+                    sessionStorage.removeItem(SESSION_TOKEN_KEY);
+                    sessionStorage.removeItem(SESSION_EXPIRY_KEY);
+                    localStorage.removeItem(SESSION_TOKEN_KEY);
+                    localStorage.removeItem(SESSION_EXPIRY_KEY);
                     sessionStorage.setItem(USER_TOKEN_KEY, s.access_token);
                     const now = Date.now();
                     sessionStorage.setItem(LOGIN_TIME_KEY, now.toString());
-                    sessionStorage.setItem(USER_EXPIRY_KEY, (now + AUTO_LOGOUT_MS).toString());
+                    sessionStorage.setItem(USER_EXPIRY_KEY, (now + getActiveSessionDuration()).toString());
                     sessionStorage.setItem(USER_ROLE_KEY, 'user');
                     if (s.user?.email) sessionStorage.setItem(USER_EMAIL_KEY, s.user.email);
                     if (s.user?.user_metadata?.username) sessionStorage.setItem(USER_NAME_KEY, s.user.user_metadata.username);

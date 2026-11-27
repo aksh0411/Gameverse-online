@@ -1,5 +1,7 @@
-document.addEventListener('DOMContentLoaded', async () => {
-    // Admin features are mostly for index.html (adding/editing games)
+function initAdminModule() {
+    if (window.__gvAdminInitialized) return;
+    window.__gvAdminInitialized = true;
+
     const addGameModal = document.getElementById('addGameModal');
     const addGameFab = document.getElementById('addGameFab');
     const gameModalClose = document.getElementById('gameModalClose');
@@ -13,6 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ── Lazy-loaded form options (fetched once on first need) ──
     let _formOptionsLoaded = false;
     let _formOptionsPromise = null;
+    let _isSubmitting = false;
 
     async function loadFormOptions() {
         if (_formOptionsLoaded) return;
@@ -30,12 +33,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 const devSelect = document.getElementById('developerSelect');
                 const pubSelect = document.getElementById('publisherSelect');
+                devSelect.innerHTML = '<option value="">Select...</option>';
+                pubSelect.innerHTML = '<option value="">Select...</option>';
                 // escHtml on developer and publisher names to prevent stored XSS
                 devs.forEach(d => devSelect.insertAdjacentHTML('beforeend', `<option value="${d.id}">${escHtml(d.name)}</option>`));
                 pubs.forEach(p => pubSelect.insertAdjacentHTML('beforeend', `<option value="${p.id}">${escHtml(p.name)}</option>`));
 
                 const makeCheckboxes = (containerId, items, name) => {
                     const container = document.getElementById(containerId);
+                    container.innerHTML = '';
                     items.forEach(item => {
                         const label = document.createElement('label');
                         label.className = 'checkbox-pill';
@@ -63,8 +69,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         return _formOptionsPromise;
     }
 
-    // ── FAB click: load options on first open, then show modal ──
-    addGameFab.addEventListener('click', async () => {
+    async function openAddGameModal() {
+        if (typeof requireAdmin === 'function' && !requireAdmin('add a game')) return;
         gameForm.reset();
         document.getElementById('editGameId').value = '';
         document.getElementById('gameFormTitle').textContent = 'Add New Game';
@@ -73,11 +79,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Fetch form options on first click (lazy-load)
         await loadFormOptions();
         addGameModal.classList.remove('hidden');
-    });
+    }
+    window.openAddGameModal = openAddGameModal;
+
+    // ── FAB click: load options on first open, then show modal ──
+    addGameFab.addEventListener('click', openAddGameModal);
 
     const closeModal = () => addGameModal.classList.add('hidden');
-    gameModalClose.addEventListener('click', closeModal);
-    gameModalCancel.addEventListener('click', closeModal);
+    if (gameModalClose) gameModalClose.addEventListener('click', closeModal);
+    if (gameModalCancel) gameModalCancel.addEventListener('click', closeModal);
 
     // Image preview
     coverImageInput.addEventListener('change', function() {
@@ -106,18 +116,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Handle Form Submit
+    // Handle Form Submit (guarded against double submits)
     gameForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
-        const editId = document.getElementById('editGameId').value;
-        const formData = new FormData();
+        if (_isSubmitting) return;
 
         const gameName = document.getElementById('f_name').value.trim();
         if (!gameName) {
             alert("Game Name is required.");
             return;
         }
+
+        _isSubmitting = true;
+        const submitBtn = gameForm.querySelector('button[type="submit"]');
+        const prevBtnText = submitBtn ? submitBtn.textContent : '';
+        if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Saving…'; }
+        
+        const editId = document.getElementById('editGameId').value;
+        const formData = new FormData();
 
         formData.append('game_name', gameName);
         formData.append('description', document.getElementById('f_description').value || '');
@@ -181,19 +197,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.location.reload();
         } catch (err) {
             alert(`Error saving game: ${err.message}`);
+        } finally {
+            _isSubmitting = false;
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = prevBtnText || 'Save Game'; }
         }
     });
 
     // Check if we arrived from edit redirect
-    const urlParams = new URLSearchParams(window.location.search);
-    const editId = urlParams.get('edit');
-    if (editId && isAdmin()) {
+    (async function handleEditQueryParam() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const editId = urlParams.get('edit');
+        if (!editId || typeof isAdmin !== 'function' || !isAdmin()) return;
         try {
             const game = await apiGet(`/games/${editId}`);
-            
+
             document.getElementById('editGameId').value = game.id;
             document.getElementById('gameFormTitle').textContent = 'Edit Game';
-            
+
             // Populate basic info
             document.getElementById('f_name').value = game.name || '';
             document.getElementById('f_release_date').value = game.release_date || '';
@@ -201,8 +221,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('f_price').value = game.price || '';
             document.getElementById('f_engine').value = game.engine || '';
             document.getElementById('f_description').value = game.description || '';
-            document.getElementById('f_is_free_to_play').checked = game.is_free_to_play;
-            
+            document.getElementById('f_is_free_to_play').checked = Boolean(game.is_free_to_play);
+
             // System requirements
             document.getElementById('f_os').value = game.operating_system || '';
             document.getElementById('f_min_cpu').value = game.minimum_cpu || '';
@@ -213,25 +233,26 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('f_rec_gpu').value = game.recommended_gpu || '';
             document.getElementById('f_rec_ram').value = game.recommended_ram || '';
             document.getElementById('f_rec_storage').value = game.recommended_storage || '';
-            
+
             // Statuses
             document.getElementById('f_play_status').value = game.play_status || 'not_started';
-            document.getElementById('f_is_bookmarked').checked = game.is_bookmarked;
-            document.getElementById('f_is_favorited').checked = game.is_favorited;
+            document.getElementById('f_is_bookmarked').checked = Boolean(game.is_bookmarked);
+            document.getElementById('f_is_favorited').checked = Boolean(game.is_favorited);
 
             // Await form options (replaces blind 500ms setTimeout)
             await loadFormOptions();
 
-            if(game.developer_id) document.getElementById('developerSelect').value = game.developer_id;
-            if(game.publisher_id) document.getElementById('publisherSelect').value = game.publisher_id;
-            
-            // Select checkboxes (genres, platforms, modes)
+            if (game.developer_id) document.getElementById('developerSelect').value = game.developer_id;
+            if (game.publisher_id) document.getElementById('publisherSelect').value = game.publisher_id;
+
+            // Select checkboxes (genres, platforms, modes) by ID or display name
             const selectPills = (items, name) => {
-                if(!items) return;
-                const ids = items.map(i => (typeof i === 'object' && i !== null ? (i.id || i.genre_id || i.platform_id || i.mode_id) : i).toString());
+                if (!items) return;
+                const keys = items.map(i => (typeof i === 'object' && i !== null ? (i.id || i.genre_id || i.platform_id || i.mode_id || i.name) : i).toString().trim().toLowerCase());
                 const inputs = document.querySelectorAll(`input[name="${name}"]`);
                 inputs.forEach(input => {
-                    if (ids.includes(input.value)) {
+                    const labelText = (input.parentElement?.textContent || '').trim().toLowerCase();
+                    if (keys.includes(input.value.toLowerCase()) || (labelText && keys.includes(labelText))) {
                         input.checked = true;
                         input.parentElement.classList.add('selected');
                     }
@@ -255,9 +276,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Remove param from URL
             window.history.replaceState({}, document.title, window.location.pathname);
-            
+
         } catch (e) {
             console.error("Failed to load game for editing", e);
         }
-    }
-});
+    })();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAdminModule);
+} else {
+    initAdminModule();
+}

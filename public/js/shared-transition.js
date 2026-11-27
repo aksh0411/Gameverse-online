@@ -914,7 +914,12 @@
                     if (confirm(`Are you sure you want to delete "${title}"?`)) {
                         try {
                             await apiDelete(`/games/${gid}`);
-                            window.closeGameDetail();
+                            try {
+                                const nextParams = new URLSearchParams(window.location.search);
+                                nextParams.delete('game');
+                                const nextQs = nextParams.toString();
+                                history.replaceState({}, '', window.location.pathname + (nextQs ? `?${nextQs}` : ''));
+                            } catch (_) {}
                             window.location.reload();
                         } catch (e) {
                             alert(e.message || 'Error deleting game. Please ensure you are logged in as admin.');

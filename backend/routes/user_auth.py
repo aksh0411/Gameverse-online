@@ -13,8 +13,6 @@ from auth import (
     SUPABASE_URL,
     SUPABASE_ANON_KEY,
     SUPABASE_SECRET_KEY,
-    ADMIN_USERNAME,
-    ADMIN_EMAIL,
     get_client_ip,
     check_login_rate_limit,
     record_login_failure,
@@ -195,10 +193,6 @@ async def user_login(
 
         user_role = profile_data.get("role", "user")
         uname = profile_data.get("username") or ident
-        admin_u = (ADMIN_USERNAME or "").strip().lower()
-        admin_e = (ADMIN_EMAIL or "").strip().lower()
-        if (admin_u and uname.strip().lower() == admin_u) or (admin_e and email and email.strip().lower() == admin_e) or (admin_u and email and email.strip().lower() == admin_u):
-            user_role = "admin"
 
         return {
             "access_token": data.get("access_token"),
