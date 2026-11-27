@@ -210,7 +210,7 @@
       <!-- Main Content Container -->
       <div class="dashboard-content">
 
-        <!-- ── 3. Dimensional Radar (3D Collection Core integrated edge-to-edge) ── -->
+        <!-- ── 3. Bento Telemetry Row (2fr Radar + 1fr Spotlight + 1fr Stats) ── -->
         <div class="telemetry-row" id="telemetryRow">
           <!-- Accordion toggle banner for mobile (<768px) -->
           <button type="button" class="radar-mobile-toggle" id="radarMobileToggle" aria-expanded="false" aria-controls="radarCard">
@@ -224,8 +224,8 @@
             </span>
           </button>
 
-          <!-- Dimensional Radar Widget (same 3D orbital core as home, full-bleed) -->
-          <div class="telemetry-radar-card" id="radarCard">
+          <!-- Tile 1 (2fr): Dimensional Radar Widget -->
+          <div class="telemetry-radar-card bento-tile" id="radarCard">
             <div class="radar-canvas-container">
               <div id="radarCore3d"></div>
               <div id="radarPillsLayer"></div>
@@ -236,6 +236,67 @@
               <p class="radar-desc">Your games visualized by genre, platform, and play status. Click a node to open details.</p>
             </div>
           </div>
+
+          <!-- Tile 2 (1fr): Featured Game Spotlight -->
+          <article class="bento-spotlight-card bento-tile" id="bentoSpotlightCard" aria-live="polite">
+            <div class="bento-spotlight-media">
+              <img id="bentoSpotlightImg" src="static/images/game_1.jpg" alt="Featured title" loading="lazy" />
+              <div class="bento-spotlight-scrim"></div>
+            </div>
+            <div class="bento-spotlight-content">
+              <div class="bento-spotlight-top">
+                <span class="bento-pill-tag" id="bentoSpotlightTag">Spotlight</span>
+                <button type="button" class="bento-shuffle-btn" id="bentoShuffleBtn" title="Pick another featured title" aria-label="Pick another featured title">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
+                </button>
+              </div>
+              <div class="bento-spotlight-body">
+                <span class="bento-spotlight-genre" id="bentoSpotlightGenre">Loading archive...</span>
+                <h3 class="bento-spotlight-title" id="bentoSpotlightTitle">Curating Spotlight</h3>
+                <p class="bento-spotlight-desc" id="bentoSpotlightDesc">Scanning your collection for a top-rated or active title.</p>
+                <div class="bento-spotlight-footer">
+                  <span class="wide-card-rating bento-spotlight-rating" id="bentoSpotlightRating">
+                    <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    <span>—</span>
+                  </span>
+                  <button type="button" class="bento-cta-btn" id="bentoSpotlightOpenBtn">Open Title</button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Tile 3 (1fr): Archive Telemetry / Quick Stats -->
+          <aside class="bento-stats-card bento-tile" id="bentoStatsCard">
+            <div class="bento-stats-head">
+              <span class="bento-pill-tag">Archive Pulse</span>
+              <span class="bento-stats-completion" id="bentoCompletionPct">0%</span>
+            </div>
+            <div class="bento-stats-hero">
+              <div class="bento-stats-total" id="bentoTotalGames">0</div>
+              <div class="bento-stats-sublabel">Indexed Titles</div>
+            </div>
+            <div class="bento-progress-track" aria-hidden="true">
+              <div class="bento-progress-fill" id="bentoCompletionBar" style="width: 0%;"></div>
+            </div>
+            <div class="bento-stats-grid">
+              <div class="bento-stat-cell">
+                <span class="bento-stat-num" id="radarCountPlaying">0</span>
+                <span class="bento-stat-key">Playing</span>
+              </div>
+              <div class="bento-stat-cell">
+                <span class="bento-stat-num" id="bentoCountCompleted">0</span>
+                <span class="bento-stat-key">Completed</span>
+              </div>
+              <div class="bento-stat-cell">
+                <span class="bento-stat-num" id="radarCountFavorited">0</span>
+                <span class="bento-stat-key">Favorites</span>
+              </div>
+              <div class="bento-stat-cell">
+                <span class="bento-stat-num" id="radarCountBookmarked">0</span>
+                <span class="bento-stat-key">Bookmarked</span>
+              </div>
+            </div>
+          </aside>
 
         </div>
 
@@ -316,6 +377,64 @@
         <!-- ── 5. Games Catalog Container ── -->
         <div class="games-catalog-container" id="gamesCatalogContainer">
           <!-- Rendered dynamically as 16:9 cards, genre bundles, or list items -->
+          <div class="wide-cards-grid skeleton-grid" aria-hidden="true">
+            <div class="skeleton-card">
+              <div class="skeleton-shimmer"></div>
+              <div class="skeleton-meta">
+                <div class="skeleton-line skeleton-line-lg"></div>
+                <div class="skeleton-line skeleton-line-sm"></div>
+              </div>
+            </div>
+            <div class="skeleton-card">
+              <div class="skeleton-shimmer"></div>
+              <div class="skeleton-meta">
+                <div class="skeleton-line skeleton-line-lg"></div>
+                <div class="skeleton-line skeleton-line-sm"></div>
+              </div>
+            </div>
+            <div class="skeleton-card">
+              <div class="skeleton-shimmer"></div>
+              <div class="skeleton-meta">
+                <div class="skeleton-line skeleton-line-lg"></div>
+                <div class="skeleton-line skeleton-line-sm"></div>
+              </div>
+            </div>
+            <div class="skeleton-card">
+              <div class="skeleton-shimmer"></div>
+              <div class="skeleton-meta">
+                <div class="skeleton-line skeleton-line-lg"></div>
+                <div class="skeleton-line skeleton-line-sm"></div>
+              </div>
+            </div>
+            <div class="skeleton-card">
+              <div class="skeleton-shimmer"></div>
+              <div class="skeleton-meta">
+                <div class="skeleton-line skeleton-line-lg"></div>
+                <div class="skeleton-line skeleton-line-sm"></div>
+              </div>
+            </div>
+            <div class="skeleton-card">
+              <div class="skeleton-shimmer"></div>
+              <div class="skeleton-meta">
+                <div class="skeleton-line skeleton-line-lg"></div>
+                <div class="skeleton-line skeleton-line-sm"></div>
+              </div>
+            </div>
+            <div class="skeleton-card">
+              <div class="skeleton-shimmer"></div>
+              <div class="skeleton-meta">
+                <div class="skeleton-line skeleton-line-lg"></div>
+                <div class="skeleton-line skeleton-line-sm"></div>
+              </div>
+            </div>
+            <div class="skeleton-card">
+              <div class="skeleton-shimmer"></div>
+              <div class="skeleton-meta">
+                <div class="skeleton-line skeleton-line-lg"></div>
+                <div class="skeleton-line skeleton-line-sm"></div>
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>

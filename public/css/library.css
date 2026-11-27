@@ -233,7 +233,7 @@ html:has(body.library-page) {
 }
 
 .sidebar-nav-item.active {
-    background: linear-gradient(135deg, rgba(249, 115, 22, 0.22), rgba(13, 148, 136, 0.14));
+    background: linear-gradient(135deg, rgba(249, 115, 22, 0.22), rgba(251, 113, 133, 0.14));
     border-color: rgba(253, 186, 116, 0.35);
     color: #ffffff;
     box-shadow: 0 0 20px rgba(251, 146, 60, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.06);
@@ -380,7 +380,7 @@ html:has(body.library-page) {
     position: fixed;
     inset: 0;
     z-index: 190;
-    background: rgba(2, 8, 12, 0.6);
+    background: rgba(14, 7, 12, 0.65);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
     opacity: 0;
@@ -410,10 +410,10 @@ html:has(body.library-page) {
     gap: 16px;
     height: 64px;
     padding: 0 28px;
-    background: rgba(3, 12, 18, 0.78);
+    background: rgba(20, 11, 18, 0.80);
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
-    border-bottom: 1px solid rgba(253, 186, 116, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 }
 
 .sidebar-toggle {
@@ -488,11 +488,11 @@ html:has(body.library-page) {
     overflow-y: auto;
     padding: 6px;
     border-radius: 14px;
-    border: 1px solid rgba(253, 186, 116, 0.22);
-    background: rgba(4, 18, 26, 0.97);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: rgba(24, 13, 21, 0.97);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+    box-shadow: 0 20px 40px -15px rgba(255, 176, 116, 0.06), 0 24px 60px rgba(0, 0, 0, 0.65);
 }
 .topbar-suggestions .spotlight-result-item { cursor: pointer; }
 .topbar-search-box:focus-within {
@@ -570,24 +570,253 @@ html:has(body.library-page) {
     display: none;
 }
 
-/* ── 5. Dimensional Radar (full-width hero card) ── */
+/* ── 5. Bento Telemetry Row (2fr Radar + 1fr Spotlight + 1fr Stats) ── */
 .telemetry-row {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 22px;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 20px;
     margin-bottom: 30px;
+    align-items: stretch;
+}
+
+.bento-tile {
+    position: relative;
+    height: 440px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: linear-gradient(160deg, rgba(38, 20, 30, 0.65), rgba(20, 11, 18, 0.88));
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 20px 40px -15px rgba(255, 176, 116, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+    transition: border-color 0.28s ease, box-shadow 0.28s ease;
+}
+.bento-tile:hover {
+    border-color: rgba(255, 176, 116, 0.26);
+    box-shadow: 0 20px 40px -15px rgba(255, 176, 116, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
 
 .telemetry-radar-card {
+    min-width: 0;
+}
+
+.bento-pill-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    background: rgba(20, 11, 18, 0.65);
+    font-family: var(--font-heading);
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    color: var(--gv-cyan);
+}
+
+/* Bento Tile 2: Featured Spotlight Card */
+.bento-spotlight-card {
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+}
+.bento-spotlight-media {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+}
+.bento-spotlight-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.bento-spotlight-card:hover .bento-spotlight-media img {
+    transform: scale(1.05);
+}
+.bento-spotlight-scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        180deg,
+        rgba(20, 11, 18, 0.45) 0%,
+        rgba(20, 11, 18, 0.32) 38%,
+        rgba(20, 11, 18, 0.94) 84%,
+        rgba(20, 11, 18, 0.98) 100%
+    );
+}
+.bento-spotlight-content {
     position: relative;
-    height: 500px;
-    border-radius: 20px;
-    border: 1px solid rgba(253, 186, 116, 0.13);
-    background: linear-gradient(160deg, rgba(8, 30, 42, 0.55), rgba(3, 13, 20, 0.85));
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    padding: 18px 20px 20px;
+}
+.bento-spotlight-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+.bento-shuffle-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(20, 11, 18, 0.65);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: var(--gv-text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.22s ease, border-color 0.22s ease, color 0.22s ease;
+}
+.bento-shuffle-btn:hover {
+    border-color: rgba(255, 176, 116, 0.45);
+    color: #ffffff;
+    transform: rotate(25deg);
+}
+.bento-spotlight-body {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.bento-spotlight-genre {
+    font-family: var(--font-heading);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    color: var(--gv-text-secondary);
+    opacity: 0.85;
+}
+.bento-spotlight-title {
+    font-family: var(--font-heading);
+    font-size: 1.28rem;
+    font-weight: 700;
+    line-height: 1.18;
+    color: #ffffff;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
     overflow: hidden;
+}
+.bento-spotlight-desc {
+    font-size: 0.78rem;
+    line-height: 1.48;
+    color: rgba(255, 247, 237, 0.68);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.bento-spotlight-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 10px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.bento-cta-btn {
+    padding: 7px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 176, 116, 0.35);
+    background: rgba(249, 115, 22, 0.16);
+    color: #ffffff;
+    font-family: var(--font-heading);
+    font-size: 0.76rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+.bento-cta-btn:hover {
+    background: rgba(249, 115, 22, 0.30);
+    border-color: rgba(255, 176, 116, 0.65);
+}
+
+/* Bento Tile 3: Archive Pulse / Stats Card */
+.bento-stats-card {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    gap: 14px;
+}
+.bento-stats-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.bento-stats-completion {
+    font-family: var(--font-heading);
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--plum-300, #fcd34d);
+    font-variant-numeric: tabular-nums;
+}
+.bento-stats-hero {
+    margin-top: 4px;
+}
+.bento-stats-total {
+    font-family: var(--font-heading);
+    font-size: 2.55rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: #ffffff;
+    font-variant-numeric: tabular-nums;
+}
+.bento-stats-sublabel {
+    margin-top: 4px;
+    font-size: 0.76rem;
+    color: var(--gv-text-muted);
+}
+.bento-progress-track {
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+}
+.bento-progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #f97316, #ffb074, #fcd34d);
+    transition: width 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.bento-stats-grid {
+    margin-top: auto;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+.bento-stat-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: rgba(255, 255, 255, 0.025);
+}
+.bento-stat-num {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+.bento-stat-key {
+    font-size: 0.7rem;
+    color: var(--gv-text-muted);
+    letter-spacing: 0.3px;
 }
 
 /* Radar card (3D Collection Core integrated edge-to-edge, header floats on top) */
@@ -746,11 +975,11 @@ body.library-page .orbital-badge-pill {
     width: min(420px, 86vw);
     padding: 18px;
     border-radius: 16px;
-    border: 1px solid rgba(253, 186, 116, 0.22);
-    background: rgba(4, 18, 26, 0.96);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: rgba(24, 13, 21, 0.96);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    box-shadow: 0 20px 40px -15px rgba(255, 176, 116, 0.06), 0 24px 60px rgba(0, 0, 0, 0.65);
 }
 
 .filter-group-title {
@@ -827,7 +1056,7 @@ body.library-page .orbital-badge-pill {
     border-radius: 11px;
     border: 1px solid rgba(253, 186, 116, 0.2);
     background:
-        url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2367e8f9' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 13px center,
+        url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23ffb074' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 13px center,
         rgba(42, 22, 34, 0.45);
     color: rgba(255, 247, 237, 0.85);
     font-family: var(--font-heading);
@@ -875,7 +1104,7 @@ body.library-page .orbital-badge-pill {
     color: var(--accent-pink);
 }
 
-/* ── 7. Games Catalog: 16:9 Widescreen Cards ── */
+/* ── 7. Games Catalog: 16:9 / 16:10 Widescreen Cards & Skeleton Shimmers ── */
 .games-catalog-container { min-height: 320px; }
 
 .wide-cards-grid {
@@ -886,18 +1115,20 @@ body.library-page .orbital-badge-pill {
 
 .wide-game-card {
     position: relative;
+    display: grid;
     aspect-ratio: 16 / 10;
     border-radius: 16px;
     overflow: hidden;
-    border: 1px solid rgba(253, 186, 116, 0.13);
+    border: 1px solid rgba(255, 255, 255, 0.07);
     background: #21111b;
+    box-shadow: 0 20px 40px -15px rgba(255, 176, 116, 0.06);
     cursor: pointer;
     transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease;
 }
 .wide-game-card:hover {
     transform: translateY(-5px) scale(1.015);
-    border-color: rgba(255, 176, 116, 0.45);
-    box-shadow: 0 22px 44px -12px rgba(0, 0, 0, 0.75), 0 0 24px rgba(255, 176, 116, 0.12);
+    border-color: rgba(255, 176, 116, 0.42);
+    box-shadow: 0 22px 44px -12px rgba(0, 0, 0, 0.72), 0 20px 40px -15px rgba(255, 176, 116, 0.14);
 }
 
 .wide-card-bg {
@@ -914,20 +1145,26 @@ body.library-page .orbital-badge-pill {
 .wide-card-gradient {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgba(20, 11, 18, 0.95) 0%, rgba(20, 11, 18, 0.5) 38%, rgba(20, 11, 18, 0.05) 68%);
+    background: linear-gradient(to top, rgba(20, 11, 18, 0.96) 0%, rgba(20, 11, 18, 0.52) 40%, rgba(20, 11, 18, 0.06) 72%);
     pointer-events: none;
 }
 
+.wide-card-overlay {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 11px 14px 13px;
+    min-width: 0;
+    min-height: 0;
+}
+
 .wide-card-top {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    right: 10px;
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 8px;
-    z-index: 3;
 }
 
 .wide-status-pill {
@@ -936,10 +1173,10 @@ body.library-page .orbital-badge-pill {
     gap: 6px;
     padding: 4px 11px;
     border-radius: 999px;
-    background: rgba(3, 12, 18, 0.78);
+    background: rgba(20, 11, 18, 0.78);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     font-family: var(--font-heading);
     font-size: 0.66rem;
     font-weight: 600;
@@ -964,8 +1201,8 @@ body.library-page .orbital-badge-pill {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(3, 12, 18, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(20, 11, 18, 0.72);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     color: rgba(255, 255, 255, 0.75);
@@ -990,12 +1227,10 @@ body.library-page .orbital-badge-pill {
 .wide-card-fav-btn.active svg { fill: #fb7185; }
 
 .wide-card-bottom {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 14px 15px 13px;
-    z-index: 3;
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
 }
 
 .wide-card-title {
@@ -1011,7 +1246,7 @@ body.library-page .orbital-badge-pill {
 
 .wide-card-subtitle {
     font-size: 0.74rem;
-    color: rgba(255, 247, 237, 0.55);
+    color: rgba(255, 247, 237, 0.58);
     margin-top: 2px;
     white-space: nowrap;
     overflow: hidden;
@@ -1023,14 +1258,14 @@ body.library-page .orbital-badge-pill {
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    margin-top: 9px;
+    margin-top: 10px;
 }
 
 .wide-card-genre {
     font-size: 0.68rem;
     font-weight: 500;
     letter-spacing: 0.4px;
-    color: rgba(103, 232, 249, 0.75);
+    color: rgba(254, 215, 170, 0.85);
     padding: 3px 9px;
     border-radius: 999px;
     background: rgba(249, 115, 22, 0.16);
@@ -1050,12 +1285,65 @@ body.library-page .orbital-badge-pill {
     color: var(--accent-pink);
     text-shadow: 0 0 10px rgba(255, 176, 116, 0.4);
     flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
 }
 .wide-card-rating svg {
     width: 13px;
     height: 13px;
     fill: var(--accent-pink);
     filter: drop-shadow(0 0 4px rgba(255, 176, 116, 0.5));
+}
+
+/* Skeletal Loading Shimmers (layout-accurate 16:10 placeholders) */
+@keyframes gvSkeletonShimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.skeleton-card {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: rgba(34, 18, 28, 0.68);
+    box-shadow: 0 20px 40px -15px rgba(255, 176, 116, 0.06);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 15px;
+}
+.skeleton-shimmer {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        110deg,
+        transparent 25%,
+        rgba(255, 176, 116, 0.07) 45%,
+        rgba(251, 113, 133, 0.05) 55%,
+        transparent 75%
+    );
+    background-size: 200% 100%;
+    animation: gvSkeletonShimmer 1.6s linear infinite;
+}
+.skeleton-meta {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.skeleton-line {
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.07);
+}
+.skeleton-line-lg {
+    width: 68%;
+    height: 14px;
+}
+.skeleton-line-sm {
+    width: 42%;
+    height: 10px;
 }
 
 /* ── 8. Genre Bundles (Collections view) ── */
@@ -1091,6 +1379,7 @@ body.library-page .orbital-badge-pill {
     font-size: 0.76rem;
     font-weight: 600;
     color: rgba(254, 215, 170, 0.45);
+    font-variant-numeric: tabular-nums;
 }
 
 .genre-bundle .bundle-grid {
@@ -1111,14 +1400,15 @@ body.library-page .orbital-badge-pill {
     gap: 14px;
     padding: 9px 14px 9px 9px;
     border-radius: 13px;
-    border: 1px solid rgba(253, 186, 116, 0.1);
-    background: rgba(6, 21, 30, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: rgba(30, 16, 25, 0.6);
+    box-shadow: 0 20px 40px -15px rgba(255, 176, 116, 0.04);
     cursor: pointer;
     transition: border-color 0.22s ease, background 0.22s ease, transform 0.22s ease;
 }
 .list-row-item:hover {
     border-color: rgba(255, 176, 116, 0.4);
-    background: rgba(42, 22, 34, 0.6);
+    background: rgba(42, 22, 34, 0.72);
     transform: translateX(3px);
 }
 
@@ -1171,6 +1461,20 @@ body.library-page .orbital-badge-pill {
     .wide-cards-grid,
     .genre-bundle .bundle-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 1200px) {
+    .telemetry-row {
+        grid-template-columns: 1fr 1fr;
+    }
+    .telemetry-radar-card {
+        grid-column: 1 / -1;
+        height: 400px;
+    }
+    .bento-spotlight-card,
+    .bento-stats-card {
+        height: 340px;
     }
 }
 
@@ -1227,10 +1531,6 @@ body.library-page .orbital-badge-pill {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .telemetry-row {
-        grid-template-columns: 1fr;
-    }
-
     .dashboard-content {
         padding: 24px 22px 60px;
     }
@@ -1238,14 +1538,15 @@ body.library-page .orbital-badge-pill {
 
 @media (max-width: 768px) {
     .radar-mobile-toggle {
+        grid-column: 1 / -1;
         display: flex;
         align-items: center;
         justify-content: space-between;
         width: 100%;
         padding: 12px 18px;
         border-radius: 14px;
-        border: 1px solid rgba(253, 186, 116, 0.22);
-        background: linear-gradient(135deg, rgba(8, 30, 42, 0.7), rgba(4, 18, 26, 0.9));
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: linear-gradient(135deg, rgba(38, 20, 30, 0.78), rgba(20, 11, 18, 0.92));
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         color: var(--gv-text-primary);
@@ -1259,7 +1560,7 @@ body.library-page .orbital-badge-pill {
     .radar-mobile-toggle:hover,
     .radar-mobile-toggle:active {
         border-color: rgba(255, 176, 116, 0.45);
-        background: linear-gradient(135deg, rgba(8, 38, 54, 0.85), rgba(4, 22, 32, 0.95));
+        background: linear-gradient(135deg, rgba(46, 24, 36, 0.88), rgba(24, 13, 21, 0.95));
     }
     .radar-mobile-toggle-left {
         display: flex;
@@ -1269,7 +1570,7 @@ body.library-page .orbital-badge-pill {
         letter-spacing: 0.5px;
     }
     .radar-toggle-icon {
-        color: var(--accent-cyan);
+        color: var(--gv-cyan);
         font-size: 0.75rem;
     }
     .radar-toggle-action {
@@ -1287,10 +1588,11 @@ body.library-page .orbital-badge-pill {
     }
     .radar-mobile-toggle.expanded {
         border-color: rgba(255, 176, 116, 0.4);
-        background: rgba(8, 38, 54, 0.92);
+        background: rgba(46, 24, 36, 0.92);
         box-shadow: 0 0 16px rgba(255, 176, 116, 0.15);
     }
     .telemetry-row {
+        grid-template-columns: 1fr;
         gap: 12px;
         margin-bottom: 20px;
     }
@@ -1301,6 +1603,11 @@ body.library-page .orbital-badge-pill {
     .telemetry-radar-card.expanded {
         display: block;
     }
+    .bento-spotlight-card,
+    .bento-stats-card {
+        height: auto;
+        min-height: 290px;
+    }
 }
 
 @media (max-width: 640px) {
@@ -1309,7 +1616,8 @@ body.library-page .orbital-badge-pill {
         grid-template-columns: 1fr;
     }
 
-    .wide-game-card { aspect-ratio: 16 / 9; }
+    .wide-game-card,
+    .skeleton-card { aspect-ratio: 16 / 9; }
 
     .dashboard-topbar { padding: 0 16px; gap: 10px; }
     .topbar-search-box { width: 100%; }

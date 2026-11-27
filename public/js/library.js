@@ -61,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.__ALL_GAMES__ = allGames;
 
             updateStatistics(allGames);
+            initSpotlightCard(allGames);
             initDimensionalRadar(allGames);
             populateFilterOptions(allGames);
             readUrlState();
@@ -106,6 +107,115 @@ document.addEventListener('DOMContentLoaded', () => {
         if (badgeBacklog) badgeBacklog.textContent = backlogCount;
         if (badgeCompleted) badgeCompleted.textContent = completedCount;
         if (badgeBookmarked) badgeBookmarked.textContent = bookmarkedCount;
+
+        // Bento Stats Tile updates
+        const completionPct = total > 0 ? Math.round((completedCount / total) * 100) : 0;
+        const bentoTotalEl = document.getElementById('bentoTotalGames');
+        const bentoPctEl = document.getElementById('bentoCompletionPct');
+        const bentoBarEl = document.getElementById('bentoCompletionBar');
+        const bentoCompletedEl = document.getElementById('bentoCountCompleted');
+        const radarPlayingEl = document.getElementById('radarCountPlaying');
+        const radarFavEl = document.getElementById('radarCountFavorited');
+        const radarBookmarkEl = document.getElementById('radarCountBookmarked');
+
+        if (bentoTotalEl) bentoTotalEl.textContent = total;
+        if (bentoPctEl) bentoPctEl.textContent = `${completionPct}% Complete`;
+        if (bentoBarEl) bentoBarEl.style.width = `${completionPct}%`;
+        if (bentoCompletedEl) bentoCompletedEl.textContent = completedCount;
+        if (radarPlayingEl) radarPlayingEl.textContent = playingCount;
+        if (radarFavEl) radarFavEl.textContent = favCount;
+        if (radarBookmarkEl) radarBookmarkEl.textContent = bookmarkedCount;
+    }
+
+    // Shared image fallback handler (replaces inline onerror strings)
+    function attachImageFallback(imgEl, fallbackUrl = 'static/images/game_1.jpg') {
+        if (!imgEl) return;
+        imgEl.addEventListener('error', function () {
+            if (!this.dataset.retry && this.src.endsWith('.webp')) {
+                this.dataset.retry = '1';
+                this.src = this.src.replace(/\.webp$/, '.jpg');
+            } else if (this.src !== fallbackUrl && !this.dataset.fallbackApplied) {
+                this.dataset.fallbackApplied = '1';
+                this.src = fallbackUrl;
+            }
+        });
+    }
+
+    // ── 2B. Bento Spotlight Tile ──
+    let spotlightPool = [];
+    let currentSpotlightGame = null;
+
+    function initSpotlightCard(games) {
+        const card = document.getElementById('bentoSpotlightCard');
+        const shuffleBtn = document.getElementById('bentoShuffleBtn');
+        const openBtn = document.getElementById('bentoSpotlightOpenBtn');
+        if (!card || !Array.isArray(games) || games.length === 0) return;
+
+        // Prefer currently playing or top-rated titles for the spotlight pool
+        const curated = games.filter(g => (g.play_status || '').toLowerCase() === 'playing' || (Number(g.rating) || 0) >= 8);
+        spotlightPool = curated.length > 0 ? curated : games;
+
+        renderSpotlightGame(spotlightPool[0]);
+
+        if (shuffleBtn && !shuffleBtn.dataset.wired) {
+            shuffleBtn.dataset.wired = 'true';
+            shuffleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (spotlightPool.length <= 1) return;
+                const candidates = spotlightPool.filter(g => (g.id || g.game_id) !== (currentSpotlightGame?.id || currentSpotlightGame?.game_id));
+                const next = candidates[Math.floor(Math.random() * candidates.length)] || spotlightPool[0];
+                renderSpotlightGame(next);
+            });
+        }
+
+        const triggerOpen = (e) => {
+            if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+            if (currentSpotlightGame) openDetail(card, currentSpotlightGame);
+        };
+
+        if (!card.dataset.wired) {
+            card.dataset.wired = 'true';
+            card.addEventListener('click', triggerOpen);
+        }
+        if (openBtn && !openBtn.dataset.wired) {
+            openBtn.dataset.wired = 'true';
+            openBtn.addEventListener('click', triggerOpen);
+        }
+    }
+
+    function renderSpotlightGame(game) {
+        if (!game) return;
+        currentSpotlightGame = game;
+
+        const imgEl = document.getElementById('bentoSpotlightImg');
+        const tagEl = document.getElementById('bentoSpotlightTag');
+        const genreEl = document.getElementById('bentoSpotlightGenre');
+        const titleEl = document.getElementById('bentoSpotlightTitle');
+        const descEl = document.getElementById('bentoSpotlightDesc');
+        const ratingEl = document.getElementById('bentoSpotlightRating');
+
+        const title = game.name || game.game_name || 'Untitled';
+        const rawCover = game.cover_image || 'static/images/game_1.jpg';
+        const coverUrl = typeof getImageUrl === 'function' ? getImageUrl(rawCover) : rawCover;
+
+        if (imgEl) {
+            delete imgEl.dataset.retry;
+            delete imgEl.dataset.fallbackApplied;
+            imgEl.src = coverUrl;
+            imgEl.alt = title;
+            if (!imgEl.dataset.fallbackBound) {
+                imgEl.dataset.fallbackBound = 'true';
+                attachImageFallback(imgEl);
+            }
+        }
+        if (tagEl) tagEl.textContent = statusLabel(displayStatus(game));
+        if (genreEl) genreEl.textContent = gameGenres(game, 2, ' · ');
+        if (titleEl) titleEl.textContent = title;
+        if (descEl) descEl.textContent = game.description ? game.description.slice(0, 110) : 'Personal archive highlight.';
+        if (ratingEl) {
+            const span = ratingEl.querySelector('span');
+            if (span) span.textContent = starScore(game);
+        }
     }
 
     // Shims so shared-transition.js modal toggles (favorite/bookmark/status) instantly
@@ -314,7 +424,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <path d="M8 12h8"></path>
                     </svg>
                     <p style="font-size: 1.1rem; margin-bottom: 4px;">No games found in this view</p>
-                    <span style="font-size: 0.85rem; color: rgba(224,248,252,0.4);">Try adjusting your search query or filters</span>
+                    <span style="font-size: 0.85rem; color: var(--gv-text-muted);">Try adjusting your search query or filters</span>
                 </div>
             `;
             return;
@@ -368,36 +478,39 @@ document.addEventListener('DOMContentLoaded', () => {
         const rawCover = game.cover_image || 'static/images/game_1.jpg';
         const coverUrl = typeof getImageUrl === 'function' ? getImageUrl(rawCover) : rawCover;
         const rawStatus = displayStatus(game);
-        const subtitle = game.description ? game.description.slice(0, 48) + '...' : 'An extraordinary digital odyssey';
+        const subtitle = game.description ? game.description.slice(0, 48) + '...' : 'Curated archive entry';
         const isFav = Boolean(game.is_favorited);
 
         card.innerHTML = `
-            <img class="wide-card-bg" src="${escHtml(coverUrl)}" alt="${escHtml(game.name || game.game_name)}" loading="lazy" onerror="if(!this.dataset.retry){this.dataset.retry='1';var s=this.src;if(s.endsWith('.webp')){this.src=s.replace(/\\.webp$/,'.jpg');}else{this.src='static/images/game_1.jpg';}}else{this.src='static/images/game_1.jpg';}">
+            <img class="wide-card-bg" src="${escHtml(coverUrl)}" alt="${escHtml(game.name || game.game_name)}" loading="lazy" decoding="async">
             <div class="wide-card-gradient"></div>
-            <div class="wide-card-top">
-                <span class="wide-status-pill status-${rawStatus}">
-                    <span class="pill-dot"></span>
-                    ${statusLabel(rawStatus)}
-                </span>
-                <button class="wide-card-fav-btn ${isFav ? 'active' : ''}" title="Favorite" data-id="${game.id || game.game_id}" aria-label="Toggle Favorite">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                    </svg>
-                </button>
-            </div>
-            <div class="wide-card-bottom">
-                <h3 class="wide-card-title">${escHtml(game.name || game.game_name)}</h3>
-                <p class="wide-card-subtitle">${escHtml(subtitle)}</p>
-                <div class="wide-card-footer">
-                    <span class="wide-card-genre">${escHtml(gameGenres(game, 2, ' · '))}</span>
-                    <span class="wide-card-rating">
-                        <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                        ${starScore(game)}
+            <div class="wide-card-overlay">
+                <div class="wide-card-top">
+                    <span class="wide-status-pill status-${rawStatus}">
+                        <span class="pill-dot"></span>
+                        ${statusLabel(rawStatus)}
                     </span>
+                    <button class="wide-card-fav-btn ${isFav ? 'active' : ''}" title="Favorite" data-id="${game.id || game.game_id}" aria-label="Toggle Favorite">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="wide-card-bottom">
+                    <h3 class="wide-card-title">${escHtml(game.name || game.game_name)}</h3>
+                    <p class="wide-card-subtitle">${escHtml(subtitle)}</p>
+                    <div class="wide-card-footer">
+                        <span class="wide-card-genre">${escHtml(gameGenres(game, 2, ' · '))}</span>
+                        <span class="wide-card-rating">
+                            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            ${starScore(game)}
+                        </span>
+                    </div>
                 </div>
             </div>
         `;
 
+        attachImageFallback(card.querySelector('.wide-card-bg'));
         wireFavoriteButton(card.querySelector('.wide-card-fav-btn'), game);
         card.addEventListener('click', () => openDetail(card, game));
         return card;
@@ -520,6 +633,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </button>
             `;
 
+            attachImageFallback(row.querySelector('.list-thumb'));
             wireFavoriteButton(row.querySelector('.wide-card-fav-btn'), game);
             row.addEventListener('click', () => openDetail(row, game));
             list.appendChild(row);
@@ -577,7 +691,7 @@ document.addEventListener('DOMContentLoaded', () => {
         suggestionsBox.innerHTML = '';
 
         if (matches.length === 0) {
-            suggestionsBox.innerHTML = '<div class="spotlight-result-item" style="justify-content:center; color:rgba(212,204,239,0.5); cursor:default;">No matching worlds found.</div>';
+            suggestionsBox.innerHTML = '<div class="spotlight-result-item" style="justify-content:center; color:var(--gv-text-muted); cursor:default;">No matching worlds found.</div>';
         } else {
             matches.forEach((game, idx) => {
                 const item = document.createElement('div');
@@ -882,8 +996,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (aboutBtn) {
         aboutBtn.addEventListener('click', () => {
-            if (dashboardSidebar) dashboardSidebar.classList.remove('mobile-open');
-            if (sidebarBackdrop) sidebarBackdrop.classList.remove('active');
+            closeMobileSidebar();
             const aboutModal = document.getElementById('aboutModal');
             if (aboutModal) {
                 aboutModal.classList.remove('hidden');

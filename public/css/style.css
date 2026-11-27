@@ -1302,3 +1302,21 @@ textarea:focus-visible,
 p, li, dd, figcaption, blockquote {
   text-wrap: pretty;
 }
+
+/* ========================================================================= */
+/* PHASE 3: Tabular Numeric Figures for Stats, Ratings & Counters            */
+/* ========================================================================= */
+.stat-number,
+.stat-value,
+.rating-badge,
+.sidebar-badge,
+.catalog-count-indicator,
+.genre-bundle-count,
+.wide-card-rating,
+.bento-stats-total,
+.bento-stat-num,
+.bento-stats-completion,
+.meta-strip-value,
+.card-rating {
+  font-variant-numeric: tabular-nums;
+}
