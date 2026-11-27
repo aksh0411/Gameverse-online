@@ -359,7 +359,7 @@
   position: relative;
   width: 100%;
   max-width: 680px;
-  background: radial-gradient(120% 120% at 50% 0%, rgba(4, 28, 38, 0.95) 0%, rgba(2, 13, 19, 0.98) 100%);
+  background: radial-gradient(120% 120% at 50% 0%, rgba(38, 20, 30, 0.96) 0%, rgba(20, 11, 18, 0.98) 100%);
   border: 1px solid rgba(253, 186, 116, 0.25);
   border-radius: 28px;
   box-shadow: 0 0 70px -12px rgba(251, 146, 60, 0.25), 0 30px 60px -10px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.08);
@@ -371,7 +371,7 @@
 }
 
 .about-modal-inner {
-  max-height: 92vh;
+  max-height: 92dvh;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: none !important;
@@ -682,45 +682,6 @@
   color: rgba(254, 215, 170, 0.55);
 }
 
-/* Pill Action Buttons */
-.about-actions-row {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 4px;
-  position: relative;
-  z-index: 1;
-}
-
-.about-pill-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: rgba(36, 20, 56, 0.65);
-  border: 1px solid rgba(168, 85, 247, 0.38);
-  border-radius: 9999px;
-  padding: 10px 26px;
-  color: #fff7ed;
-  font-family: var(--font-body), 'Inter', sans-serif;
-  font-size: 0.88rem;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, color 0.25s ease;
-}
-
-.about-pill-btn:hover {
-  background: rgba(168, 85, 247, 0.25);
-  border-color: rgba(192, 132, 252, 0.7);
-  box-shadow: 0 0 24px rgba(168, 85, 247, 0.35);
-  color: #ffffff;
-  transform: translateY(-1.5px);
-}
-
-.about-pill-btn:active {
-  transform: translateY(0) scale(0.98);
-}
-
 /* Corner Decor */
 .about-corner-pixel {
   position: absolute;
@@ -805,11 +766,6 @@
   }
   .about-closing-block .closing-sub {
     font-size: 0.78rem;
-  }
-
-  .about-pill-btn {
-    padding: 9px 22px;
-    font-size: 0.82rem;
   }
 }
 

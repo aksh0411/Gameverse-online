@@ -882,9 +882,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (aboutBtn) {
         aboutBtn.addEventListener('click', () => {
+            if (dashboardSidebar) dashboardSidebar.classList.remove('mobile-open');
+            if (sidebarBackdrop) sidebarBackdrop.classList.remove('active');
             const aboutModal = document.getElementById('aboutModal');
             if (aboutModal) {
                 aboutModal.classList.remove('hidden');
+                if (typeof lockBodyScroll === 'function') lockBodyScroll();
                 const inner = aboutModal.querySelector('.about-modal-inner');
                 if (inner) inner.scrollTop = 0;
             }

@@ -381,8 +381,6 @@ function ensureAdminAssets() {
 // --- Admin Controls Visibility ---
 function showAdminControls() {
     ensureAdminAssets();
-    document.querySelectorAll('.admin-login-btn, #adminLoginBtn').forEach(b => b.classList.add('hidden'));
-    document.querySelectorAll('.admin-logout-btn, #adminLogoutBtn').forEach(b => b.classList.remove('hidden'));
 
     const addGameFab = document.getElementById('addGameFab');
     const adminMenu = document.getElementById('adminMenu');
@@ -1133,14 +1131,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Direct Logout handlers (profile modal logout, admin modal logout)
-    document.querySelectorAll('#profileModalLogoutBtn, #adminLogoutBtn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+    // Direct Logout handler (profile modal logout)
+    const profileLogoutBtn = document.getElementById('profileModalLogoutBtn');
+    if (profileLogoutBtn) {
+        profileLogoutBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
             logoutUser();
         });
-    });
+    }
 
     // Close user dropdown on document click
     document.addEventListener('click', (e) => {
@@ -1162,24 +1161,44 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Close About modal (X button, backdrop click, Escape)
+    function closeAboutModal() {
+        const aboutModal = document.getElementById('aboutModal');
+        if (aboutModal && !aboutModal.classList.contains('hidden')) {
+            aboutModal.classList.add('hidden');
+            if (typeof unlockBodyScroll === 'function') unlockBodyScroll();
+        }
+    }
+    window.closeAboutModal = closeAboutModal;
+
+    const aboutModal = document.getElementById('aboutModal');
+    const aboutModalClose = document.getElementById('aboutModalClose');
+    if (aboutModalClose) {
+        aboutModalClose.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            closeAboutModal();
+        });
+    }
+    if (aboutModal) {
+        aboutModal.addEventListener('click', (e) => {
+            if (e.target === aboutModal) {
+                e.preventDefault();
+                e.stopPropagation();
+                closeAboutModal();
+            }
+        });
+    }
+
     // Global Escape key
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             closeLoginModal();
             closeUserProfileModal();
+            closeAboutModal();
             const dropdown = document.getElementById('userMenuDropdown');
             if (dropdown) dropdown.classList.add('hidden');
         }
-    });
-
-    // Admin login triggers from About modal or buttons
-    document.querySelectorAll('.admin-login-btn, #adminLoginBtn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const aboutModal = document.getElementById('aboutModal');
-            if (aboutModal) aboutModal.classList.add('hidden');
-            openLoginModal(null, 'signin');
-        });
     });
 
     // Post-Login Clean Redirection to Library (issue 3: always go to library, close any game card modal, strip hash)
